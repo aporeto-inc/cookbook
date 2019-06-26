@@ -11,3 +11,9 @@ To import a recipe:
 ```shell
 apoctl api import -n /yournamespace --file ./recipe.yaml
 ```
+
+Or directly from Github:
+
+```shell
+apoctl api import -n /yournamespace --url https://raw.githubusercontent.com/aporeto-inc/cookbook/master/recipe-name.yaml
+```

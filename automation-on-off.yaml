@@ -1,0 +1,64 @@
+APIVersion: 1
+label: recipe:testing:on-and-off-automation
+data:
+  recipes:
+  - name: Periodically block all traffic
+    label: recipe:testing:on-and-off-automation
+    propagate: true
+    protected: true
+    targetIdentities:
+    - automation
+    - networkaccesspolicy
+    description: Block all traffic every 10m. Why not?
+    longDescription: |-
+      ### On and Off Traffic
+
+      This recipe creates a deny all policy that will block all traffic
+      from and to all processing units and external networks and an Automation
+      that will switch the policy on and off every 10m.
+
+      This is mostly a toy testing policy
+
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        networkaccesspolicies:
+        - name: "[test:on-and-off] deny all"
+          description: denies all traffic to/from all pus
+          action: Reject
+          logsEnabled: true
+          disabled: true
+          object:
+            - - $identity=processingunit
+            - - $identity=externalnetwork
+          subject:
+            - - $identity=processingunit
+            - - $identity=externalnetwork
+          associatedTags:
+            - policy:on-and-off:target=deny-policy
+        automations:
+        - name: "[test:on-and-off] switch deny all regularly"
+          description: Turns the target policy on and off every 10m
+          trigger: Time
+          schedule: "@every 10m"
+          entitlements:
+            networkaccesspolicy:
+              - update
+              - retrieve-many
+          actions:
+            - |-
+              function then(api, params, payload) {
+                  pol = api.RetrieveMany('networkaccesspolicy', null, 'associatedtags contains "policy:on-and-off:target=deny-policy"')[0];
+                  pol.disabled = !pol.disabled;
+                  api.Update('networkaccesspolicy', pol);
+                  console.log("policy updated! disabled=", pol.disabled)
+              }
+          condition: |-
+            function when(api, params) {
+              return {
+                continue: true,
+                payload: null,
+              }
+            }
+      `}}

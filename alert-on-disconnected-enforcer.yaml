@@ -1,0 +1,68 @@
+APIVersion: 1
+label: recipe:alerts:disconnected-enforcers
+data:
+  recipes:
+  - name: Alert on disconnected enforcers
+    label: recipe:alerts:disconnected-enforcers
+    propagate: true
+    targetIdentities:
+    - automation
+    description: Raises an alarm if some enforcerd instances are disconnected for too long.
+    longDescription: |-
+      ### Raise Alarm on Disconnected Enforcers
+
+      This recipe deploys an automation that will create an alarm when some enforcers are found
+      disconnected for more than 24h.
+
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        automations:
+        - name: alert-on-disconnected-enforcers
+          trigger: Time
+          schedule: "@every 30m"
+          immediateExecution: true
+          entitlements:
+            enforcer:
+              - retrieve-many
+            alarm:
+              - create
+
+          condition: |
+            function when(m, params) {
+              enforcers = m.RetrieveMany(
+                'enforcer',
+                null,
+                'operationalStatus == Disconnected and updateTime <= now("-24h")',
+                {{ .Values.recursive }}
+              );
+
+              return {
+                continue: enforcers.length > 0,
+                payload:{
+                  enforcers: enforcers,
+                }
+              };
+            }
+
+          actions:
+            - |
+              function then(m, params, payload) {
+                var nb = payload.enforcers.length;
+
+                m.Create('alarm', {
+                    name: 'Disconnected enforcers',
+                    kind: 'recipes.automations.disconnected-enforcers',
+                    content: "Found " + nb + "enforcer(s) disconnected for more than 24h",
+                });
+              }
+      `}}
+    steps:
+    - name: Recursive
+      description: Configure if the automation should look for disconnected enforcers in child namespaces.
+      parameters:
+      - key: recursive
+        name: Recursive
+        description: Looks for disconnected enforcers in child namespaces.
+        type: Boolean

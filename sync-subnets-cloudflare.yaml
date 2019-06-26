@@ -1,0 +1,97 @@
+APIVersion: 1
+label: recipe:sync:subnets:cloudflare
+data:
+  recipes:
+  - name: Synchronize Cloudflare public subnets
+    label: recipe:sync:subnets:cloudflare
+    propagate: true
+    targetIdentities:
+    - automation
+    description: Regularly synchronizes Cloudflare public subnets as Aporeto External Networks.
+    longDescription: |-
+      ### Synchronize Cloudflare public subnets
+
+      This example reads the Cloudflare public subnets
+      and adds them as external networks in your namespace. It will create
+      the external networks with the region name and service name.
+      You can use multiple of these automations to retrieve multiple
+      types of services and create network policies based on these labels.
+
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        externalnetworks:
+        - name: cloudflare-networks
+          entries:
+          - "0.0.0.1/32"
+          ports:
+          {{- range $idx, $port := .Values.ports }}
+          - "{{ $port }}"
+          {{- end }}
+          protocols:
+          {{- range $idx, $protocol := .Values.protocols }}
+          - "{{ $protocol }}"
+          {{- end }}
+          associatedTags :
+          - 'recipe:renderid={{ .RenderID }}'
+
+        automations:
+        - name: sync-cloudflare-subnets
+          trigger: Time
+          schedule: "0 */1 * * *"
+          immediateExecution: true
+          entitlements:
+            externalnetwork:
+              - retrieve-many
+              - update
+
+          condition: |
+            function when(api, params) {
+              return {continue: true, payload: null};
+            }
+
+          actions:
+            - |
+              function then(api, params, payload) {
+
+                var extnets = api.RetrieveMany('externalnetworks', null, 'normalizedTags contains "recipe:renderid={{ .RenderID }}"');
+                if (extnets.length != 1) {
+                  throw "unable to find external network"
+                }
+
+                var extnet = extnets[0];
+                var entries = [];
+                var obj = aporeto.http('GET', 'https://www.cloudflare.com/ips-v4');
+                var subnets = obj.body.split('\n');
+
+                _.each(subnets, function(subnet) {
+                  if (subnet != '') {
+                    entries.push(subnet);
+                  }
+                })
+
+                if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
+                  console.log('no change since last sync');
+                  return;
+                }
+
+                extnet.entries = entries
+                api.Update('externalnetwork', extnet)
+                console.log('external network updated');
+              }
+      `}}
+    steps:
+    - name: Synchronization
+      description: Configure the target AWS objects
+      parameters:
+
+      - key: ports
+        name: Ports
+        description: The ports to define in the external network. Empty means any.
+        type: StringSlice
+
+      - key: protocols
+        name: Protocols
+        description: The protocols to define in the external network. Empty means any.
+        type: StringSlice

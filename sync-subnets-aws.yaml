@@ -1,0 +1,146 @@
+APIVersion: 1
+label: recipe:sync:subnets:aws
+data:
+  recipes:
+  - name: Synchronize AWS public subnets
+    label: recipe:sync:subnets:aws
+    propagate: true
+    targetIdentities:
+    - automation
+    description: Regularly synchronizes AWS public subnets as Aporeto External Networks.
+    longDescription: |-
+      ### Synchronize AWS public subnets
+
+      This example reads the AWS subnets of a specific region and service
+      and adds them as external networks in your namespace. It will create
+      the external networks with the region name and service name.
+      You can use multiple of these automations to retrieve multiple
+      types of services and create network policies based on these labels.
+
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        externalnetworks:
+        - name: aws-{{ .Values.region | lower }}-{{ .Values.serviceType | lower }}-networks
+          entries:
+          - "0.0.0.1/32"
+          ports:
+          {{- range $idx, $port := .Values.ports }}
+          - "{{ $port }}"
+          {{- end }}
+          protocols:
+          {{- range $idx, $protocol := .Values.protocols }}
+          - "{{ $protocol }}"
+          {{- end }}
+          associatedTags:
+          - 'recipe:renderid={{ .RenderID }}'
+          - 'cloud:aws:networks=imported'
+          - 'cloud:aws:service={{ .Values.serviceType }}'
+          - 'cloud:aws:region={{ .Values.region }}'
+
+        automations:
+        - name: sync-aws-{{ .Values.serviceType | lower }}-subnets-{{ .Values.region | lower }}
+          trigger: Time
+          schedule: "0 */1 * * *"
+          immediateExecution: true
+          entitlements:
+            externalnetwork:
+              - retrieve-many
+              - update
+
+          condition: |
+            function when(api, params) {
+              return {continue: true, payload: null};
+            }
+
+          actions:
+            - |
+              function then(api, params, payload) {
+
+                var extnets = api.RetrieveMany('externalnetworks', null, 'normalizedTags contains "recipe:renderid={{ .RenderID }}"');
+                if (extnets.length != 1) {
+                  throw "unable to find external network"
+                }
+
+                var obj = aporeto.http('GET', 'https://ip-ranges.amazonaws.com/ip-ranges.json');
+                var body = JSON.parse(obj.body);
+                var subnets = body.prefixes;
+                var extnet = extnets[0];
+                var entries = [];
+
+                _.each(subnets, function(subnet) {
+                  if (subnet.region == '{{ .Values.region }}' && subnet.service == '{{ .Values.serviceType }}') {
+                    entries.push(subnet.ip_prefix);
+                  }
+                })
+
+                if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
+                  console.log('no change since last sync');
+                  return;
+                }
+
+                extnet.entries = entries
+                api.Update('externalnetwork', extnet)
+                console.log('external network updated');
+              }
+      `}}
+    steps:
+    - name: Synchronization
+      description: Configure the target AWS objects
+      parameters:
+      - key: region
+        name: Region
+        description: Region to look for subnets.
+        type: Enum
+        defaultValue: us-west-2
+        allowedChoices:
+          us-east-2: us-east-2
+          us-east-1: us-east-1
+          us-west-1: us-west-1
+          us-west-2: us-west-2
+          ap-east-1: ap-east-1
+          ap-south-1: ap-south-1
+          ap-northeast-2: ap-northeast-2
+          ap-southeast-1: ap-southeast-1
+          ap-southeast-2: ap-southeast-2
+          ap-northeast-1: ap-northeast-1
+          ca-central-1: ca-central-1
+          cn-north-1: cn-north-1
+          cn-northwest-1: cn-northwest-1
+          eu-central-1: eu-central-1
+          eu-west-1: eu-west-1
+          eu-west-2: eu-west-2
+          eu-west-3: eu-west-3
+          eu-north-1: eu-north-1
+          sa-east-1: sa-east-1
+          us-gov-east-1: us-gov-east-1
+          us-gov-west-1: us-gov-west-1
+          GLOBAL: Global
+
+      - key: serviceType
+        name: Service Type
+        description: Service type to synchronize.
+        type: Enum
+        defaultValue: AMAZON
+        allowedChoices:
+          AMAZON: Amazon
+          EC2: EC2
+          S3: S3
+          ROUTE53_HEALTHCHECKS: Route 53 Healthchecks
+          DYNAMODB: DynamoDB
+          CLOUDFRONT: CloudFront
+          CODEBUILD: Codebuild
+          GLOBALACCELERATOR: Global Accelerator
+          AMAZON_CONNECT: Amazon Connect
+          CLOUD9: Cloud9
+
+      - key: ports
+        name: Ports
+        description: The ports to define in the external network. Empty means any.
+        type: StringSlice
+
+      - key: protocols
+        name: Protocols
+        description: The protocols to define in the external network. Empty means any.
+        type: StringSlice

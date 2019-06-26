@@ -1,0 +1,140 @@
+
+APIVersion: 1
+label: recipe:quickstart:k8s
+data:
+  recipes:
+  - name: Secure a Kubernetes Cluster
+    label: recipe:quickstart:k8s
+    options:
+      appCrendentialFormat: YAML
+    propagate: true
+    protected: true
+    metadata:
+    - "@aporeto:audience=public"
+    associatedTags:
+    - "aporeto:placement=topnav"
+    targetIdentities:
+    - namespace
+    - appcredential
+    description: Secure a Kubernetes cluster with Aporeto Enforcerd and Operator.
+    longDescription: |-
+
+      ### Secure your Kubernetes cluster with Aporeto
+
+      Follow these steps to onboard an enforcerd in your Kubernetes cluster.
+
+      #### Prerequisites
+
+      Before diving into the steps, make sure you have
+
+      - [Create the Tiller service account](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#1-create-the-tiller-service-account)
+      - [Initialize Helm and deploy Tiller](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#2-initialize-helm-and-deploy-tiller)
+      - [Add Aporeto to Helm repository](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#3-add-the-aporeto-repository-to-helm)
+
+      Follow all the steps from the [official documentation page](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/).
+
+      #### Summary
+
+      1. Define a Namespace that will store all your data in a single folder-like structure.
+
+        _(See all namespaces from the left menu under "Namespace Settings")_
+
+      2. Create two AppCredentials
+          - One will be given to the **enforcerd** to register and communicate with the Aporeto control plane.
+          - One will be given to the **Aporeto Operator** which provides a bridge between Aporeto APIs and Kubernetes API using CRDs (Custom Resource Definitions).
+
+        _(See all "AppCredentials" from the left menu under "Namespace Settings")_
+
+      3. Install the Aporeto Operator using helm
+
+      4. Install the enforcerd using helm
+
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        namespaces:
+        - name: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
+          {{- if .Values.namespace_description }}
+          description: {{ .Values.namespace_description }}
+          {{- end }}
+        appcredentials:
+        - name: "enforcerd"
+          namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
+          description: "credentials used by the enforcerd running in kubernetes."
+          roles:
+          - "@auth:role=enforcer"
+        - name: "aporeto-operator"
+          namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
+          description: "credentials used by the aporeto-operator."
+          roles:
+          - "@auth:role=aporeto-operator"
+      `}}
+
+    steps:
+
+    - name: Namespace
+      description: |-
+        Let's create a namespace first. It will contain all the data that will be created during these steps.
+
+        ##### Read more about Namespaces and Authentication
+
+        - [Namespaces](https://docs.aporeto.com/docs/main/concepts/namespaces/)
+        - [Authentications and authorizations](https://docs.aporeto.com/docs/main/concepts/authentication-and-authorization/)
+
+      parameters:
+      - key: namespace_name
+        name: Namespace
+        description: Define your namespace name.
+        type: String
+        defaultValue: mycluster
+
+      - key: namespace_description
+        name: Description
+        description: Description of the namespace.
+        type: String
+        optional: true
+
+    successfullMessage: |-
+
+        #### Create a kubernetes namespace to deploy Aporeto
+
+        ```shell
+        kubectl create namespace aporeto
+        ```
+
+        #### Install the secrets
+
+        A zip file has been dowloaded to your computer. it contains application credentials
+        that will be used to authenticate your cluster with Aporeto. Unzip the
+        archive, then run:
+
+        ```shell
+        kubectl apply -n aporeto -f aporeto-operator.yaml
+        ```
+
+        ```shell
+        kubectl apply -n aporeto -f enforcerd.yaml
+        ```
+
+        #### Install Aporeto Operator
+
+        Install Aporeto CRDs in your cluster:
+
+        ```shell
+        helm install aporeto/aporeto-crds --name aporeto-crds
+        ```
+
+        Deploy Aporeto Operator:
+
+        ```shell
+        helm install aporeto/aporeto-operator --name aporeto-operator --namespace aporeto
+        ```
+
+        #### Install Enforcerd
+
+        Install enforcerd:
+
+        ```shell
+        helm install aporeto/enforcerd --name enforcerd --namespace aporeto
+        ```

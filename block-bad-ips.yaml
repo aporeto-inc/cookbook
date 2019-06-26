@@ -1,0 +1,93 @@
+APIVersion: 1
+label: recipe:security:block-blacklisted-ips
+data:
+  recipes:
+  - name: Automatically block blacklisted IPs
+    label: recipe:security:block-blacklisted-ips
+    propagate: true
+    targetIdentities:
+    - automation
+    description: Installs a policy and an automation to block blacklisted IPs.
+    longDescription: |-
+      ### Automatically block blacklisted IPs
+
+      This recipe installs an automation that will regularly pull from
+      from [a list of blacklisted IPs](https://github.com/stamparm/ipsum)
+      and updates an external networks.
+
+      It will also install a network access policy that will block all
+      traffic from and to these IPs.
+
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        networkaccesspolicies:
+        - name: block-blacklisted-ips
+          action: Reject
+          logsEnabled: true
+          subject:
+          - - '$identity=processingunit'
+          - - '$identity=externalnetwork'
+            - "recipe:renderid={{ .RenderID }}"
+          object:
+          - - '$identity=processingunit'
+          - - '$identity=externalnetwork'
+            - "recipe:renderid={{ .RenderID }}"
+
+        externalnetworks:
+        - name: blacklisted-ips
+          entries:
+          - "0.0.0.1/32"
+          associatedTags:
+          - "recipe:renderid={{ .RenderID }}"
+
+        automations:
+        - name: sync-blacklisted-ips
+          trigger: Time
+          schedule: "0 0 * * *"
+          immediateExecution: true
+          entitlements:
+            externalnetwork:
+              - retrieve-many
+              - update
+
+          condition: |
+            function when(api, params) {
+              return {continue: true, payload: null};
+            }
+
+          actions:
+            - |
+              function then(api, params, payload) {
+
+                var extnets = api.RetrieveMany('externalnetworks', null, 'normalizedTags contains "recipe:renderid={{ .RenderID }}"');
+                if (extnets.length != 1) {
+                  throw "unable to find external network"
+                }
+
+                var obj = aporeto.http('GET', 'https://raw.githubusercontent.com/stamparm/ipsum/master/ipsum.txt');
+                var data = obj.body.split('\n');
+                var extnet = extnets[0];
+                var entries = [];
+
+                _.each(data, function(line) {
+                  if (line.slice(0, 1) == '#') {
+                    return;
+                  }
+                  var parts = line.split(/\s+/);
+                  if ( parseInt(parts[1]) > 8 ) {
+                    entries.push(parts[0]+'/32')
+                  }
+                });
+
+                if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
+                  console.log('no change since last sync');
+                  return;
+                }
+
+                extnet.entries = entries
+                api.Update('externalnetwork', extnet)
+                console.log('external network updated');
+              }
+      `}}

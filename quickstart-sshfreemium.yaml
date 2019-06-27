@@ -7,7 +7,6 @@ data:
     options:
       appCrendentialFormat: JSON
     propagate: true
-    protected: true
     metadata:
     - "@aporeto:audience=public"
     - "@aporeto:audience=sshcertificates"

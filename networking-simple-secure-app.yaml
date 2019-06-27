@@ -13,7 +13,6 @@ data:
     - externalnetwork
     - networkaccesspolicy
     propagate: true
-    protected: true
     longDescription: |-
       ### Secure a simple application
 

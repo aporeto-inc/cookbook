@@ -8,7 +8,6 @@ data:
     options:
       appCrendentialFormat: YAML
     propagate: true
-    protected: true
     metadata:
     - "@aporeto:audience=public"
     associatedTags:

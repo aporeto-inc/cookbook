@@ -5,7 +5,6 @@ data:
   - name: Periodically block all traffic
     label: recipe:testing:on-and-off-automation
     propagate: true
-    protected: true
     targetIdentities:
     - automation
     - networkaccesspolicy

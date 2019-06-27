@@ -6,7 +6,6 @@ data:
     description: Allow all processing unit to access DNS.
     label: recipe:networking:allow-dns
     propagate: true
-    protected: true
     targetIdentities:
     - externalnetwork
     - networkaccesspolicy

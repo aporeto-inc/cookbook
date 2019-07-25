@@ -15,6 +15,9 @@ data:
     targetIdentities:
     - namespace
     - appcredential
+    - enforcerprofile
+    - enforcerprofilemappingpolicy
+    - automation
     description: Secure a Kubernetes cluster with Aporeto Enforcerd and Operator.
     longDescription: |-
 
@@ -30,7 +33,7 @@ data:
       - [Initialize Helm and deploy Tiller](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#2-initialize-helm-and-deploy-tiller)
       - [Add Aporeto to Helm repository](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#3-add-the-aporeto-repository-to-helm)
 
-      Follow all the steps from the [official documentation page](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/).
+      You can use steps 1 and 2 from the [official documentation page](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/) for that.
 
       #### Summary
 
@@ -57,6 +60,32 @@ data:
           {{- if .Values.namespace_description }}
           description: {{ .Values.namespace_description }}
           {{- end }}
+        enforcerprofiles:
+        - name: kubernetes-default
+          namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
+          protected: true
+          metadata:
+          - '@profile:name=kubernetes-default'
+          description: Default Profile for Kubernetes
+          excludedNetworks:
+          - 127.0.0.0/8
+          ignoreExpression:
+          - - '@app:k8s:namespace=aporeto'
+          - - '@app:k8s:namespace=aporeto-operator'
+          - - '@app:k8s:namespace=kube-system'
+          excludedInterfaces: []
+          targetNetworks: []
+          targetUDPNetworks: []
+        enforcerprofilemappingpolicies:
+        - name: fallback-kubernetes-default
+          namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
+          protected: true
+          fallback: true
+          description: "Kubernetes fallback: if there is no other profile, use the default Kubernetes profile."
+          object:
+          - - '@profile:name=kubernetes-default'
+          subject:
+          - - $identity=enforcer
         appcredentials:
         - name: "enforcerd"
           namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
@@ -68,6 +97,88 @@ data:
           description: "credentials used by the aporeto-operator."
           roles:
           - "@auth:role=aporeto-operator"
+        automations:
+          - name: install-default-allow-all-policies
+            namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
+            description: Installs default allow all fallback policies for every child namespace that gets created to mimic Kubernetes default behavior.
+            trigger: Event
+            events:
+              namespace:
+                - create
+            entitlements:
+              externalnetwork:
+                - create
+              networkaccesspolicy:
+                - create
+            condition: |-
+              function when(api, params) {
+                  // Your custom code goes here.
+                  return {continue: true, payload: { namespace: params.eventPayload.entity }};
+              }
+            actions:
+              - |-
+                /**
+                 * Write your action code here. This function will be executed when the condition is met
+                 * @param {object} api - api manipulator that allows CRUD operations.
+                 * @param {object} params - the parameters configured in the automation.
+                 * @param {object} payload - Payload returned by the condition.
+                 */
+                function then(api, params, payload) {
+                    api.Create('externalnetwork', {
+                        name: 'external-tcp-all',
+                        description: 'Created by an automation on namespace creation. It is safe to be deleted, if not required.',
+                        metadata: ['@ext:name=tcpall'],
+                        entries: ['0.0.0.0/0'],
+                        ports: ['1:65535'],
+                        protocols: ['tcp'],
+                        propagate: true,
+                    }, payload.namespace.name);
+                    api.Create('externalnetwork', {
+                        name: 'external-udp-all',
+                        description: 'Created by an automation on namespace creation. It is safe to be deleted, if not required.',
+                        metadata: ['@ext:name=udpall'],
+                        entries: ['0.0.0.0/0'],
+                        ports: ['1:65535'],
+                        protocols: ['udp'],
+                        propagate: true,
+                    }, payload.namespace.name);
+                    api.Create('networkaccesspolicy', {
+                        name: 'default-fallback-ingress-allow-all',
+                        description: 'Created by an automation on namespace creation. It is safe to be deleted, if not required.',
+                        metadata: ['@netpol=default-fallback'],
+                        propagate: true,
+                        fallback: true,
+                        logsEnabled: true,
+                        observationEnabled: true,
+                        observedTrafficAction: 'Apply',
+                        action: 'Allow',
+                        applyPolicyMode: 'IncomingTraffic',
+                        subject: [
+                            ['$identity=processingunit'],
+                            ['@ext:name=tcpall'],
+                            ['@ext:name=udpall'],
+                        ],
+                        object: [['$namespace='+payload.namespace.name]],
+                    }, payload.namespace.name);
+                    api.Create('networkaccesspolicy', {
+                        name: 'default-fallback-egress-allow-all',
+                        description: 'Created by an automation on namespace creation. It is safe to be deleted, if not required',
+                        metadata: ['@netpol=default-fallback'],
+                        propagate: true,
+                        fallback: true,
+                        logsEnabled: true,
+                        observationEnabled: true,
+                        observedTrafficAction: 'Apply',
+                        action: 'Allow',
+                        applyPolicyMode: 'OutgoingTraffic',
+                        subject: [['$namespace='+payload.namespace.name]],
+                        object: [
+                            ['$identity=processingunit'],
+                            ['@ext:name=tcpall'],
+                            ['@ext:name=udpall'],
+                        ],
+                    }, payload.namespace.name);
+                }
       `}}
 
     steps:
@@ -99,6 +210,7 @@ data:
         #### Create a kubernetes namespace to deploy Aporeto
 
         ```shell
+        kubectl create namespace aporeto-operator
         kubectl create namespace aporeto
         ```
 
@@ -109,7 +221,7 @@ data:
         archive, then run:
 
         ```shell
-        kubectl apply -n aporeto -f aporeto-operator.yaml
+        kubectl apply -n aporeto-operator -f aporeto-operator.yaml
         ```
 
         ```shell
@@ -127,7 +239,7 @@ data:
         Deploy Aporeto Operator:
 
         ```shell
-        helm install aporeto/aporeto-operator --name aporeto-operator --namespace aporeto
+        helm install aporeto/aporeto-operator --name aporeto-operator --namespace aporeto-operator
         ```
 
         #### Install Enforcerd

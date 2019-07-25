@@ -1,0 +1,313 @@
+APIVersion: 1
+label: quickstart-ssh-protection
+data:
+  recipes:
+  - name: Quickstart your SSH protection
+    label: quickstart-ssh-protection
+    options:
+      appCrendentialFormat: JSON
+    propagate: true
+    metadata:
+    - "@aporeto:audience=public"
+    - "@aporeto:audience=sshprotection"
+    associatedTags:
+    - "aporeto:placement=topnav"
+    targetIdentities:
+    - oidcprovider
+    - apiauthorizationpolicy
+    - sshauthorizationpolicy
+    - networkaccesspolicy
+    - auditprofilemappingpolicy
+    - externalnetwork
+    description: Protect the SSH access to your resources.
+    longDescription: |-
+
+      ### Context
+
+      Aporeto offers the ability to control who can get an SSH Certificate to access your resources protected by an enforcer.
+
+      ### Prerequisites
+
+      Protect your VM with the Aporeto enforcer by following [the installation steps](.Aporeto.junonUrl/docs/main/installation/install-on-linux/).
+
+      ### Steps
+
+      To manage securely, here are a few steps we will walk you through:
+
+      1. Define an **Authentication Source** that will allow your users to authenticate to Aporeto.
+      2. Define an **API Authorization** to authorize users to access your namespace and ask for an SSH Certificate
+      3. Define an **SSH Authorization** to authorize certain authorized user to get an SSH Certificate and access the protected resource.
+
+      Follow this guide to achieve the above steps.
+
+      _Note: Each step can be done or modified individually by accessing the corresponding page in the left menu._
+
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        {{- if (eq .Values.realm "oidc") }}
+        oidcproviders:
+        - name: {{ required ".Values.oidc_name is required" .Values.oidc_name }}
+          description: "Created with the quickstart"
+          endpoint: {{ required ".Values.oidc_endpoint is required" .Values.oidc_endpoint }}
+          clientID: {{ required ".Values.oidc_clientID is required" .Values.oidc_clientID }}
+          clientSecret: {{ required ".Values.oidc_clientSecret is required" .Values.oidc_clientSecret }}
+          scopes:
+          {{- range $i, $scope := .Values.oidc_scopes }}
+          - "{{ $scope }}"
+          {{- end }}
+          subjects:
+          {{- range $i, $subject := .Values.oidc_subjects }}
+          - "{{ $subject }}"
+          {{- end }}
+          default: true
+        apiauthorizationpolicies:
+        - name: "Allow OIDC users to request an SSH Certificate"
+          description: "Created with the quickstart"
+          propagate: true
+          subject:
+          - - "@auth:realm=oidc"
+            - "@auth:organization={{ required ".Aporeto.Namespace is required" .Aporeto.Namespace }}"
+          authorizedNamespace: "{{ .Aporeto.Namespace }}"
+          authorizedIdentities:
+          - "@auth:role=sshidentity.requester"
+          - "@auth:role=namespace.viewer"
+        {{- else }}
+        apiauthorizationpolicies:
+        - name: "Allow Google users to request an SSH Certificate"
+          description: "Created with the quickstart"
+          propagate: true
+          subject:
+          {{- range $i, $email := .Values.emails }}
+          - - "@auth:realm=google"
+            - "@auth:email={{ $email }}"
+          {{- end }}
+          authorizedNamespace: "{{ .Aporeto.Namespace }}"
+          authorizedIdentities:
+          - "@auth:role=sshidentity.requester"
+          - "@auth:role=namespace.viewer"
+        {{- end }}
+
+        sshauthorizationpolicies:
+        - name: {{ required ".Values.sshauthorizationpolicy_name is required" .Values.sshauthorizationpolicy_name }}
+          description: "Created with the quickstart"
+          propagate: true
+          subject:
+          {{- if .Values.sshauthorizationpolicy_claims }}
+          {{- range $i, $claim := .Values.sshauthorizationpolicy_claims }}
+          - - "@auth:realm={{ $.Values.realm }}"
+            - "{{ $claim }}"
+          {{- end }}
+          {{- else }}
+
+          {{- if (eq .Values.realm "google" ) }}
+          {{- range $i, $email := .Values.emails }}
+          - - "@auth:realm=google"
+            - "@auth:email={{ $email }}"
+          {{- end }}
+          {{- else }}
+          - - "@auth:realm=oidc"
+            - "@auth:organization={{ .Aporeto.Namespace }}"
+          {{- end}}
+
+          {{- end }}
+          object:
+          - - "$identity=enforcer"
+            - "$namespace={{ .Aporeto.Namespace }}"
+          principals:
+          {{- range $i, $principal := .Values.sshauthorizationpolicy_principals }}
+          - "{{ $principal }}"
+          {{- end }}
+
+        externalnetwork:
+        - name: "Internet"
+          description: "Represents any traffic"
+          associatedTags:
+          - "ext:net=internet"
+          entries:
+          - "0.0.0.0/0"
+          protocols:
+          - udp
+          - tcp
+          - icmp
+          ports:
+          - "1:65535"
+
+
+        networkaccesspolicies:
+        - name: "Allow all UDP/TCP traffic between processing units"
+          description: "This allows your resource to communicate with "
+          action: "Allow"
+          logsEnabled: true
+          propagate: true
+          subject:
+          - - "$identity=processingunit"
+          - - "$identity=externalnetwork"
+          object:
+          - - "$identity=processingunit"
+          - - "$identity=externalnetwork"
+
+        auditprofilemappingpolicies:
+        - name: "Enforcers collect execve commands"
+          description: "All enforcer are implementing the audit profile execve"
+          propagate: true
+          subject:
+          - - "$identity=enforcer"
+          object:
+          - - "auditprofile:rule=execve"
+
+
+      `}}
+    steps:
+    - name: Authentication
+      description: |-
+        Aporeto provides multiple authentication sources.
+
+        In this step, you will define how your users will access your namespace and request for an SSH Certificate.
+
+        _Note: Read more about [configuring OIDC for Aporeto](.Aporeto.junonUrl/docs/main/guides/oidc/oidc-access-control-plane/)_
+
+      parameters:
+      - key: realm
+        name: Identity Provider
+        description: Which identity provider would you like to use ?
+        type: Enum
+        defaultValue: google
+        allowedChoices:
+          google: Google
+          oidc: OIDC
+
+      - key: emails
+        name: Emails
+        description: List of emails to grant access to your namespace.
+        type: StringSlice
+        visibilityCondition:
+        - - key: realm
+            operator: Equal
+            value: "google"
+
+      - key: oidc_name
+        name: Name
+        description: Used by your users to authenticate to that specific OIDC provider.
+        type: String
+        visibilityCondition:
+        - - key: realm
+            operator: Equal
+            value: "oidc"
+      - key: oidc_endpoint
+        name: Endpoint
+        description: Identity provider's URL.
+        type: String
+        visibilityCondition:
+        - - key: realm
+            operator: Equal
+            value: "oidc"
+      - key: oidc_clientID
+        name: Client ID
+        description: Client ID provided by your OIDC provider.
+        type: String
+        visibilityCondition:
+        - - key: realm
+            operator: Equal
+            value: "oidc"
+      - key: oidc_clientSecret
+        name: Client Secret
+        description: Client Secret provided by your OIDC provider.
+        type: String
+        visibilityCondition:
+        - - key: realm
+            operator: Equal
+            value: "oidc"
+      - key: oidc_scopes
+        name: Scopes
+        description: List of scopes to retrieve from the OIDC provider.
+        type: StringSlice
+        defaultValue:
+        - profile
+        - email
+        visibilityCondition:
+        - - key: realm
+            operator: Equal
+            value: "oidc"
+      - key: oidc_subjects
+        name: Subjects
+        description: Indicate which OIDC claims should define the subject claim.
+        type: StringSlice
+        defaultValue:
+        - email
+        visibilityCondition:
+        - - key: realm
+            operator: Equal
+            value: "oidc"
+
+    - name: Authorization
+      description: |-
+
+        ### Authorize your users to access your namespace and request an SSH Certificate.
+
+        According to the provider defined, this step will define a default **API Authorization** that allows your users to access your namespace
+        and request for an SSH Certificate.
+
+        You will retrieve this authorization in the left menu under *Namespace Settings* > *Authorizations*
+        Feel free to modify this API Authorization if you feel it is too permissive.
+
+
+        **Important:** Requesting an SSH Certificate does not mean the certificate will be delivered. An **SSH Authorization** will be defined next step.
+
+    - name: SSH Authorization
+      description: |-
+
+        ### Define who can retrieve an SSH Certificate
+
+        Some of the users who can request an SSH Certificate, will be actually allowed to get an SSH Certificate.
+
+      parameters:
+      - key: sshauthorizationpolicy_name
+        name: Name
+        description: Define the name of this policy.
+        type: String
+        defaultValue: Allow users to get an SSH Certificate
+      - key: sshauthorizationpolicy_claims
+        name: Claims
+        description: Claims to present to get an SSH Certificate (Type @ for suggestions)
+        type: StringSlice
+        allowedValues:
+        - "@auth:realm="
+        - "@auth:email="
+        - "@auth:account="
+        - "@auth:organization="
+      - key: sshauthorizationpolicy_principals
+        name: Principals
+        description: Principals to add to the SSH Certificate. In any case, the certificate will always contain the Aporeto Token subject as principal.
+        optional: true
+        type: StringSlice
+
+    successfullMessage: |-
+        ### Tell your users they can now request for an SSH Certificate
+
+        To get an SSH Certificate, follow these steps:
+
+        1. Authenticate to the OIDC provider to get a temporary token:
+
+        ```
+        apoctl auth oidc --namespace .Aporeto.Namespace --provider .Values.oidc_name
+        ```
+
+        2. Copy this token. If you want, you can also store it in an environment variable.
+
+        ```
+        export TOKEN=<paste-token>
+        ```
+
+        3. Get an SSH Certificate with the temporary token:
+
+        ```
+        apoctl ssh cert --token $TOKEN --namespace .Aporeto.Namespace
+        ```
+
+        The above command will generate an Aporeto SSH Certificate that you can now use to access the resources.
+
+        **Note** Any apoctl parameter can be saved in a configuration file or environment variable.
+
+        Learn more about [apoctl](.Aporeto.junonUrl/docs/main/apoctl-install/apoctl-install-user/#installing-apoctl-for-users)

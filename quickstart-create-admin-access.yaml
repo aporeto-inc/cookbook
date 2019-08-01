@@ -4,7 +4,7 @@ data:
   recipes:
   - name: Create an admin access
     icon: fal fa-user-shield
-    label: create-admin-access
+    label: recipe:create-admin-access
     options:
       appCrendentialFormat: JSON
     propagate: true

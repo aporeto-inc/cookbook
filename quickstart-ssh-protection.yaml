@@ -1,9 +1,8 @@
 APIVersion: 1
-label: quickstart-ssh-protection
+label: recipe:quickstart-ssh-protection
 data:
   recipes:
   - name: Quickstart your SSH protection
-    label: recipe:quickstart-ssh-protection
     options:
       appCrendentialFormat: JSON
     propagate: true

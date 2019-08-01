@@ -3,7 +3,7 @@ label: quickstart-ssh-protection
 data:
   recipes:
   - name: Quickstart your SSH protection
-    label: quickstart-ssh-protection
+    label: recipe:quickstart-ssh-protection
     options:
       appCrendentialFormat: JSON
     propagate: true

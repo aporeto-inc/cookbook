@@ -26,8 +26,8 @@ data:
 
       To create an administrator account, we will:
 
-      1. Define an **Authentication Source** that will allow your users to authenticate to Aporeto.
-      2. Define an **API Authorization** to authorize users to access your namespace and request an SSH Certificate
+      1. Define an **Authentication Source** that will allow you to authenticate to Aporeto.
+      2. Define an **API Authorization** to grant you the **Namespace Administrator** role on your namespace.
 
       Follow this guide to achieve the above steps.
 
@@ -93,7 +93,7 @@ data:
       description: |-
         Aporeto provides multiple authentication sources.
 
-        In this step, you will define how your users will access your namespace and request for an SSH Certificate.
+        In this step, you will define which one you want to use to access your namespace.
 
         _Note: Read more about [configuring OIDC for Aporeto](.Aporeto.junonUrl/docs/main/guides/oidc/oidc-access-control-plane/)_
 
@@ -204,11 +204,9 @@ data:
 
         ### Authorize your users to access your namespace and request an SSH Certificate.
 
-        According to the provider defined, this step will define an **API Authorization** that grants the role **namespace.editor**
+        According to the chosen provider, this step will define an **API Authorization** that grants the **Namesoace Administrator** role.
 
         You will retrieve this authorization in the left menu under *Namespace Settings* > *Authorizations*.
-
-        Feel free to modify this API Authorization if you feel it is too permissive.
 
       parameters:
       - key: oidc_claims

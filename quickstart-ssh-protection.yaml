@@ -296,7 +296,6 @@ data:
         description: Claims to present to get an SSH Certificate (Type @ for suggestions)
         type: StringSlice
         allowedValues:
-        - "@auth:realm="
         - "@auth:email="
         - "@auth:account="
         - "@auth:organization="

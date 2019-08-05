@@ -2,8 +2,7 @@ APIVersion: 1
 label: quickstart-ssh-certificates
 data:
   recipes:
-  - name: Quickstart your SSH Certificates
-    label: quickstart-ssh-certificates
+  - name: Quickstart your SSH Certificates (freemium only)
     options:
       appCrendentialFormat: JSON
     propagate: true
@@ -109,9 +108,6 @@ data:
           {{- end}}
 
           {{- end }}
-          object:
-          - - "$identity=enforcer"
-            - "$namespace={{ .Aporeto.Namespace }}"
           extensions:
           - "permit-pty"
           principals:
@@ -262,7 +258,6 @@ data:
         description: Claims to present to get an SSH Certificate (Type @ for suggestions)
         type: StringSlice
         allowedValues:
-        - "@auth:realm="
         - "@auth:email="
         - "@auth:account="
         - "@auth:organization="

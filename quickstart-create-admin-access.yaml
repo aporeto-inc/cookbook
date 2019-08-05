@@ -217,7 +217,6 @@ data:
         type: StringSlice
         optional: true
         allowedValues:
-        - "@auth:realm="
         - "@auth:email="
         - "@auth:account="
         - "@auth:organization="

@@ -23,21 +23,15 @@ data:
 
       ### Context
 
-      Aporeto offers the ability to control who can get an SSH Certificate to access your resources protected by an enforcer.
-
-      ### Prerequisites
-
-      Protect your VM with the Aporeto enforcer by following [the installation steps](.Aporeto.junonUrl/docs/main/installation/install-on-linux/).
+      Aporeto allows you to manage, control, and monitor secure shell (SSH) access to remote hosts that are protected with an Enforcer.
 
       ### Steps
 
-      To manage securely, here are a few steps we will walk you through:
+      Follow these steps to complete this guide:
 
-      1. Define an **Authentication Source** that will allow your users to authenticate to Aporeto.
-      2. Define an **API Authorization** to authorize users to access your namespace and ask for an SSH Certificate
-      3. Define an **SSH Authorization** to authorize certain authorized user to get an SSH Certificate and access the protected resource.
-
-      Follow this guide to achieve the above steps.
+      1. Define an **OIDC Provider** that will allow your users to authenticate to Aporeto.
+      2. Allow an authenticated user to request an SSH certificate via an **Authorization**.
+      3. Allow an authenticated user to obtain an SSH Certificate via an **SSH Authorization**.
 
       _Note: Each step can be done or modified individually by accessing the corresponding page in the left menu._
 
@@ -73,7 +67,6 @@ data:
           authorizedNamespace: "{{ .Aporeto.Namespace }}"
           authorizedIdentities:
           - "@auth:role=sshidentity.requester"
-          - "@auth:role=namespace.viewer"
         {{- else }}
         apiauthorizationpolicies:
         - name: "Allow Google users to request an SSH Certificate"
@@ -87,7 +80,6 @@ data:
           authorizedNamespace: "{{ .Aporeto.Namespace }}"
           authorizedIdentities:
           - "@auth:role=sshidentity.requester"
-          - "@auth:role=namespace.viewer"
         {{- end }}
 
         sshauthorizationpolicies:
@@ -116,12 +108,14 @@ data:
           object:
           - - "$identity=enforcer"
             - "$namespace={{ .Aporeto.Namespace }}"
+          extensions:
+          - "permit-pty"
           principals:
           {{- range $i, $principal := .Values.sshauthorizationpolicy_principals }}
           - "{{ $principal }}"
           {{- end }}
 
-        externalnetwork:
+        externalnetworks:
         - name: "Internet"
           description: "Represents any traffic"
           associatedTags:
@@ -134,7 +128,6 @@ data:
           - icmp
           ports:
           - "1:65535"
-
 
         networkaccesspolicies:
         - name: "Allow all UDP/TCP traffic between processing units"
@@ -314,30 +307,29 @@ data:
         type: StringSlice
 
     successfullMessage: |-
+        ### Configure your hosts to require an Aporeto SSH Certificate
+
+        You've succesfully created all the rules! Before your users can access your resources, you will need to
+
+        *. Install the enforcer on your hosts.
+        *. Configure them to require an Aporeto SSH Certificate.
+
+        [Follow the steps described in our detailed documentation](.Aporeto.junonUrl/docs/main/guides/ssh/ssh-restrict/).
+
         ### Tell your users they can now request for an SSH Certificate
 
-        To get an SSH Certificate, follow these steps:
+        Once the enforcer is installed, here are the steps to get an SSH Certificate:
 
-        1. Authenticate to the OIDC provider to get a temporary token:
-
-        ```
-        apoctl auth oidc --namespace .Aporeto.Namespace --provider .Values.oidc_name
-        ```
-
-        2. Copy this token. If you want, you can also store it in an environment variable.
+        1. Authenticate to the OIDC provider and store the token in the APOCTL_TOKEN environment variable:
 
         ```
-        export TOKEN=<paste-token>
+        eval `apoctl auth oidc --namespace .Aporeto.Namespace -e`
         ```
 
-        3. Get an SSH Certificate with the temporary token:
+        2. Obtain an SSH Certificate using the temporary token:
 
         ```
-        apoctl ssh cert --token $TOKEN --namespace .Aporeto.Namespace
+        apoctl ssh cert --namespace .Aporeto.Namespace
         ```
 
-        The above command will generate an Aporeto SSH Certificate that you can now use to access the resources.
-
-        **Note** Any apoctl parameter can be saved in a configuration file or environment variable.
-
-        Learn more about [apoctl](.Aporeto.junonUrl/docs/main/apoctl-install/apoctl-install-user/#installing-apoctl-for-users)
+        The above command will generate an Aporeto SSH Certificate that can be used to access the protected hosts.

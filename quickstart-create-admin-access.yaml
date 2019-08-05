@@ -24,10 +24,10 @@ data:
 
       ### Steps
 
-      To manage securely, here are a few steps we will walk you through:
+      To create an administrator account, we will:
 
       1. Define an **Authentication Source** that will allow your users to authenticate to Aporeto.
-      2. Define an **API Authorization** to authorize users to access your namespace and ask for an SSH Certificate
+      2. Define an **API Authorization** to authorize users to access your namespace and request an SSH Certificate
 
       Follow this guide to achieve the above steps.
 

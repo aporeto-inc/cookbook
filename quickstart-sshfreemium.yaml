@@ -3,6 +3,7 @@ label: quickstart-ssh-certificates
 data:
   recipes:
   - name: Quickstart your SSH Certificates (freemium only)
+    label: quickstart-ssh-certificates
     options:
       appCrendentialFormat: JSON
     propagate: true
@@ -234,7 +235,7 @@ data:
 
         You will retrieve this authorization in the left menu under *Namespace Settings* > *Authorizations*.
 
-        Feel free to modify this API Authorization if you feel it is too permissive.
+        Feel free to modify this **Authorization** if you feel it is too permissive.
 
         **Important:** Requesting an SSH Certificate does not mean the certificate will be delivered. An **SSH Authorization** will be defined next step.
 
@@ -285,6 +286,8 @@ data:
         ```
 
         The above command will generate an Aporeto SSH Certificate that you can now use to access the resources.
+
+        [Share these instructions with your users](.Aporeto.junonUrl/docs/main/guides/ssh/ssh-access/).
 
         #### Apoctl
 

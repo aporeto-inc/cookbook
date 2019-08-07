@@ -3,6 +3,7 @@ label: recipe:create-admin-access
 data:
   recipes:
   - name: Create an admin access
+    label: recipe:create-admin-access
     icon: fal fa-user-shield
     options:
       appCrendentialFormat: JSON
@@ -27,7 +28,7 @@ data:
       To create an administrator account, we will:
 
       1. Define an **Authentication Source** that will allow you to authenticate to Aporeto.
-      2. Define an **API Authorization** to grant you the **Namespace Administrator** role on your namespace.
+      2. Define an **Authorization** to grant you the **Namespace Administrator** role on your namespace.
 
       Follow this guide to achieve the above steps.
 
@@ -202,9 +203,9 @@ data:
     - name: Authorization
       description: |-
 
-        ### Authorize your users to access your namespace and request an SSH Certificate.
+        ### Grant the Namespace Administrator role
 
-        According to the chosen provider, this step will define an **API Authorization** that grants the **Namesoace Administrator** role.
+        This step will define an **Authorization** that grants the **Namespace Administrator** role.
 
         You will retrieve this authorization in the left menu under *Namespace Settings* > *Authorizations*.
 
@@ -225,6 +226,6 @@ data:
 
 
     successfullMessage: |-
-        ### Administrator authorization created !
+        ### Administrator authorization created
 
         If you are logged in using your company account, you can now log out and connect with your new administrator role!

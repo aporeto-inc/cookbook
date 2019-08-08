@@ -68,7 +68,6 @@ data:
         enforcerprofiles:
         - name: kubernetes-default
           namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
-          protected: true
           metadata:
           - '@profile:name=kubernetes-default'
           description: Default Profile for Kubernetes
@@ -84,7 +83,6 @@ data:
         enforcerprofilemappingpolicies:
         - name: fallback-kubernetes-default
           namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
-          protected: true
           fallback: true
           description: "Kubernetes fallback: if there is no other profile, use the default Kubernetes profile."
           object:

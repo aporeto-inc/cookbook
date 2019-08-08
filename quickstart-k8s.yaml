@@ -23,36 +23,41 @@ data:
 
       ### Secure your Kubernetes cluster with Aporeto
 
-      Follow these steps to onboard an enforcerd in your Kubernetes cluster.
+      Follow these steps to install the Aporeto operator and enforcer into your Kubernetes cluster.
 
       #### Prerequisites
 
       Before diving into the steps, make sure you have
 
-      - [Create the Tiller service account](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#1-create-the-tiller-service-account)
-      - [Initialize Helm and deploy Tiller](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#2-initialize-helm-and-deploy-tiller)
-      - [Add Aporeto to Helm repository](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#3-add-the-aporeto-repository-to-helm)
+      - [Created the tiller service account](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#1-create-the-tiller-service-account)
+      - [Initialized Helm and deployed tiller](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#2-initialize-helm-and-deploy-tiller)
+      - [Added the Aporeto helm repository](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#3-add-the-aporeto-repository-to-helm)
 
       You can use steps 1 and 2 from the [official documentation page](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/) for that.
 
       #### Summary
 
-      1. Define a Namespace that will store all your data in a single folder-like structure.
+      1. In the dialog here: define a namespace that will store all your data in a single folder-like structure.
 
         _(See all namespaces from the left menu under "Namespace Settings")_
 
-      2. Create two AppCredentials
-          - One will be given to the **enforcerd** to register and communicate with the Aporeto control plane.
-          - One will be given to the **Aporeto Operator** which provides a bridge between Aporeto APIs and Kubernetes API using CRDs (Custom Resource Definitions).
+      2. In the dialog here: choose your default trust model for Kubernetes namespaces - Kubernetes vs Zero Trust
 
-        _(See all "AppCredentials" from the left menu under "Namespace Settings")_
+      3. An enforcer profile with working defaults for a Kubernetes cluster will be created for you automatically.
 
-      3. Install the Aporeto Operator using helm
+      4. Two app credentials will be created for you automatically.
+          - One will be given to the **enforcer** to register and communicate with the Aporeto control plane.
+          - One will be given to the **Aporeto operator** which provides a bridge between Aporeto and Kubernetes.
 
-      4. Install the enforcerd using helm
+        _(See all "App Credentials" from the left menu under "Authentication Sources")_
+
+      5. If you chose the Kubernetes trust model, an automation will be installed for you automatically.
+
+        _(See all "Automations" from the left menu under "Integrations")_
+
+      6. Install the Aporeto operator, CRDs and enforcer using helm (commands will be displayed in the summary at the end).
 
     template: |-
-      {{`
       APIVersion: 1
       data:
         namespaces:
@@ -89,14 +94,15 @@ data:
         appcredentials:
         - name: "enforcerd"
           namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
-          description: "credentials used by the enforcerd running in kubernetes."
+          description: "Credentials used by the enforcer running in Kubernetes"
           roles:
           - "@auth:role=enforcer"
         - name: "aporeto-operator"
           namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
-          description: "credentials used by the aporeto-operator."
+          description: "Credentials used by the Aporeto operator"
           roles:
           - "@auth:role=aporeto-operator"
+        {{- if (eq .Values.trust_model "kubernetes") }}
         automations:
           - name: install-default-allow-all-policies
             namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
@@ -112,17 +118,10 @@ data:
                 - create
             condition: |-
               function when(api, params) {
-                  // Your custom code goes here.
-                  return {continue: true, payload: { namespace: params.eventPayload.entity }};
+                  return { continue: true, payload: { namespace: params.eventPayload.entity } };
               }
             actions:
               - |-
-                /**
-                 * Write your action code here. This function will be executed when the condition is met
-                 * @param {object} api - api manipulator that allows CRUD operations.
-                 * @param {object} params - the parameters configured in the automation.
-                 * @param {object} payload - Payload returned by the condition.
-                 */
                 function then(api, params, payload) {
                     api.Create('externalnetwork', {
                         name: 'external-tcp-all',
@@ -179,7 +178,7 @@ data:
                         ],
                     }, payload.namespace.name);
                 }
-      `}}
+        {{- end }}
 
     steps:
 
@@ -205,9 +204,43 @@ data:
         type: String
         optional: true
 
+    - name: Trust Model
+      description: |-
+        Choose your default trust model for synchronized Kubernetes namespaces. You can choose between two options here.
+
+        #### Kubernetes
+
+        Choosing the Kubernetes trust model means that unless you have created policies that match your processing units,
+        your processing units are allowed everything by default.
+
+        This will effectively install an automation into your Aporeto namespace which will create the required external networks
+        and fallback network policies for every new Kubernetes namespace that gets synchronized with Aporeto.
+
+        This is the _recommended_ way to get started with a cluster. It allows you to install all software with helm or through
+        the OperatorHub in OpenShift and Aporeto will not get in the way. You can then go ahead and create the necessary policies
+        for your namespace as you require. If you are ready for _Zero Trust_ simply remove (or disable) the fallback policies
+        in the namespace. The fallback policies are not synchronized, so they will only appear for a new namespace.
+
+        #### Zero Trust
+
+        This is Aporeto's default operating model. Nothing is allowed unless explicitly allowed by policies. Choose this model
+        if you are already confident about your policies or you are not afraid of denied flows.
+
+        This will effectively skip to install the above mentioned automation.
+
+      parameters:
+      - key: trust_model
+        name: Trust Model
+        description: Choose your default trust model.
+        type: Enum
+        defaultValue: kubernetes
+        allowedChoices:
+          kubernetes: "Kubernetes"
+          aporeto: "Zero Trust"
+
     successfullMessage: |-
 
-        #### Create a kubernetes namespace to deploy Aporeto
+        #### Create Kubernetes namespaces to deploy Aporeto
 
         ```shell
         kubectl create namespace aporeto-operator
@@ -217,34 +250,29 @@ data:
         #### Install the secrets
 
         A zip file has been dowloaded to your computer. it contains application credentials
-        that will be used to authenticate your cluster with Aporeto. Unzip the
-        archive, then run:
+        that will be used to authenticate your cluster with Aporeto. Unzip the archive
+        (for example by running _unzip credentials.zip_), then run:
 
         ```shell
         kubectl apply -n aporeto-operator -f aporeto-operator.yaml
-        ```
-
-        ```shell
         kubectl apply -n aporeto -f enforcerd.yaml
         ```
 
-        #### Install Aporeto Operator
+        #### Install CRDs, Aporeto operator and enforcer
 
-        Install Aporeto CRDs in your cluster:
+        Install the Aporeto CRDs into your cluster:
 
         ```shell
         helm install aporeto/aporeto-crds --name aporeto-crds
         ```
 
-        Deploy Aporeto Operator:
+        Install the Aporeto operator:
 
         ```shell
         helm install aporeto/aporeto-operator --name aporeto-operator --namespace aporeto-operator
         ```
 
-        #### Install Enforcerd
-
-        Install enforcerd:
+        Install the enforcer:
 
         ```shell
         helm install aporeto/enforcerd --name enforcerd --namespace aporeto

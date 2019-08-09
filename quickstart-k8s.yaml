@@ -58,6 +58,7 @@ data:
       6. Install the Aporeto operator, CRDs and enforcer using helm (commands will be displayed in the summary at the end).
 
     template: |-
+      {{`
       APIVersion: 1
       data:
         namespaces:
@@ -177,7 +178,7 @@ data:
                     }, payload.namespace.name);
                 }
         {{- end }}
-
+      `}}
     steps:
 
     - name: Namespace

@@ -2,282 +2,277 @@ APIVersion: 1
 label: recipe:networking:simple-secure-app
 data:
   recipes:
-  - name: Secure a simple application
-    description: Creates basic rules to secure a simple application.
-    label: recipe:networking:simple-secure-app
-    metadata:
-    - "@aporeto:audience=public"
-    associatedTags:
-    - "aporeto:placement=topnav"
-    targetIdentities:
-    - externalnetwork
-    - networkaccesspolicy
-    propagate: true
-    longDescription: |-
-      ### Secure a simple application
+    - name: Secure a simple application
+      description: Creates basic rules to secure a simple application.
+      label: recipe:networking:simple-secure-app
+      metadata:
+        - "@aporeto:audience=public"
+      associatedTags:
+      targetIdentities:
+        - externalnetwork
+        - networkaccesspolicy
+      propagate: true
+      longDescription: |-
+        ### Secure a simple application
 
-      This recipe will create Network Access Policies and External Networks to
-      easily secure an application.
+        This recipe will create Network Access Policies and External Networks to
+        easily secure an application.
 
-      The policies will work as follow
+        The policies will work as follow
 
-      - The traffic between all Processing Units is allowed in the current namespace
-      - The traffic from and to private subnets is allowed on any protocol
-      - The traffic to public subnets is allowed on any protocol
+        - The traffic between all Processing Units is allowed in the current namespace
+        - The traffic from and to private subnets is allowed on any protocol
+        - The traffic to public subnets is allowed on any protocol
 
-      You can change these behaviors with the various options this recipe provides.
+        You can change these behaviors with the various options this recipe provides.
 
-      By private subnets, we mean the private networks as defined by the IETF
+        By private subnets, we mean the private networks as defined by the IETF
 
-      - 10.0.0.0/8
-      - 172.16.0.0/12
-      - 192.168.0.0/16
+        - 10.0.0.0/8
+        - 172.16.0.0/12
+        - 192.168.0.0/16
 
-    template: |-
-      {{`
-      {{- $shortname := .Values.name | lower | replace " " "-" }}
-      APIVersion: 1
-      data:
-        networkaccesspolicies:
-        - name: "[{{ $shortname }}] allow-pus-to-pus"
-          description: "Allows traffic from any Processing Units to any other Processing Units in the namespace."
-          action: "Allow"
-          logsEnabled: true
-          subject:
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "$identity=processingunit"
-          object:
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "$identity=processingunit"
-        {{- if or (ne .Values.privateOutgoingAccessMode "none") (ne .Values.publicOutgoingAccessMode "none") }}
-        - name: "[{{ $shortname }}] allow-pus-to-networks"
-          description: "Allows traffic from any Processing Units to External Networks"
-          action: "Allow"
-          logsEnabled: true
-          subject:
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "$identity=processingunit"
-          object:
-          {{- if or (eq .Values.privateOutgoingAccessMode "TCP") (eq .Values.privateOutgoingAccessMode "any") }}
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "{{ $shortname }}:ext:net=private:tcp"
-          {{- end }}
-          {{- if or (eq .Values.privateOutgoingAccessMode "UDP") (eq .Values.privateOutgoingAccessMode "any") }}
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "{{ $shortname }}:ext:net=private:udp"
-          {{- end }}
-          {{- if or (eq .Values.publicOutgoingAccessMode "TCP") (eq .Values.publicOutgoingAccessMode "any") }}
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "{{ $shortname }}:ext:net=public:tcp"
-          {{- end }}
-          {{- if or (eq .Values.publicOutgoingAccessMode "UDP") (eq .Values.publicOutgoingAccessMode "any") }}
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "{{ $shortname }}:ext:net=public:udp"
-          {{- end }}
-        {{- end }}
-        {{- if or (ne .Values.privateIncomingAccessMode "none") }}
-        - name: "[{{ $shortname }}] allow-private-networks-to-pus"
-          description: "Allows traffic from private External Networks to any Processing Units in the namespace"
-          action: "Allow"
-          logsEnabled: true
-          subject:
-          {{- if or (eq .Values.privateIncomingAccessMode "TCP") (eq .Values.privateIncomingAccessMode "any") }}
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "{{ $shortname }}:ext:net=private:tcp"
-          {{- end }}
-          {{- if or (eq .Values.privateIncomingAccessMode "UDP") (eq .Values.privateIncomingAccessMode "any") }}
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "{{ $shortname }}:ext:net=private:udp"
-          {{- end }}
-          object:
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "$identity=processingunit"
-        {{- end }}
-        {{- if ne .Values.publicIncomingAccessMode "none" }}
-        - name: "[{{ $shortname }}] allow-internet-to-pus"
-          description: "Allows traffic from internet to Processing Units in the namespace"
-          action: "Allow"
-          logsEnabled: true
-          subject:
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "{{ $shortname }}:ext:net=internet"
-          object:
-          {{- if eq (len .Values.publicIncomingAccessTags) 0 }}
-          - - "$namespace={{ .Aporeto.Namespace }}"
-            - "$identity=processingunit"
-          {{- end }}
-          {{- range $idx, $ands := .Values.publicIncomingAccessTags }}
-          - - "$namespace={{ $.Aporeto.Namespace }}"
-            - "$identity=processingunit"
-            {{- range $idx, $tag := $ands  }}
-            - "{{ $tag }}"
+      template: |-
+        {{`
+        {{- $shortname := .Values.name | lower | replace " " "-" }}
+        APIVersion: 1
+        data:
+          networkaccesspolicies:
+          - name: "[{{ $shortname }}] allow-pus-to-pus"
+            description: "Allows traffic from any Processing Units to any other Processing Units in the namespace."
+            action: "Allow"
+            logsEnabled: true
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "$identity=processingunit"
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "$identity=processingunit"
+          {{- if or (ne .Values.privateOutgoingAccessMode "none") (ne .Values.publicOutgoingAccessMode "none") }}
+          - name: "[{{ $shortname }}] allow-pus-to-networks"
+            description: "Allows traffic from any Processing Units to External Networks"
+            action: "Allow"
+            logsEnabled: true
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "$identity=processingunit"
+            object:
+            {{- if or (eq .Values.privateOutgoingAccessMode "TCP") (eq .Values.privateOutgoingAccessMode "any") }}
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "{{ $shortname }}:ext:net=private:tcp"
+            {{- end }}
+            {{- if or (eq .Values.privateOutgoingAccessMode "UDP") (eq .Values.privateOutgoingAccessMode "any") }}
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "{{ $shortname }}:ext:net=private:udp"
+            {{- end }}
+            {{- if or (eq .Values.publicOutgoingAccessMode "TCP") (eq .Values.publicOutgoingAccessMode "any") }}
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "{{ $shortname }}:ext:net=public:tcp"
+            {{- end }}
+            {{- if or (eq .Values.publicOutgoingAccessMode "UDP") (eq .Values.publicOutgoingAccessMode "any") }}
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "{{ $shortname }}:ext:net=public:udp"
             {{- end }}
           {{- end }}
-        {{- end }}
-        externalnetworks:
-        {{- if ne .Values.publicIncomingAccessMode "none" }}
-        - name: "[{{ $shortname }}] internet"
-          associatedTags:
-          - "{{ $shortname }}:ext:net=internet"
-          entries:
-          - "0.0.0.0/0"
-          protocols:
-          {{- if or (eq .Values.publicIncomingAccessMode "TCP") (eq .Values.publicIncomingAccessMode "any") }}
-          - "tcp"
+          {{- if or (ne .Values.privateIncomingAccessMode "none") }}
+          - name: "[{{ $shortname }}] allow-private-networks-to-pus"
+            description: "Allows traffic from private External Networks to any Processing Units in the namespace"
+            action: "Allow"
+            logsEnabled: true
+            subject:
+            {{- if or (eq .Values.privateIncomingAccessMode "TCP") (eq .Values.privateIncomingAccessMode "any") }}
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "{{ $shortname }}:ext:net=private:tcp"
+            {{- end }}
+            {{- if or (eq .Values.privateIncomingAccessMode "UDP") (eq .Values.privateIncomingAccessMode "any") }}
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "{{ $shortname }}:ext:net=private:udp"
+            {{- end }}
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "$identity=processingunit"
           {{- end }}
-          {{- if or (eq .Values.publicIncomingAccessMode "UDP") (eq .Values.publicIncomingAccessMode "any") }}
-          - "udp"
+          {{- if ne .Values.publicIncomingAccessMode "none" }}
+          - name: "[{{ $shortname }}] allow-internet-to-pus"
+            description: "Allows traffic from internet to Processing Units in the namespace"
+            action: "Allow"
+            logsEnabled: true
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "{{ $shortname }}:ext:net=internet"
+            object:
+            {{- if eq (len .Values.publicIncomingAccessTags) 0 }}
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "$identity=processingunit"
+            {{- end }}
+            {{- range $idx, $ands := .Values.publicIncomingAccessTags }}
+            - - "$namespace={{ $.Aporeto.Namespace }}"
+              - "$identity=processingunit"
+              {{- range $idx, $tag := $ands  }}
+              - "{{ $tag }}"
+              {{- end }}
+            {{- end }}
           {{- end }}
-          {{- if .Values.publicIncomingAccessPorts }}
-          ports:
-          {{- range $idx, $port := .Values.publicIncomingAccessPorts }}
-          - "{{ $port }}"
+          externalnetworks:
+          {{- if ne .Values.publicIncomingAccessMode "none" }}
+          - name: "[{{ $shortname }}] internet"
+            associatedTags:
+            - "{{ $shortname }}:ext:net=internet"
+            entries:
+            - "0.0.0.0/0"
+            protocols:
+            {{- if or (eq .Values.publicIncomingAccessMode "TCP") (eq .Values.publicIncomingAccessMode "any") }}
+            - "tcp"
+            {{- end }}
+            {{- if or (eq .Values.publicIncomingAccessMode "UDP") (eq .Values.publicIncomingAccessMode "any") }}
+            - "udp"
+            {{- end }}
+            {{- if .Values.publicIncomingAccessPorts }}
+            ports:
+            {{- range $idx, $port := .Values.publicIncomingAccessPorts }}
+            - "{{ $port }}"
+            {{- end }}
+            {{- end }}
           {{- end }}
+          {{- if or (eq .Values.publicOutgoingAccessMode "TCP") (eq .Values.publicOutgoingAccessMode "any") }}
+          - name: "[{{ $shortname }}] public-network-tcp"
+            description: "Represents all TCP traffic on any port from any subnet."
+            associatedTags:
+            - "{{ $shortname }}:ext:net=public:tcp"
+            entries:
+            - "0.0.0.0/0"
+            protocols:
+            - "tcp"
           {{- end }}
-        {{- end }}
-        {{- if or (eq .Values.publicOutgoingAccessMode "TCP") (eq .Values.publicOutgoingAccessMode "any") }}
-        - name: "[{{ $shortname }}] public-network-tcp"
-          description: "Represents all TCP traffic on any port from any subnet."
-          associatedTags:
-          - "{{ $shortname }}:ext:net=public:tcp"
-          entries:
-          - "0.0.0.0/0"
-          protocols:
-          - "tcp"
-        {{- end }}
-        {{- if or (eq .Values.publicOutgoingAccessMode "UDP") (eq .Values.publicOutgoingAccessMode "any") }}
-        - name: "[{{ $shortname }}] public-network-udp"
-          description: "Represents all UDP traffic on any port from any subnet."
-          associatedTags:
-          - "{{ $shortname }}:ext:net=public:udp"
-          entries:
-          - "0.0.0.0/0"
-          protocols:
-          - "udp"
-        {{- end }}
-        {{- if or (eq .Values.privateOutgoingAccessMode "TCP") (eq .Values.privateOutgoingAccessMode "any") (eq .Values.privateIncomingAccessMode "TCP") (eq .Values.privateIncomingAccessMode "any") }}
-        - name: "[{{ $shortname }}] private-network-tcp"
-          description: "Represents all TCP traffic on any port from private subnets"
-          associatedTags:
-          - "{{ $shortname }}:ext:net=private:tcp"
-          entries:
-          - "10.0.0.0/8"
-          - "172.16.0.0/12"
-          - "192.168.0.0/16"
-          protocols:
-          - "tcp"
-        {{- end }}
-        {{- if or (eq .Values.privateOutgoingAccessMode "UDP") (eq .Values.privateOutgoingAccessMode "any") (eq .Values.privateIncomingAccessMode "UDP") (eq .Values.privateIncomingAccessMode "any") }}
-        - name: "[{{ $shortname }}] private-network-udp"
-          description: "Represents all UDP traffic on any port from private subnets"
-          associatedTags:
-          - "{{ $shortname }}:ext:net=private:udp"
-          entries:
-          - "10.0.0.0/8"
-          - "172.16.0.0/12"
-          - "192.168.0.0/16"
-          protocols:
-          - "udp"
-        {{- end }}
-        `}}
+          {{- if or (eq .Values.publicOutgoingAccessMode "UDP") (eq .Values.publicOutgoingAccessMode "any") }}
+          - name: "[{{ $shortname }}] public-network-udp"
+            description: "Represents all UDP traffic on any port from any subnet."
+            associatedTags:
+            - "{{ $shortname }}:ext:net=public:udp"
+            entries:
+            - "0.0.0.0/0"
+            protocols:
+            - "udp"
+          {{- end }}
+          {{- if or (eq .Values.privateOutgoingAccessMode "TCP") (eq .Values.privateOutgoingAccessMode "any") (eq .Values.privateIncomingAccessMode "TCP") (eq .Values.privateIncomingAccessMode "any") }}
+          - name: "[{{ $shortname }}] private-network-tcp"
+            description: "Represents all TCP traffic on any port from private subnets"
+            associatedTags:
+            - "{{ $shortname }}:ext:net=private:tcp"
+            entries:
+            - "10.0.0.0/8"
+            - "172.16.0.0/12"
+            - "192.168.0.0/16"
+            protocols:
+            - "tcp"
+          {{- end }}
+          {{- if or (eq .Values.privateOutgoingAccessMode "UDP") (eq .Values.privateOutgoingAccessMode "any") (eq .Values.privateIncomingAccessMode "UDP") (eq .Values.privateIncomingAccessMode "any") }}
+          - name: "[{{ $shortname }}] private-network-udp"
+            description: "Represents all UDP traffic on any port from private subnets"
+            associatedTags:
+            - "{{ $shortname }}:ext:net=private:udp"
+            entries:
+            - "10.0.0.0/8"
+            - "172.16.0.0/12"
+            - "192.168.0.0/16"
+            protocols:
+            - "udp"
+          {{- end }}
+          `}}
 
+      steps:
+        - name: General
+          description: General configuration
+          parameters:
+            - key: name
+              name: Application Name
+              description: Name of the application
+              longDescription: |-
+                This name will be used to prefix the objects the recipe will create to make it easier
+                to find them in the case you already have multiple policies and external services in the namespace.
+              type: String
 
-    steps:
-    - name: General
-      description: General configuration
-      parameters:
+        - name: Internal Traffic
+          description: Configure Processing Units access from and to private networks.
+          parameters:
+            - key: privateIncomingAccessMode
+              name: Traffic from private subnets
+              description: Incoming Protocols
+              longDescription: |-
+                Select what protocols your Processing Units can be accessed from when
+                receiving requests over private neworks.
+              type: Enum
+              defaultValue: any
+              allowedChoices:
+                any: Allow any protocol
+                TCP: Allow TCP
+                UDP: Allow UDP
+                none: None
 
-      - key: name
-        name: Application Name
-        description: Name of the application
-        longDescription: |-
-          This name will be used to prefix the objects the recipe will create to make it easier
-          to find them in the case you already have multiple policies and external services in the namespace.
-        type: String
+            - key: privateOutgoingAccessMode
+              name: Traffic to private subnets
+              description: Outgoing Protocols
+              longDescription: |-
+                Select what protocols your Processing Units should be able to access when
+                sending requests over private neworks
+              type: Enum
+              defaultValue: any
+              allowedChoices:
+                any: Allow any protocol
+                TCP: Allow TCP
+                UDP: Allow UDP
+                none: None
 
-    - name: Internal Traffic
-      description: Configure Processing Units access from and to private networks.
-      parameters:
+            - key: publicOutgoingAccessMode
+              name: Traffic to public subnets
+              description: Outgoing Protocols
+              longDescription: |-
+                Select what protocols your Processing Units should be able to access when
+                sending requests over public neworks
+              type: Enum
+              defaultValue: any
+              allowedChoices:
+                any: Allow any protocol
+                TCP: Allow TCP
+                UDP: Allow UDP
+                none: None
 
-      - key: privateIncomingAccessMode
-        name: Traffic from private subnets
-        description: Incoming Protocols
-        longDescription: |-
-         Select what protocols your Processing Units can be accessed from when
-         receiving requests over private neworks.
-        type: Enum
-        defaultValue: any
-        allowedChoices:
-          any: Allow any protocol
-          TCP: Allow TCP
-          UDP: Allow UDP
-          none: None
+        - name: Public Access
+          description: Configure Processing Units access from and to public networks.
+          parameters:
+            - key: publicIncomingAccessMode
+              name: Traffic from public subnets
+              description: Incoming Protocols
+              longDescription: |-
+                Select what protocols your Processing Units can be accessed from when
+                receiving requests over private neworks.
+              type: Enum
+              defaultValue: none
+              allowedChoices:
+                any: Allow any protocol
+                TCP: Allow TCP
+                UDP: Allow UDP
+                none: None
 
-      - key: privateOutgoingAccessMode
-        name: Traffic to private subnets
-        description: Outgoing Protocols
-        longDescription: |-
-         Select what protocols your Processing Units should be able to access when
-         sending requests over private neworks
-        type: Enum
-        defaultValue: any
-        allowedChoices:
-          any: Allow any protocol
-          TCP: Allow TCP
-          UDP: Allow UDP
-          none: None
+            - key: publicIncomingAccessTags
+              name: Public Processing Tag Selector
+              description: Processing Units Selector
+              longDescription: |-
+                If you set a tag selector, only the matching Processing Units will be reachable
+                from the public networks.
+              type: TagsExpression
+              visibilityCondition:
+                - - key: publicIncomingAccessMode
+                    operator: NotEqual
+                    value: "none"
 
-      - key: publicOutgoingAccessMode
-        name: Traffic to public subnets
-        description: Outgoing Protocols
-        longDescription: |-
-         Select what protocols your Processing Units should be able to access when
-         sending requests over public neworks
-        type: Enum
-        defaultValue: any
-        allowedChoices:
-          any: Allow any protocol
-          TCP: Allow TCP
-          UDP: Allow UDP
-          none: None
-
-    - name: Public Access
-      description: Configure Processing Units access from and to public networks.
-      parameters:
-
-      - key: publicIncomingAccessMode
-        name: Traffic from public subnets
-        description: Incoming Protocols
-        longDescription: |-
-         Select what protocols your Processing Units can be accessed from when
-         receiving requests over private neworks.
-        type: Enum
-        defaultValue: none
-        allowedChoices:
-          any: Allow any protocol
-          TCP: Allow TCP
-          UDP: Allow UDP
-          none: None
-
-      - key: publicIncomingAccessTags
-        name: Public Processing Tag Selector
-        description: Processing Units Selector
-        longDescription: |-
-         If you set a tag selector, only the matching Processing Units will be reachable
-         from the public networks.
-        type: TagsExpression
-        visibilityCondition:
-        - - key: publicIncomingAccessMode
-            operator: NotEqual
-            value: "none"
-
-      - key: publicIncomingAccessPorts
-        name: Public Ports
-        description: Ports
-        longDescription: |-
-         If you set some ports, Processing Units will only accept traffic to these ports.
-        type: IntegerSlice
-        visibilityCondition:
-        - - key: publicIncomingAccessMode
-            operator: NotEqual
-            value: "none"
+            - key: publicIncomingAccessPorts
+              name: Public Ports
+              description: Ports
+              longDescription: |-
+                If you set some ports, Processing Units will only accept traffic to these ports.
+              type: IntegerSlice
+              visibilityCondition:
+                - - key: publicIncomingAccessMode
+                    operator: NotEqual
+                    value: "none"

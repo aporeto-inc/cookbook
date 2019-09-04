@@ -2,265 +2,345 @@ APIVersion: 1
 label: recipe:quickstart:linux
 data:
   recipes:
-  - name: Secure a Linux Service
-    label: recipe:quickstart:linux
-    options:
-      appCrendentialFormat: JSON
-    propagate: true
-    metadata:
-    - "@aporeto:audience=public"
-    associatedTags:
-    - "aporeto:placement=topnav"
-    targetIdentities:
-    - namespace
-    - appcredential
-    - hostservice
-    - hostservicemappingpolicy
-    - externalnetwork
-    - networkaccesspolicy
-    description: Secure a host with Aporeto Enforcerd.
-    longDescription: |-
+    - name: Secure a Linux Service
+      label: recipe:quickstart:linux
+      options:
+        appCrendentialFormat: JSON
+      propagate: true
+      metadata:
+        - "@aporeto:audience=public"
+      associatedTags:
+        - "aporeto:placement=topnav"
+      targetIdentities:
+        - namespace
+        - appcredential
+        - hostservice
+        - hostservicemappingpolicy
+        - externalnetwork
+        - networkaccesspolicy
+      description: Secure a host with Aporeto Enforcerd.
+      longDescription: |-
 
-      ### Start onboarding your Linux VM
+        ### Start onboarding your Linux VM
 
-      Follow these steps to onboard an enforcerd in your Linux VM.
+        Follow these steps to onboard an enforcerd in your Linux VM.
 
-      #### Prerequisites
+        #### Prerequisites
 
-      Before diving into the steps, make sure you have:
+        Before diving into the steps, make sure you have:
 
-      - A compatible distribution
-      - Aporeto Repository added to your package manager
+        - A compatible distribution
+        - Aporeto Repository added to your package manager
 
-      Check out our complete documentation page about [Enforcerd installation on Linux](.Aporeto.junonUrl/docs/main/installation/install-on-linux/)
+        Check out our complete documentation page about [Enforcerd installation on Linux](.Aporeto.junonUrl/docs/main/installation/install-on-linux/)
 
-      #### Summary
-      1. Define a [Namespace](.Aporeto.junonUrl/docs/main/concepts/namespaces/) that will store all your data in a single folder-like structure.
+        #### Summary
+        1. Define a [Namespace](.Aporeto.junonUrl/docs/main/concepts/namespaces/) that will store all your data in a single folder-like structure.
 
-      _(See all Namespaces from the left menu under "Namespace Settings")_
+        _(See all Namespaces from the left menu under "Namespace Settings")_
 
-      2. Define the protection of your VM and we will defined some **Host Services** for you.
+        2. Define the protection of your VM and we will defined some **Host Services** for you.
 
-      _(See all Host Services from the left menu under "Node")_
+        _(See all Host Services from the left menu under "Node")_
 
-      3. Create an **AppCredential** that will be given to the enforcerd to register and discuss with the control plane.
+        3. Create an **AppCredential** that will be given to the enforcerd to register and discuss with the control plane.
 
-      _(See all AppCredentials from the left menu under "Namespace Settings")_
+        _(See all AppCredentials from the left menu under "Namespace Settings")_
 
-      4. Install and start your enforcerd
+        4. Install and start your enforcerd
 
-      Click **Next** to go to the next step.
+        Click **Next** to go to the next step.
 
-    template: |-
-      {{`
-      APIVersion: 1
-      data:
-        namespaces:
-        - name: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
-          description: {{ .Values.namespace_description }}
-        appcredentials:
-        - name: "enforcerd"
-          namespace: "{{ .Values.namespace_name }}"
-          description: "credentials used by the enforcerd running in kubernetes."
-          roles:
-          - "@auth:role=enforcer"
-        - name: "aporeto-operator"
-          description: "credentials used by the aporeto-operator."
-          roles:
-          - "@auth:role=aporeto-operator"
-        {{- if .Values.protection_entire_host }}
-
-        hostservices:
-        - name: "protection"
-          namespace: "{{ .Values.namespace_name }}"
-          description: "This host service protects the entire host."
-          hostModeEnabled: true
-          associatedTags:
-          - "hs:name=protection"
-        - name: "services"
-          namespace: "{{ .Values.namespace_name }}"
-          description: "This host service defines services"
-          hostModeEnabled: false
-          associatedTags:
-          - "hs:name=services"
-          services:
-          {{- if .Values.protection_incoming_ssh }}
-          - "tcp/22"
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          {{- if .Values.create_new_namespace }}
+          namespaces:
+          - name: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
+            description: {{ .Values.namespace_description }}
           {{- end}}
-          {{- if .Values.protection_incoming_http }}
-          - "tcp/80"
-          {{- end}}
-          {{- if .Values.protection_incoming_https }}
-          - "tcp/443"
-          {{- end}}
-
-        hostservicemappingpolicies:
-        - name: "All enforcers implement protection and services"
-          namespace: "{{ .Values.namespace_name }}"
-          description: "This policy has been created from the linux workflow"
-          subject:
-          - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
-            - "$identity=enforcer"
-          object:
-          - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+          appcredentials:
+          - name: "enforcerd"
+            {{- if .Values.create_new_namespace }}
+            namespace: "{{ .Values.namespace_name }}"
+            {{- end}}
+            description: "credentials used by the enforcerd running in kubernetes."
+            roles:
+            - "@auth:role=enforcer"
+          - name: "aporeto-operator"
+            description: "credentials used by the aporeto-operator."
+            roles:
+            - "@auth:role=aporeto-operator"
+          {{- if .Values.protection_entire_host }}
+          hostservices:
+          - name: "protection"
+            {{- if .Values.create_new_namespace }}
+            namespace: "{{ .Values.namespace_name }}"
+            {{- end}}
+            description: "This host service protects the entire host."
+            hostModeEnabled: true
+            associatedTags:
             - "hs:name=protection"
-          - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+
+          {{- if or .Values.protection_incoming_ssh .Values.protection_incoming_http .Values.protection_incoming_https }}
+          - name: "services"
+            {{- if .Values.create_new_namespace }}
+            namespace: "{{ .Values.namespace_name }}"
+            {{- end}}
+            description: "This host service defines services"
+            hostModeEnabled: false
+            associatedTags:
             - "hs:name=services"
+            services:
+            {{- if .Values.protection_incoming_ssh }}
+            - "tcp/22"
+            {{- end}}
+            {{- if .Values.protection_incoming_http }}
+            - "tcp/80"
+            {{- end}}
+            {{- if .Values.protection_incoming_https }}
+            - "tcp/443"
+            {{- end}}
+          {{- end}}
 
-        externalnetworks:
-        {{- if .Values.protection_outgoing_dns }}
-        - name: "DNS (udp/53)"
-          namespace: "{{ .Values.namespace_name }}"
-          description: "This external network has been created from the linux workflow"
-          entries:
-          - "0.0.0.0/0"
-          ports:
-          - "53"
-          protocols:
-          - "udp"
-          associatedTags:
-          - "extnet:name=dns"
-        {{- end}}
-        {{- if .Values.protection_outgoing_tcp }}
-        - name: "Internet (any TCP)"
-          namespace: "{{ .Values.namespace_name }}"
-          description: "This external network has been created from the linux workflow"
-          entries:
-          - "0.0.0.0/0"
-          ports:
-          - "1:65535"
-          protocols:
-          - "tcp"
-          associatedTags:
-          - "extnet:name=internet"
-        {{- end}}
+          hostservicemappingpolicies:
+          {{- if or .Values.protection_incoming_ssh .Values.protection_incoming_http .Values.protection_incoming_https }}
+          - name: "All enforcers implement protection and services"
+            description: "This policy has been created from the linux workflow"
+            {{- if .Values.create_new_namespace }}
+            namespace: "{{ .Values.namespace_name }}"
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "$identity=enforcer"
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "hs:name=protection"
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "hs:name=services"
+            {{- else}}
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "$identity=enforcer"
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "hs:name=protection"
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "hs:name=services"
+            {{- end}}
+          {{- else }}
+          - name: "All enforcers implement protection"
+            description: "This policy has been created from the linux workflow"
+            {{- if .Values.create_new_namespace }}
+            namespace: "{{ .Values.namespace_name }}"
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "$identity=enforcer"
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "hs:name=protection"
+            {{- else}}
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "$identity=enforcer"
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "hs:name=protection"
+            {{- end}}
+          {{- end}}
 
-        networkaccesspolicies:
-        {{- if .Values.protection_outgoing_dns }}
-        - name: "Allow traffic to DNS"
-          namespace: "{{ .Values.namespace_name }}"
-          description: "This policy has been created from the linux workflow"
-          action: "Allow"
-          logsEnabled: true
-          subject:
-          - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
-            - "$identity=processingunit"
-          object:
-          - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+          externalnetworks:
+          {{- if .Values.protection_outgoing_dns }}
+          - name: "DNS (udp/53)"
+            {{- if .Values.create_new_namespace }}
+            namespace: "{{ .Values.namespace_name }}"
+            {{- end}}
+            description: "This external network has been created from the linux workflow"
+            entries:
+            - "0.0.0.0/0"
+            ports:
+            - "53"
+            protocols:
+            - "udp"
+            associatedTags:
             - "extnet:name=dns"
-        {{- end}}
-        {{- if .Values.protection_outgoing_tcp }}
-        - name: "Allow traffic to Internet"
-          namespace: "{{ .Values.namespace_name }}"
-          description: "This policy has been created from the linux workflow"
-          action: "Allow"
-          logsEnabled: true
-          subject:
-          - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
-            - "$identity=processingunit"
-          object:
-          - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+          {{- end}}
+          {{- if .Values.protection_outgoing_tcp }}
+          - name: "Internet (any TCP)"
+            {{- if .Values.create_new_namespace }}
+            namespace: "{{ .Values.namespace_name }}"
+            {{- end}}
+            description: "This external network has been created from the linux workflow"
+            entries:
+            - "0.0.0.0/0"
+            ports:
+            - "1:65535"
+            protocols:
+            - "tcp"
+            associatedTags:
             - "extnet:name=internet"
-        {{- end}}
+          {{- end}}
 
-        {{- end }}
-      `}}
-    steps:
-    - name: Namespace
-      description: |-
-        Let's create a namespace first. It will contain all the data that will be created during these steps.
+          networkaccesspolicies:
+          {{- if .Values.protection_outgoing_dns }}
+          - name: "Allow traffic to DNS"
+            description: "This policy has been created from the linux workflow"
+            action: "Allow"
+            logsEnabled: true
+            {{- if .Values.create_new_namespace }}
+            namespace: "{{ .Values.namespace_name }}"
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "$identity=processingunit"
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "extnet:name=dns"
+            {{- else}}
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "$identity=processingunit"
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "extnet:name=dns"
+            {{- end}}
+          {{- end}}
+          {{- if .Values.protection_outgoing_tcp }}
+          - name: "Allow traffic to Internet"
+            description: "This policy has been created from the linux workflow"
+            action: "Allow"
+            logsEnabled: true
+            {{- if .Values.create_new_namespace }}
+            namespace: "{{ .Values.namespace_name }}"
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "$identity=processingunit"
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "extnet:name=internet"
+            {{- else}}
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "$identity=processingunit"
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "extnet:name=internet"
+            {{- end}}
+          {{- end}}
 
-        Also, having a separate namespace allows you to give permissions to other users to access that specific namespace.
+          {{- end }}
+        `}}
+      steps:
+        - name: Namespace
+          description: |-
+            Define where the data will be created.
+            You can either choose to use the current namespace **.Aporeto.junonUrl** or create a new one.
 
-        Later, you will be able to delete this namespace which automatically delete all the related resources.
+            Having a separate namespace allows you to give permissions to other users to access that specific namespace.
 
-        ##### Read more about:
+            Later, you will be able to delete this namespace which automatically delete all the related resources.
 
-        - [Namespaces](.Aporeto.junonUrl/docs/main/concepts/namespaces/)
-        - [Authentications and authorizations](.Aporeto.junonUrl/docs/main/concepts/authentication-and-authorization/)
+            ##### Read more about:
 
-        Clicking **Next** once you have defined your Aporeto namespace.
+            - [Namespaces](.Aporeto.junonUrl/docs/main/concepts/namespaces/)
+            - [Authentications and authorizations](.Aporeto.junonUrl/docs/main/concepts/authentication-and-authorization/)
 
-      parameters:
-      - key: namespace_name
-        name: Namespace
-        description: Define your namespace name.
-        type: String
-        defaultValue: quickstart
-      - key: namespace_description
-        name: Description
-        description: Description of the namespace.
-        type: String
-        optional: true
-        defaultValue: Namespace for quick start project
+            Clicking **Next** once you have defined your Aporeto namespace.
 
-    - name: Protection
-      description: |-
+          parameters:
+            - key: create_new_namespace
+              name: Do you want to install data in the current namespace or in a child namespace ?
+              description: Install this workflow in a new child namespace.
+              type: Boolean
+              defaultValue: false
 
-        ### Protect your Linux host
+            - key: namespace_name
+              name: Namespace
+              description: Define your namespace name.
+              type: String
+              defaultValue: quickstart
+              visibilityCondition:
+                - - key: create_new_namespace
+                    operator: Equal
+                    value: true
 
-        Define how your VM should be protected. The default suggestion, will allow:
+            - key: namespace_description
+              name: Description
+              description: Description of the namespace.
+              type: String
+              optional: true
+              defaultValue: Namespace for quick start project
+              visibilityCondition:
+                - - key: create_new_namespace
+                    operator: Equal
+                    value: true
 
-        * Enforcer to protect the entire host
-        * Only SSH access is allowed to the VM
-        * All outgoing traffic is allowed
+        - name: Protection
+          description: |-
 
-        This step will define some host services based on your below choices.
-        Click **Next** to continue.
+            ### Protect your Linux host
 
-      parameters:
-      - key: protection_entire_host
-        description: Protect the entire host.
-        type: Boolean
-        defaultValue: true
-      - key: protection_incoming_ssh
-        description: Allow incoming SSH traffic (tcp/22)
-        type: Boolean
-        defaultValue: true
-      - key: protection_incoming_http
-        description: Allow incoming HTTP traffic (tcp/80)
-        type: Boolean
-        defaultValue: false
-      - key: protection_incoming_https
-        description: Allow incoming HTTPS traffic (tcp/443)
-        type: Boolean
-        defaultValue: false
-      - key: protection_outgoing_tcp
-        description: Allow outgoing traffic on TCP (tcp/1:65535)
-        type: Boolean
-        defaultValue: true
-      - key: protection_outgoing_dns
-        description: Allow outgoing traffic for DNS resolution (udp/53)
-        type: Boolean
-        defaultValue: true
+            Define how your VM should be protected. The default suggestion, will allow:
 
-    - name: Credentials
-      description: |-
+            * Enforcer to protect the entire host
+            * Only SSH access is allowed to the VM
+            * All outgoing traffic is allowed
 
-        ### Define an app credential
+            This step will define some host services based on your below choices.
+            Click **Next** to continue.
 
-        In this step, we will create an AppCredential for the enforcerd.
+          parameters:
+            - key: protection_entire_host
+              description: Protect the entire host.
+              type: Boolean
+              defaultValue: true
+            - key: protection_incoming_ssh
+              description: Allow incoming SSH traffic (tcp/22)
+              type: Boolean
+              defaultValue: true
+            - key: protection_incoming_http
+              description: Allow incoming HTTP traffic (tcp/80)
+              type: Boolean
+              defaultValue: false
+            - key: protection_incoming_https
+              description: Allow incoming HTTPS traffic (tcp/443)
+              type: Boolean
+              defaultValue: false
+            - key: protection_outgoing_tcp
+              description: Allow outgoing traffic on TCP (tcp/1:65535)
+              type: Boolean
+              defaultValue: true
+            - key: protection_outgoing_dns
+              description: Allow outgoing traffic for DNS resolution (udp/53)
+              type: Boolean
+              defaultValue: true
 
-        #### What is an App Credential ?
-        An App Credential is a yaml file that contains all the necessary information to connect to the platform.
-        It has a specific role in the namespace it has been created.
+        - name: Credentials
+          description: |-
 
-        Read more about [App Credentials](.Aporeto.junonUrl/docs/main/references/appcredentials/)
+            ### Define an app credential
 
-      parameters:
-      - key: credentials_name
-        name: Name
-        description: Define your credential name.
-        type: String
-        defaultValue: enforcerd
-      - key: credentials_description
-        name: Description
-        description: Description of the appcredentials.
-        type: String
-        optional: true
-        defaultValue: AppCredential for the enforcerd on linux.
+            In this step, we will create an AppCredential for the enforcerd.
 
-    successfullMessage: |-
+            #### What is an App Credential ?
+            An App Credential is a yaml file that contains all the necessary information to connect to the platform.
+            It has a specific role in the namespace it has been created.
+
+            Read more about [App Credentials](.Aporeto.junonUrl/docs/main/references/appcredentials/)
+
+          parameters:
+            - key: credentials_name
+              name: Name
+              description: Define your credential name.
+              type: String
+              defaultValue: enforcerd
+            - key: credentials_description
+              name: Description
+              description: Description of the appcredentials.
+              type: String
+              optional: true
+              defaultValue: AppCredential for the enforcerd on linux.
+
+      successfullMessage: |-
         ### Start your enforcerd in Linux
 
         Use the AppCredential to start your enforcer.

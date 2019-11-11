@@ -2,230 +2,229 @@ APIVersion: 1
 label: recipe:create-admin-access
 data:
   recipes:
-  - name: Create an admin access
-    label: recipe:create-admin-access
-    icon: fal fa-user-shield
-    options:
-      appCrendentialFormat: JSON
-    propagate: true
-    metadata:
-    - "@aporeto:audience=public"
-    - "@aporeto:audience=enterprise"
-    associatedTags:
-    - "aporeto:recipe:identity=apiauthorization"
-    targetIdentities:
-    - oidcprovider
-    - apiauthorizationpolicy
-    description: Create an admin access.
-    longDescription: |-
+    - name: Create an admin access
+      label: recipe:create-admin-access
+      icon: fal fa-user-shield
+      options:
+        appCrendentialFormat: JSON
+      propagate: true
+      metadata:
+        - "@aporeto:audience=public"
+        - "@aporeto:audience=enterprise"
+      associatedTags:
+        - "aporeto:recipe:identity=apiauthorization"
+      targetIdentities:
+        - oidcprovider
+        - apiauthorizationpolicy
+      description: Create an admin access.
+      longDescription: |-
 
-      ### Context
+        ### Context
 
-      Follow these steps to create an admin access to a given namespace.
+        Follow these steps to create an admin access to a given namespace.
 
-      ### Steps
+        ### Steps
 
-      To create an administrator account, we will:
+        To create an administrator account, we will:
 
-      1. Define an **Authentication Source** that will allow you to authenticate to Aporeto.
-      2. Define an **Authorization** to grant you the **Namespace Administrator** role on your namespace.
+        1. Define an **Authentication Source** that will allow you to authenticate to Aporeto.
+        2. Define an **Authorization** to grant you the **Namespace Administrator** role on your namespace.
 
-      Follow this guide to achieve the above steps.
+        Follow this guide to achieve the above steps.
 
-      _Note: Each step can be done or modified individually by accessing the corresponding page in the left menu of the application._
+        _Note: Each step can be done or modified individually by accessing the corresponding page in the left menu of the application._
 
-    template: |-
-      {{`
-      APIVersion: 1
-      data:
-        {{- if (eq .Values.realm "oidc") }}
-        {{- if (not .Values.oidc_already_exists) }}
-        oidcproviders:
-        - name: {{ required ".Values.oidc_name is required" .Values.oidc_name }}
-          description: "Created with the quickstart"
-          endpoint: {{ required ".Values.oidc_endpoint is required" .Values.oidc_endpoint }}
-          clientID: {{ required ".Values.oidc_clientID is required" .Values.oidc_clientID }}
-          clientSecret: {{ required ".Values.oidc_clientSecret is required" .Values.oidc_clientSecret }}
-          scopes:
-          {{- range $i, $scope := .Values.oidc_scopes }}
-          - "{{ $scope }}"
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          {{- if (eq .Values.realm "oidc") }}
+          {{- if (not .Values.oidc_already_exists) }}
+          oidcproviders:
+          - name: {{ required ".Values.oidc_name is required" .Values.oidc_name }}
+            description: "Created with the quickstart"
+            endpoint: {{ required ".Values.oidc_endpoint is required" .Values.oidc_endpoint }}
+            clientID: {{ required ".Values.oidc_clientID is required" .Values.oidc_clientID }}
+            clientSecret: {{ required ".Values.oidc_clientSecret is required" .Values.oidc_clientSecret }}
+            scopes:
+            {{- range $i, $scope := .Values.oidc_scopes }}
+            - "{{ $scope }}"
+            {{- end }}
+            subjects:
+            {{- range $i, $subject := .Values.oidc_subjects }}
+            - "{{ $subject }}"
+            {{- end }}
+            default: true
           {{- end }}
-          subjects:
-          {{- range $i, $subject := .Values.oidc_subjects }}
-          - "{{ $subject }}"
-          {{- end }}
-          default: true
-        {{- end }}
-        apiauthorizationpolicies:
-        - name: "Administrators"
-          description: "Define administrators access via OIDC"
-          propagate: true
-          subject:
-          {{- if .Values.oidc_claims }}
-          {{- range $i, $claim := .Values.oidc_claims }}
-          - - "@auth:realm=oidc"
-            - "@auth:organization={{ required ".Aporeto.Namespace is required" $.Aporeto.Namespace }}"
-            - "{{ $claim }}"
-          {{- end }}
+          apiauthorizationpolicies:
+          - name: "Administrators"
+            description: "Define administrators access via OIDC"
+            propagate: true
+            subject:
+            {{- if .Values.oidc_claims }}
+            {{- range $i, $claim := .Values.oidc_claims }}
+            - - "@auth:realm=oidc"
+              - "@auth:organization={{ required ".Aporeto.Namespace is required" $.Aporeto.Namespace }}"
+              - "{{ $claim }}"
+            {{- end }}
+            {{- else }}
+            - - "@auth:realm=oidc"
+              - "@auth:organization={{ required ".Aporeto.Namespace is required" .Aporeto.Namespace }}"
+            {{- end }}
+            authorizedNamespace: "{{ .Aporeto.Namespace }}"
+            authorizedIdentities:
+            - "@auth:role=namespace.editor"
           {{- else }}
-          - - "@auth:realm=oidc"
-            - "@auth:organization={{ required ".Aporeto.Namespace is required" .Aporeto.Namespace }}"
+          apiauthorizationpolicies:
+          - name: "Adminitrators"
+            description: "Define administrators access via Google"
+            propagate: true
+            subject:
+            {{- range $i, $email := .Values.emails }}
+            - - "@auth:realm=google"
+              - "@auth:email={{ $email }}"
+            {{- end }}
+            authorizedNamespace: "{{ .Aporeto.Namespace }}"
+            authorizedIdentities:
+            - "@auth:role=namespace.editor"
           {{- end }}
-          authorizedNamespace: "{{ .Aporeto.Namespace }}"
-          authorizedIdentities:
-          - "@auth:role=namespace.editor"
-        {{- else }}
-        apiauthorizationpolicies:
-        - name: "Adminitrators"
-          description: "Define administrators access via Google"
-          propagate: true
-          subject:
-          {{- range $i, $email := .Values.emails }}
-          - - "@auth:realm=google"
-            - "@auth:email={{ $email }}"
-          {{- end }}
-          authorizedNamespace: "{{ .Aporeto.Namespace }}"
-          authorizedIdentities:
-          - "@auth:role=namespace.editor"
-        {{- end }}
-      `}}
-    steps:
-    - name: Authentication Source
-      description: |-
-        Aporeto provides multiple authentication sources.
+        `}}
+      steps:
+        - name: Authentication Source
+          description: |-
+            Aporeto provides multiple authentication sources.
 
-        In this step, you will define which one you want to use to access your namespace.
+            In this step, you will define which one you want to use to access your namespace.
 
-        _Note: Read more about [configuring OIDC for Aporeto](.Aporeto.junonUrl/docs/main/guides/oidc/oidc-access-control-plane/)_
+            _Note: Read more about [configuring OIDC for Aporeto](.Aporeto.junonUrl/saas/concepts/#authentication)_
 
-      parameters:
-      - key: realm
-        name: Identity Provider
-        description: Which identity provider would you like to use ?
-        type: Enum
-        defaultValue: google
-        allowedChoices:
-          google: Google
-          oidc: OIDC
+          parameters:
+            - key: realm
+              name: Identity Provider
+              description: Which identity provider would you like to use ?
+              type: Enum
+              defaultValue: google
+              allowedChoices:
+                google: Google
+                oidc: OIDC
 
-      - key: emails
-        name: Emails
-        description: List of emails to grant access to your namespace.
-        type: StringSlice
-        visibilityCondition:
-        - - key: realm
-            operator: Equal
-            value: "google"
+            - key: emails
+              name: Emails
+              description: List of emails to grant access to your namespace.
+              type: StringSlice
+              visibilityCondition:
+                - - key: realm
+                    operator: Equal
+                    value: "google"
 
-      - key: oidc_already_exists
-        name: Use an existing OIDC Provider
-        description: I have already defined an OIDC provider
-        type: Boolean
-        optional: true
-        defaultValue: false
-        visibilityCondition:
-        - - key: realm
-            operator: Equal
-            value: "oidc"
+            - key: oidc_already_exists
+              name: Use an existing OIDC Provider
+              description: I have already defined an OIDC provider
+              type: Boolean
+              optional: true
+              defaultValue: false
+              visibilityCondition:
+                - - key: realm
+                    operator: Equal
+                    value: "oidc"
 
-      - key: oidc_name
-        name: Name
-        description: Used by your users to authenticate to that specific OIDC provider.
-        type: String
-        visibilityCondition:
-        - - key: realm
-            operator: Equal
-            value: "oidc"
-          - key: oidc_already_exists
-            operator: Equal
-            value: false
-      - key: oidc_endpoint
-        name: Endpoint
-        description: Identity provider's URL.
-        type: String
-        visibilityCondition:
-        - - key: realm
-            operator: Equal
-            value: "oidc"
-          - key: oidc_already_exists
-            operator: Equal
-            value: false
-      - key: oidc_clientID
-        name: Client ID
-        description: Client ID provided by your OIDC provider.
-        type: String
-        visibilityCondition:
-        - - key: realm
-            operator: Equal
-            value: "oidc"
-          - key: oidc_already_exists
-            operator: Equal
-            value: false
-      - key: oidc_clientSecret
-        name: Client Secret
-        description: Client Secret provided by your OIDC provider.
-        type: String
-        visibilityCondition:
-        - - key: realm
-            operator: Equal
-            value: "oidc"
-          - key: oidc_already_exists
-            operator: Equal
-            value: false
-      - key: oidc_scopes
-        name: Scopes
-        description: List of scopes to retrieve from the OIDC provider.
-        type: StringSlice
-        defaultValue:
-        - profile
-        - email
-        visibilityCondition:
-        - - key: realm
-            operator: Equal
-            value: "oidc"
-          - key: oidc_already_exists
-            operator: Equal
-            value: false
-      - key: oidc_subjects
-        name: Subjects
-        description: Indicate which OIDC claims should define the subject claim.
-        type: StringSlice
-        defaultValue:
-        - email
-        visibilityCondition:
-        - - key: realm
-            operator: Equal
-            value: "oidc"
-          - key: oidc_already_exists
-            operator: Equal
-            value: false
+            - key: oidc_name
+              name: Name
+              description: Used by your users to authenticate to that specific OIDC provider.
+              type: String
+              visibilityCondition:
+                - - key: realm
+                    operator: Equal
+                    value: "oidc"
+                  - key: oidc_already_exists
+                    operator: Equal
+                    value: false
+            - key: oidc_endpoint
+              name: Endpoint
+              description: Identity provider's URL.
+              type: String
+              visibilityCondition:
+                - - key: realm
+                    operator: Equal
+                    value: "oidc"
+                  - key: oidc_already_exists
+                    operator: Equal
+                    value: false
+            - key: oidc_clientID
+              name: Client ID
+              description: Client ID provided by your OIDC provider.
+              type: String
+              visibilityCondition:
+                - - key: realm
+                    operator: Equal
+                    value: "oidc"
+                  - key: oidc_already_exists
+                    operator: Equal
+                    value: false
+            - key: oidc_clientSecret
+              name: Client Secret
+              description: Client Secret provided by your OIDC provider.
+              type: String
+              visibilityCondition:
+                - - key: realm
+                    operator: Equal
+                    value: "oidc"
+                  - key: oidc_already_exists
+                    operator: Equal
+                    value: false
+            - key: oidc_scopes
+              name: Scopes
+              description: List of scopes to retrieve from the OIDC provider.
+              type: StringSlice
+              defaultValue:
+                - profile
+                - email
+              visibilityCondition:
+                - - key: realm
+                    operator: Equal
+                    value: "oidc"
+                  - key: oidc_already_exists
+                    operator: Equal
+                    value: false
+            - key: oidc_subjects
+              name: Subjects
+              description: Indicate which OIDC claims should define the subject claim.
+              type: StringSlice
+              defaultValue:
+                - email
+              visibilityCondition:
+                - - key: realm
+                    operator: Equal
+                    value: "oidc"
+                  - key: oidc_already_exists
+                    operator: Equal
+                    value: false
 
-    - name: Authorization
-      description: |-
+        - name: Authorization
+          description: |-
 
-        ### Grant the Namespace Administrator role
+            ### Grant the Namespace Administrator role
 
-        This step will define an **Authorization** that grants the **Namespace Administrator** role.
+            This step will define an **Authorization** that grants the **Namespace Administrator** role.
 
-        You will retrieve this authorization in the left menu under *Namespace Settings* > *Authorizations*.
+            You will retrieve this authorization in the left menu under *Namespace Settings* > *Authorizations*.
 
-      parameters:
-      - key: oidc_claims
-        name: Claims
-        description: Specify the OIDC claims the user must present (Type @ for suggestions)
-        type: StringSlice
-        optional: true
-        allowedValues:
-        - "@auth:email="
-        - "@auth:account="
-        - "@auth:organization="
-        visibilityCondition:
-        - - key: realm
-            operator: Equal
-            value: "oidc"
+          parameters:
+            - key: oidc_claims
+              name: Claims
+              description: Specify the OIDC claims the user must present (Type @ for suggestions)
+              type: StringSlice
+              optional: true
+              allowedValues:
+                - "@auth:email="
+                - "@auth:account="
+                - "@auth:organization="
+              visibilityCondition:
+                - - key: realm
+                    operator: Equal
+                    value: "oidc"
 
-
-    successfullMessage: |-
+      successfullMessage: |-
         ### Administrator authorization created
 
         If you are logged in using your company account, you can now log out and connect with your new administrator role!

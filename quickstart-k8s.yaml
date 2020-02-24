@@ -9,9 +9,9 @@ data:
       appCrendentialFormat: YAML
     propagate: true
     metadata:
-    - "@aporeto:audience=public"
+    - "@aporeto:author=aporeto"
     associatedTags:
-    - "aporeto:placement=topnav"
+    - "aporeto:recipe:placement=getting-started"
     targetIdentities:
     - namespace
     - appcredential

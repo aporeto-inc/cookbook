@@ -6,8 +6,7 @@ data:
       description: Creates basic rules to secure a simple application.
       label: recipe:networking:simple-secure-app
       metadata:
-        - "@aporeto:audience=public"
-      associatedTags:
+        - "@aporeto:author=aporeto"
       targetIdentities:
         - externalnetwork
         - networkaccesspolicy

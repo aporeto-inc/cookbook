@@ -5,6 +5,8 @@ data:
   - name: Synchronize Cloudflare public subnets
     label: recipe:sync:subnets:cloudflare
     propagate: true
+    metadata:
+    - "@aporeto:author=aporeto"
     targetIdentities:
     - automation
     description: Regularly synchronizes Cloudflare public subnets as Aporeto External Networks.

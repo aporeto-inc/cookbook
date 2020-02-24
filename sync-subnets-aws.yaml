@@ -5,6 +5,8 @@ data:
   - name: Synchronize AWS public subnets
     label: recipe:sync:subnets:aws
     propagate: true
+    metadata:
+    - "@aporeto:author=aporeto"
     targetIdentities:
     - automation
     description: Regularly synchronizes AWS public subnets as Aporeto External Networks.

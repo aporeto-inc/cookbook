@@ -9,8 +9,7 @@ data:
       appCrendentialFormat: JSON
     propagate: true
     metadata:
-    - "@aporeto:audience=public"
-    - "@aporeto:audience=enterprise"
+    - "@aporeto:author=aporeto"
     associatedTags:
     - "aporeto:recipe:identity=apiauthorization"
     targetIdentities:

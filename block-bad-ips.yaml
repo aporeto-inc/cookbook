@@ -5,6 +5,8 @@ data:
   - name: Automatically block blacklisted IPs
     label: recipe:security:block-blacklisted-ips
     propagate: true
+    metadata:
+    - "@aporeto:author=aporeto"
     targetIdentities:
     - automation
     description: Installs a policy and an automation to block blacklisted IPs.

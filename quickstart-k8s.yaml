@@ -33,7 +33,7 @@ data:
       - [Initialized Helm and deployed tiller](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#2-initialize-helm-and-deploy-tiller)
       - [Added the Aporeto helm repository](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#3-add-the-aporeto-repository-to-helm)
 
-      You can use steps 1 and 2 from the [official documentation page](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/) for that.
+      You can use steps 1-3 from the [official documentation page](https://docs.aporeto.com/saas/start/enforcer/k8s/) for that.
 
       #### Summary
 
@@ -187,8 +187,8 @@ data:
 
         ##### Read more about Namespaces and Authentication
 
-        - [Namespaces](https://docs.aporeto.com/docs/main/concepts/namespaces/)
-        - [Authentications and authorizations](https://docs.aporeto.com/docs/main/concepts/authentication-and-authorization/)
+        - [Namespaces](https://docs.aporeto.com/saas/concepts/#namespaces)
+        - [Authentications and authorizations](https://docs.aporeto.com/saas/concepts/#authentication)
 
       parameters:
       - key: namespace_name

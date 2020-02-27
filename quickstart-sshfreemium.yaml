@@ -26,7 +26,7 @@ data:
       ### Prerequisites
 
       Before you begin, ensure that you have:
-      * [Added Aporeto to your Identity provider](.Aporeto.junonUrl/docs/main/guides/oidc/oidc-access-control-plane/#adding-aporeto-to-the-identity-provider)
+      * [Added Aporeto to your Identity provider](.Aporeto.junonUrl/saas/setup/idp/ssh-ctrl-plane/#adding-the-identity-provider-to-aporeto)
       * Configured each host to trust the Aporeto SSH certificate authority
 
       ### Follow these steps
@@ -123,7 +123,7 @@ data:
 
         In this step, you will define how your users should authenticate to your namespace.
 
-        _Note: Read more about [configuring OIDC for Aporeto](.Aporeto.junonUrl/docs/main/guides/oidc/oidc-access-control-plane/)_
+        _Note: Read more about [configuring OIDC for Aporeto](.Aporeto.junonUrl/saas/setup/idp/ssh-ctrl-plane/)_
 
       parameters:
       - key: realm
@@ -237,7 +237,7 @@ data:
 
         Feel free to modify this **Authorization** if you feel it is too permissive.
 
-        **Important:** Requesting an SSH Certificate does not mean the certificate will be delivered. An **SSH Authorization** will be defined next step.
+        **Important:** Requesting an SSH Certificate does not mean the certificate will be delivered. An **SSH Authorization** will be defined in next step.
 
     - name: SSH Authorization
       description: |-
@@ -291,4 +291,4 @@ data:
 
         #### Apoctl
 
-        **apoctl** is the official Aporeto CLI. To learn how to create a configuration file, read more about [apoctl](.Aporeto.junonUrl/docs/main/apoctl-install/apoctl-install-user/#installing-apoctl-for-users)
+        **apoctl** is the official Aporeto CLI. To learn how to create a configuration file, read more about [apoctl](.Aporeto.junonUrl/saas/start/apoctl/#for-users)

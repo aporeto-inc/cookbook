@@ -146,11 +146,11 @@ data:
           subject:
           - - "$identity=processingunit"
             - "$type=SSHSession"
-          - - "$identity=externalnetwork"
+          - - "ext:net=internet"
           object:
           - - "$identity=processingunit"
             - "$type=SSHSession"
-          - - "$identity=externalnetwork"
+          - - "ext:net=internet"
 
         auditprofilemappingpolicies:
         - name: "Enforcers collect execve commands"

@@ -242,7 +242,7 @@ data:
             subject:
             - - "$name=Internet (any TCP)"
             object:
-            - - "$namespace={{ .Aporeto.Namespace }}
+            - - "$namespace={{ .Aporeto.Namespace }}"
               - "hs:name=services"
             {{- end}}
           {{- end}}

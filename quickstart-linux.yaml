@@ -234,13 +234,15 @@ data:
             {{- if .Values.create_new_namespace }}
             namespace: "{{ .Values.namespace_name }}"
             subject:
-            - - "$name=Internet (any TCP)"
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "extnet:name=internet"
             object:
             - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
               - "hs:name=services"
             {{- else}}
             subject:
-            - - "$name=Internet (any TCP)"
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "extnet:name=internet"
             object:
             - - "$namespace={{ .Aporeto.Namespace }}"
               - "hs:name=services"

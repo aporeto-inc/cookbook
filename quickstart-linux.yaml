@@ -39,7 +39,7 @@ data:
 
         _(See all Namespaces from the left menu under "Namespace Settings")_
 
-        2. Define the protection of your VM and we will defined some **Host Services** for you.
+        2. Define the protection of your VM and we will define some **Host Services** for you.
 
         _(See all Host Services from the left menu under "Node")_
 
@@ -255,7 +255,7 @@ data:
         - name: Namespace
           description: |-
             Define where the data will be created.
-            You can either choose to use the current namespace **.Aporeto.junonUrl** or create a new one.
+            You can either choose to use the current namespace or create a new one.
 
             Having a separate namespace allows you to give permissions to other users to access that specific namespace.
 

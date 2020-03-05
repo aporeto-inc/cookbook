@@ -145,11 +145,11 @@ data:
           subject:
           - - "$identity=processingunit"
             - "$type=SSHSession"
-          - - "$identity=externalnetwork"
+          - - "ext:net=internet"
           object:
           - - "$identity=processingunit"
             - "$type=SSHSession"
-          - - "$identity=externalnetwork"
+          - - "ext:net=internet"
 
         auditprofilemappingpolicies:
         - name: "Enforcers collect execve commands"
@@ -169,7 +169,7 @@ data:
 
         In this step, you will define how your users should authenticate to your namespace.
 
-        _Note: Read more about [configuring OIDC for Aporeto](.Aporeto.junonUrl/docs/main/guides/oidc/oidc-access-control-plane/)_
+        _Note: Read more about [configuring OIDC for Aporeto](.Aporeto.junonUrl/saas/setup/idp/)_
 
       parameters:
       - key: realm

@@ -35,11 +35,11 @@ data:
         Check out our complete documentation page about [Enforcerd installation on Linux](.Aporeto.junonUrl/docs/main/installation/install-on-linux/)
 
         #### Summary
-        1. Define a [Namespace](.Aporeto.junonUrl/docs/main/concepts/namespaces/) that will store all your data in a single folder-like structure.
+        1. Define a [Namespace](.Aporeto.junonUrl/saas/concepts/#namespaces) that will store all your data in a single folder-like structure.
 
         _(See all Namespaces from the left menu under "Namespace Settings")_
 
-        2. Define the protection of your VM and we will defined some **Host Services** for you.
+        2. Define the protection of your VM and we will define some **Host Services** for you.
 
         _(See all Host Services from the left menu under "Node")_
 
@@ -61,11 +61,11 @@ data:
             description: {{ .Values.namespace_description }}
           {{- end}}
           appcredentials:
-          - name: "enforcerd"
+          - name: "{{ .Values.credentials_name }}"
             {{- if .Values.create_new_namespace }}
             namespace: "{{ .Values.namespace_name }}"
             {{- end}}
-            description: "credentials used by the enforcerd running in kubernetes."
+            description: "{{ .Values.credentials_description }}"
             roles:
             - "@auth:role=enforcer"
           - name: "aporeto-operator"
@@ -226,6 +226,28 @@ data:
               - "extnet:name=internet"
             {{- end}}
           {{- end}}
+          {{- if .Values.protection_incoming_ssh }}
+          - name: "Allow incoming SSH access"
+            description: "This policy has been created from the linux workflow"
+            action: "Allow"
+            logsEnabled: true
+            {{- if .Values.create_new_namespace }}
+            namespace: "{{ .Values.namespace_name }}"
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "extnet:name=internet"
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}/{{ .Values.namespace_name }}"
+              - "hs:name=services"
+            {{- else}}
+            subject:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "extnet:name=internet"
+            object:
+            - - "$namespace={{ .Aporeto.Namespace }}"
+              - "hs:name=services"
+            {{- end}}
+          {{- end}}
 
           {{- end }}
         `}}
@@ -233,7 +255,7 @@ data:
         - name: Namespace
           description: |-
             Define where the data will be created.
-            You can either choose to use the current namespace **.Aporeto.junonUrl** or create a new one.
+            You can either choose to use the current namespace or create a new one.
 
             Having a separate namespace allows you to give permissions to other users to access that specific namespace.
 
@@ -241,8 +263,8 @@ data:
 
             ##### Read more about:
 
-            - [Namespaces](.Aporeto.junonUrl/docs/main/concepts/namespaces/)
-            - [Authentications and authorizations](.Aporeto.junonUrl/docs/main/concepts/authentication-and-authorization/)
+            - [Namespaces](.Aporeto.junonUrl/saas/concepts/#namespaces)
+            - [Authentications and authorizations](.Aporeto.junonUrl/saas/concepts/#authentication)
 
             Clicking **Next** once you have defined your Aporeto namespace.
 
@@ -325,7 +347,7 @@ data:
             An App Credential is a yaml file that contains all the necessary information to connect to the platform.
             It has a specific role in the namespace it has been created.
 
-            Read more about [App Credentials](.Aporeto.junonUrl/docs/main/references/appcredentials/)
+            Read more about [App Credentials](.Aporeto.junonUrl/saas/reference/resources/app-cred/)
 
           parameters:
             - key: credentials_name

@@ -75,7 +75,7 @@ data:
           - "@auth:role=namespace.editor"
         {{- else }}
         apiauthorizationpolicies:
-        - name: "Adminitrators"
+        - name: "Administrators"
           description: "Define administrators access via Google"
           propagate: true
           subject:
@@ -95,12 +95,12 @@ data:
 
         In this step, you will define which one you want to use to access your namespace.
 
-        _Note: Read more about [configuring OIDC for Aporeto](.Aporeto.junonUrl/docs/main/guides/oidc/oidc-access-control-plane/)_
+        _Note: Read more about [configuring OIDC for Aporeto](.Aporeto.junonUrl/saas/setup/idp/)_
 
       parameters:
       - key: realm
         name: Identity Provider
-        description: Which identity provider would you like to use ?
+        description: Which identity provider would you like to use?
         type: Enum
         defaultValue: google
         allowedChoices:

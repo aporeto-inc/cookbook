@@ -73,7 +73,7 @@ data:
           {{- end }}
           authorizedNamespace: "{{ .Aporeto.Namespace }}"
           authorizedIdentities:
-          - "@auth:role=namespace.editor"
+          - "@auth:role=namespace.administrator"
         {{- else }}
         apiauthorizationpolicies:
         - name: "Administrators"
@@ -86,7 +86,7 @@ data:
           {{- end }}
           authorizedNamespace: "{{ .Aporeto.Namespace }}"
           authorizedIdentities:
-          - "@auth:role=namespace.editor"
+          - "@auth:role=namespace.administrator"
         {{- end }}
       `}}
     steps:

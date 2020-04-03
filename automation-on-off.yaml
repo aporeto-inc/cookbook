@@ -40,7 +40,7 @@ data:
         - name: "[test:on-and-off] switch deny all regularly"
           description: Turns the target policy on and off every 10m
           trigger: Time
-          schedule: "0,10 * * * *"
+          schedule: "@every 10m"
           entitlements:
             networkaccesspolicy:
               - update

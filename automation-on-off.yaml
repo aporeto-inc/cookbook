@@ -8,7 +8,7 @@ data:
     targetIdentities:
     - automation
     - networkaccesspolicy
-    description: Block all traffic every 30th minute. Why not?
+    description: Block all traffic every 10th minute. Why not?
     longDescription: |-
       ### On and Off Traffic
 
@@ -40,7 +40,7 @@ data:
         - name: "[test:on-and-off] switch deny all regularly"
           description: Turns the target policy on and off every 10m
           trigger: Time
-          schedule: "0,30 * * * *"
+          schedule: "0,10 * * * *"
           entitlements:
             networkaccesspolicy:
               - update

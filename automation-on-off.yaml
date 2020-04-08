@@ -10,7 +10,7 @@ data:
     targetIdentities:
     - automation
     - networkaccesspolicy
-    description: Block all traffic every 10m. Why not?
+    description: Block all traffic every 10th minute. Why not?
     longDescription: |-
       ### On and Off Traffic
 
@@ -53,7 +53,7 @@ data:
                   pol = api.RetrieveMany('networkaccesspolicy', null, 'associatedtags contains "policy:on-and-off:target=deny-policy"')[0];
                   pol.disabled = !pol.disabled;
                   api.Update('networkaccesspolicy', pol);
-                  console.log("policy updated! disabled=", pol.disabled)
+                  console.log("policy updated! disabled:", pol.disabled)
               }
           condition: |-
             function when(api, params) {

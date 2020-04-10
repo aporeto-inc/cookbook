@@ -1,0 +1,123 @@
+# This recipe allows to create an admission controller
+# that controls if a policy can be created or not.
+
+APIVersion: 1
+label: recipe:admission-controller
+data:
+  recipes:
+  - name: Admission Controller
+    description: Controls policies are having a given set of tags.
+    label: recipe:admission-controller
+    propagate: true
+    deploymentMode: Unrestricted
+    metadata:
+    - "@aporeto:author=aporeto"
+    associatedTags:
+    targetIdentities:
+    - automation
+    - hookpolicy
+    longDescription: |-
+
+      An admission controller controls a policy is matching certain tags.
+      If the tags are missing, the policy creation or modification will be denied.
+
+      This workflow creates
+      * A Hook Policy that is triggered when a policy is created, updated or deleted.
+      * An Automation that checks the policy is matching the given tags.
+    template: |-
+      {{`
+      APIVersion: 1
+      label: "recipe:automation-controller"
+      data:
+        hookpolicies:
+          - name: "automation-controller-hook"
+            endpointType: Automation
+            subject:
+              - - "$identity=policy"
+            selectors:
+              - - "$identity=automation"
+                - "$name=admission-controller"
+        automations:
+          - actions:
+              - |
+                /**
+                * Write your action code here. This function will be executed when the condition is met
+                * @param {object} api - api manipulator that allows CRUD operations.
+                * @param {object} params - the parameters configured in the automation.
+                * @param {object} payload - Payload returned by the condition.
+                */
+                function then(api, params) {
+
+                    var hookPayload = JSON.parse(params.triggerPayload);
+                    var policy = hookPayload.input;
+                    var validationErr = {
+                            code: 422,
+                            title: "Validation Error",
+                            subject: "Admission Controller",
+                            description: "missing {{ .Values.tag }} tag in tag expression"
+                    };
+
+                    var found = false;
+                    _.each(policy.subject, function(tagExp) {
+                        _.each(tagExp, function(tag) {
+                            if (tag.lastIndexOf("{{ .Values.tag }}", 0) === 0) {
+                                found = true
+                            }
+                        });
+                    });
+
+                    if (!found) {
+                        validationErr.data = {
+                            attribute: "subject"
+                        };
+
+                        return {
+                            "statusCode": 422,
+                            "body": JSON.stringify([validationErr]),
+                        }
+                    }
+
+                    found = false
+                    _.each(policy.object, function(tagExp) {
+                        _.each(tagExp, function(tag) {
+                            if (tag.lastIndexOf("{{ .Values.tag }}", 0) === 0) {
+                                found = true
+                            }
+                        });
+                    });
+
+                    if (!found) {
+                        validationErr.data = {
+                            attribute: "object"
+                        };
+
+                        return {
+                            "statusCode": 422,
+                            "body": JSON.stringify([validationErr]),
+                        }
+                    }
+
+                    // populates the output field of the remote processor model with our modifications
+                    // in this case, nothing gets modified :-)
+                    hookPayload.output = policy;
+
+                    return {
+                        "statusCode": 200,
+                        "body": JSON.stringify(hookPayload),
+                    }
+                }
+            name: admission-controller
+            trigger: Webhook
+      identities:
+        - hookpolicy
+        - automation
+      `}}
+    steps:
+    - name: Tag
+      description: |-
+        Define the tag prefix that must be present in a policy.
+      parameters:
+      - key: tag
+        name: Tag
+        description: Tag prefix that should match
+        type: String

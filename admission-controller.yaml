@@ -30,18 +30,52 @@ data:
       label: "recipe:automation-controller"
       data:
         hookpolicies:
-          - name: "automation-controller-hook"
+          - name: "automation-controller-hook ({{ .RenderID }})"
+            description: "Triggers automation called admission-controller ({{ .RenderID }})"
             endpointType: Automation
             subject:
               - - "$identity=policy"
+                - "$type=Network"
             selectors:
               - - "$identity=automation"
-                - "$name=admission-controller"
+                - "recipe:renderid={{ .RenderID }}"
         automations:
-          - actions:
+          - name: admission-controller ({{ .RenderID }})
+            description: "Triggered by the hook called automation-controller-hook ({{ .RenderID }})"
+            associatedTags:
+            - "recipe:renderid={{ .RenderID }}"
+            trigger: Webhook
+            actions:
               - |
+                function isTagExpressionMatching(tagExp) {
+
+                  {{- if .Values.tags }}
+                  mandatoryTags = [{{range $index, $tag := .Values.tags }}{{ if ne $index 0}}, {{end}}"{{ $tag }}"{{ end }}];
+                  {{- else }}
+                  mandatoryTags = [];
+                  {{- end}}
+
+                  if (!mandatoryTags || mandatoryTags.length == 0) {
+                    return true;
+                  }
+
+                  if (tagExp.length < mandatoryTags.length) {
+                    return false;
+                  }
+
+                  found = {}
+                  _.each(tagExp, function(tag) {
+                    _.each(mandatoryTags, function (mtag) {
+                      if (tag.lastIndexOf(mtag, 0) === 0) {
+                        found[mtag] = true
+                      }
+                    })
+                  });
+
+                  return Object.keys(found).length == mandatoryTags.length;
+                }
                 /**
-                * Write your action code here. This function will be executed when the condition is met
+                * This function will be executed when the automation condition is met:
                 * @param {object} api - api manipulator that allows CRUD operations.
                 * @param {object} params - the parameters configured in the automation.
                 * @param {object} payload - Payload returned by the condition.
@@ -49,21 +83,25 @@ data:
                 function then(api, params) {
 
                     var hookPayload = JSON.parse(params.triggerPayload);
+                    if (hookPayload.operation === "delete") {
+                      return {
+                        "statusCode": 200,
+                        "body": JSON.stringify(hookPayload),
+                      }
+                    }
+
                     var policy = hookPayload.input;
                     var validationErr = {
                             code: 422,
                             title: "Validation Error",
                             subject: "Admission Controller",
-                            description: "missing {{ .Values.tag }} tag in tag expression"
+                            description: "missing mandatory tags ({{ .Values.tags }}) in policy rules"
                     };
 
+                    // Check the subject part of the policy
                     var found = false;
                     _.each(policy.subject, function(tagExp) {
-                        _.each(tagExp, function(tag) {
-                            if (tag.lastIndexOf("{{ .Values.tag }}", 0) === 0) {
-                                found = true
-                            }
-                        });
+                      found = isTagExpressionMatching(tagExp);
                     });
 
                     if (!found) {
@@ -77,13 +115,10 @@ data:
                         }
                     }
 
+                    // Check the object part of the policy
                     found = false
                     _.each(policy.object, function(tagExp) {
-                        _.each(tagExp, function(tag) {
-                            if (tag.lastIndexOf("{{ .Values.tag }}", 0) === 0) {
-                                found = true
-                            }
-                        });
+                      found = isTagExpressionMatching(tagExp);
                     });
 
                     if (!found) {
@@ -106,18 +141,16 @@ data:
                         "body": JSON.stringify(hookPayload),
                     }
                 }
-            name: admission-controller
-            trigger: Webhook
       identities:
         - hookpolicy
         - automation
       `}}
     steps:
-    - name: Tag
+    - name: Tags
       description: |-
-        Define the tag prefix that must be present in a policy.
+        Define the tag prefixes that must be present in a policy.
       parameters:
-      - key: tag
-        name: Tag
-        description: Tag prefix that should match
-        type: String
+      - key: tags
+        name: Tags
+        description: Tag prefixes that should match
+        type: StringSlice

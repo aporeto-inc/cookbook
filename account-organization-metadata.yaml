@@ -1,0 +1,66 @@
+APIVersion: 1
+label: "recipe:account-organizational-metadata"
+data:
+  hookpolicies:
+    - name: "account-organizational-metadata-hook"
+      description: "Triggers automation called account-organizational-metadata"
+      endpointType: Automation
+      propagate: true
+      subject:
+        - - "$identity=namespace"
+      selectors:
+        - - "$identity=automation"
+          - "$name=account-organizational-metadata"
+  automations:
+    - name: account-organizational-metadata
+      description: "Triggered by the hook called account-organizational-metadata-hook"
+      trigger: Webhook
+      actions:
+        - |
+          function organizationalMetadataForNamespace(namespace) {
+
+            accountKey = {{ .Values.accountKey | default "account" | quote}}
+
+            if (namespace.namespace !== "/") {
+              return [];
+            }
+
+            if (accountKey === "") {
+              return [];
+            }
+
+            return ["@org:" + accountKey + "=" + namespace.name];
+          }
+          /**
+          * This function will be executed when the automation condition is met:
+          * @param {object} api - api manipulator that allows CRUD operations.
+          * @param {object} params - the parameters configured in the automation.
+          * @param {object} payload - Payload returned by the condition.
+          */
+          function then(api, params) {
+
+              var triggerPayload = JSON.parse(params.triggerPayload);
+              var namespace = triggerPayload.input;
+
+              if (triggerPayload.operation !== "create" || !namespace.name) {
+                triggerPayload.output = triggerPayload.input;
+                return {
+                  "statusCode": 200,
+                  "body": JSON.stringify(triggerPayload),
+                }
+              }
+
+              namespace.organizationMetadata = organizationalMetadataForNamespace(namespace);
+
+              // populates the output field of the remote processor model with our modifications
+              triggerPayload.output = namespace;
+
+              return {
+                  "statusCode": 200,
+                  "body": JSON.stringify(triggerPayload),
+              }
+
+          }
+identities:
+  - hookpolicy
+  - automation

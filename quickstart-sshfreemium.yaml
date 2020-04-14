@@ -8,10 +8,9 @@ data:
       appCrendentialFormat: JSON
     propagate: true
     metadata:
-    - "@aporeto:audience=public"
-    - "@aporeto:audience=sshcertificates"
+    - "@aporeto:author=aporeto"
     associatedTags:
-    - "aporeto:placement=topnav"
+    - "aporeto:recipe:placement=getting-started"
     targetIdentities:
     - oidcprovider
     - apiauthorizationpolicy

@@ -5,6 +5,8 @@ data:
   - name: Alert on disconnected enforcers
     label: recipe:alerts:disconnected-enforcers
     propagate: true
+    metadata:
+    - "@aporeto:author=aporeto"
     targetIdentities:
     - automation
     description: Raises an alarm if some enforcerd instances are disconnected for too long.

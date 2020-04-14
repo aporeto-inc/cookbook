@@ -1,0 +1,93 @@
+# The content of this file is imported to create a recipe.
+# The recipe has a set of steps and parameters that are filled via the UI.
+# Parameters are injected into the `template` property of the recipe and then
+# imported.
+
+APIVersion: 1
+# Label of the import
+# It is important to keep it when reimporting the recipe itself
+label: recipe:template
+data:
+  # Define the recipes that are imported
+  recipes:
+    # Name of the recipe as it shows in the UI
+  - name: My recipe template
+    # Description of a recipe
+    description: This recipe is just a template.
+    # Label of the recipe
+    # It is used for keep an import reference.
+    label: recipe:template
+    # Indicate if the recipe should be available in child namespaces.
+    propagate: true
+    # Specify the deployment of the recipe
+    # * Unrestricted: Recipe can be imported multiple times (default)
+    # * Unique: Only one recipe can be imported in the entire hierarchy of namespaces
+    # * NamespaceUnique: Only one recipe can be imported in a given namespace.
+    deploymentMode: Unrestricted
+    # Adding a metadata to make sure we know where it is coming from.
+    metadata:
+    - "@aporeto:author=aporeto"
+    # Tags can define where the recipe should be shown in the UI
+    associatedTags:
+      # aporeto:recipe:placement indicates where in the UI. Available values
+      # - "toolbar": appears in the toolbar of an identity page
+      # - "getting-started": appears on the getting started page
+      # - "create-button": appears in the create button of an identity page
+    - "aporeto:recipe:placement=toolbar"
+    - "aporeto:recipe:identity=networkaccesspolicy"
+    # Defines which identities are created
+    targetIdentities:
+    - externalnetwork
+    - networkaccesspolicy
+    # Define the first page of the recipe that explains to the user
+    # what it is going to be done.
+    longDescription: |-
+      ### Recipe Template
+
+      Welcome to my new recipe!
+
+      How can I use markdown ?
+      * Follow your instinct
+      * Check Markdown cheat sheets
+      * Look for **other recipes**
+    # Template where the parameters will be injected.
+    # /!\ Please respect the start and end syntax /!\
+    # Parameters will be injected with {{ .Values.key }}
+    # For more information, check other recipes.
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        networkaccesspolicies:
+        - name: "Templated allow all policy"
+          description: "Description of my template policy."
+          action: "Allow"
+          protected: false
+          logsEnabled: true
+          {{- if .Values.propagate }}
+          propagate: true
+          {{- end }}
+          subject:
+          - - "$identity=processingunit"
+          - - "$identity=externalnetwork"
+          object:
+          - - "$identity=processingunit"
+          - - "$identity=externalnetwork"
+      `}}
+    # Define the list of steps of the recipe
+    steps:
+    - name: Propagation
+      description: |-
+        Define if the templated policy should be propagated to the child namespaces or not.
+
+        Obviously, you can use some **Markdown** here too!
+      # Define the list of parameters in this step
+      parameters:
+        # key is referenced in the template with {{ .Values.key }}
+      - key: propagate
+        # Name displayed in the UI
+        name: Propagate
+        description: propagate down to child namespaces.
+        # Type of parameter (ie: String, Boolean, Integer)
+        # Check other recipes for more information.
+        type: Boolean

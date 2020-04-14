@@ -5,6 +5,8 @@ data:
   - name: Periodically block all traffic
     label: recipe:testing:on-and-off-automation
     propagate: true
+    metadata:
+    - "@aporeto:author=aporeto"
     targetIdentities:
     - automation
     - networkaccesspolicy

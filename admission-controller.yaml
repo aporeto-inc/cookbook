@@ -1,0 +1,156 @@
+# This recipe allows to create an admission controller
+# that controls if a policy can be created or not.
+
+APIVersion: 1
+label: recipe:admission-controller
+data:
+  recipes:
+  - name: Admission Controller
+    description: Controls policies are having a given set of tags.
+    label: recipe:admission-controller
+    propagate: true
+    deploymentMode: Unrestricted
+    metadata:
+    - "@aporeto:author=aporeto"
+    associatedTags:
+    targetIdentities:
+    - automation
+    - hookpolicy
+    longDescription: |-
+
+      An admission controller controls a policy is matching certain tags.
+      If the tags are missing, the policy creation or modification will be denied.
+
+      This workflow creates
+      * A Hook Policy that is triggered when a policy is created, updated or deleted.
+      * An Automation that checks the policy is matching the given tags.
+    template: |-
+      {{`
+      APIVersion: 1
+      label: "recipe:automation-controller"
+      data:
+        hookpolicies:
+          - name: "automation-controller-hook ({{ .RenderID }})"
+            description: "Triggers automation called admission-controller ({{ .RenderID }})"
+            endpointType: Automation
+            subject:
+              - - "$identity=policy"
+                - "$type=Network"
+            selectors:
+              - - "$identity=automation"
+                - "recipe:renderid={{ .RenderID }}"
+        automations:
+          - name: admission-controller ({{ .RenderID }})
+            description: "Triggered by the hook called automation-controller-hook ({{ .RenderID }})"
+            associatedTags:
+            - "recipe:renderid={{ .RenderID }}"
+            trigger: Webhook
+            actions:
+              - |
+                function isTagExpressionMatching(tagExp) {
+
+                  {{- if .Values.tags }}
+                  mandatoryTags = [{{range $index, $tag := .Values.tags }}{{ if ne $index 0}}, {{end}}"{{ $tag }}"{{ end }}];
+                  {{- else }}
+                  mandatoryTags = [];
+                  {{- end}}
+
+                  if (!mandatoryTags || mandatoryTags.length == 0) {
+                    return true;
+                  }
+
+                  if (tagExp.length < mandatoryTags.length) {
+                    return false;
+                  }
+
+                  found = {}
+                  _.each(tagExp, function(tag) {
+                    _.each(mandatoryTags, function (mtag) {
+                      if (tag.lastIndexOf(mtag, 0) === 0) {
+                        found[mtag] = true
+                      }
+                    })
+                  });
+
+                  return Object.keys(found).length == mandatoryTags.length;
+                }
+                /**
+                * This function will be executed when the automation condition is met:
+                * @param {object} api - api manipulator that allows CRUD operations.
+                * @param {object} params - the parameters configured in the automation.
+                * @param {object} payload - Payload returned by the condition.
+                */
+                function then(api, params) {
+
+                    var hookPayload = JSON.parse(params.triggerPayload);
+                    if (hookPayload.operation === "delete") {
+                      return {
+                        "statusCode": 200,
+                        "body": JSON.stringify(hookPayload),
+                      }
+                    }
+
+                    var policy = hookPayload.input;
+                    var validationErr = {
+                            code: 422,
+                            title: "Validation Error",
+                            subject: "Admission Controller",
+                            description: "missing mandatory tags ({{ .Values.tags }}) in policy rules"
+                    };
+
+                    // Check the subject part of the policy
+                    var found = false;
+                    _.each(policy.subject, function(tagExp) {
+                      found = isTagExpressionMatching(tagExp);
+                    });
+
+                    if (!found) {
+                        validationErr.data = {
+                            attribute: "subject"
+                        };
+
+                        return {
+                            "statusCode": 422,
+                            "body": JSON.stringify([validationErr]),
+                        }
+                    }
+
+                    // Check the object part of the policy
+                    found = false
+                    _.each(policy.object, function(tagExp) {
+                      found = isTagExpressionMatching(tagExp);
+                    });
+
+                    if (!found) {
+                        validationErr.data = {
+                            attribute: "object"
+                        };
+
+                        return {
+                            "statusCode": 422,
+                            "body": JSON.stringify([validationErr]),
+                        }
+                    }
+
+                    // populates the output field of the remote processor model with our modifications
+                    // in this case, nothing gets modified :-)
+                    hookPayload.output = policy;
+
+                    return {
+                        "statusCode": 200,
+                        "body": JSON.stringify(hookPayload),
+                    }
+                }
+      identities:
+        - hookpolicy
+        - automation
+      `}}
+    steps:
+    - name: Tags
+      description: |-
+        Define the tag prefixes that must be present in a policy.
+      parameters:
+      - key: tags
+        name: Tags
+        description: Tag prefixes that should match
+        type: StringSlice

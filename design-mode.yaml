@@ -1,0 +1,115 @@
+APIVersion: 1
+label: recipe:design-mode
+data:
+  recipes:
+  - name: Enable Design Mode
+    description: Allow all traffic.
+    label: recipe:design-mode
+    propagate: true
+    deploymentMode: Unique
+    metadata:
+    - "@aporeto:author=aporeto"
+    associatedTags:
+    - "aporeto:recipe:placement=toolbar"
+    - "aporeto:recipe:identity=networkaccesspolicy"
+    - "aporeto:recipe:identity=platformview"
+    targetIdentities:
+    - externalnetwork
+    - networkaccesspolicy
+    longDescription: |-
+      ### Enable Design Mode
+
+      When **Discovery Mode is enabled**, all flows are accepted and will appear as dotted line in your Platform view.
+
+      How to use the Design Mode ?
+      * Enable this mode to accept all the flows and report them as dotted lines in the Platform View.
+      * Declare the **External Networks** the system will need to communicate.
+      * Create the **Network Policies** to convert dotted flows to solid green line. This means they will be authorized and enforced.
+      * When all policies have been defined, disable the discovery mode and expect the traffic to be enforced according to your policies. Traffic without policies will be dropped by default.
+
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        networkaccesspolicies:
+        - name: "discovery-mode"
+          description: "Allow all processing units and external networks commnications."
+          action: "Allow"
+          observationEnabled: true
+          observedTrafficAction: "Apply"
+          protected: false
+          logsEnabled: true
+          {{- if .Values.propagate }}
+          propagate: true
+          {{- end }}
+          subject:
+          - - "$identity=processingunit"
+          - - "$identity=externalnetwork"
+          object:
+          - - "$identity=processingunit"
+          - - "$identity=externalnetwork"
+        externalnetworks:
+        - name: "any-udp"
+          description: "Represents any UDP traffic"
+          {{- if .Values.propagate }}
+          propagate: true
+          {{- end }}
+          entries:
+          - "0.0.0.0/0"
+          - "::/0"
+          protocols:
+          - udp
+          ports:
+          - "1:65535"
+        - name: "any-tcp"
+          description: "Represents any TCP traffic"
+          {{- if .Values.propagate }}
+          propagate: true
+          {{- end }}
+          entries:
+          - "0.0.0.0/0"
+          - "::/0"
+          protocols:
+          - tcp
+          ports:
+          - "1:65535"
+        - name: "any-icmp"
+          description: "Represents any ICMP traffic"
+          {{- if .Values.propagate }}
+          propagate: true
+          {{- end }}
+          entries:
+          - "0.0.0.0/0"
+          - "::/0"
+          protocols:
+          - icmp
+          ports:
+          - "1:65535"
+        - name: "any-other-protocol"
+          description: "Represents any other traffic"
+          {{- if .Values.propagate }}
+          propagate: true
+          {{- end }}
+          entries:
+          - "0.0.0.0/0"
+          - "::/0"
+          protocols:
+          - IGMP
+          - SCTP
+          - IPIP
+          - GRE
+          - PIM
+          - VRRP
+          - L2TP
+          ports:
+          - "1:65535"
+
+      `}}
+    steps:
+    - name: Propagation
+      description: Configure if the Design Mode should be enabled in the child namespaces.
+      parameters:
+      - key: propagate
+        name: Propagate
+        description: propagate down to child namespaces.
+        type: Boolean

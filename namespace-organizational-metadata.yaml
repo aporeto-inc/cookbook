@@ -106,7 +106,7 @@ data:
                       }
                     }
 
-                    namespace.organizationMetadata = organizationalMetadataForNamespace(namespace);
+                    namespace.organizationalMetadata = organizationalMetadataForNamespace(namespace);
 
                     // populates the output field of the remote processor model with our modifications
                     triggerPayload.output = namespace;

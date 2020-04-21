@@ -43,6 +43,7 @@ data:
             description: "Triggers automation called namespace-organizational-metadata"
             endpointType: Automation
             propagate: true
+            protected: true
             subject:
               - - "$identity=namespace"
             selectors:
@@ -53,6 +54,7 @@ data:
             description: "Triggered by the hook called namespace-organizational-metadata-hook"
             trigger: Webhook
             propagate: true
+            protected: true
             actions:
               - |
                 function organizationalMetadataForNamespace(namespace) {

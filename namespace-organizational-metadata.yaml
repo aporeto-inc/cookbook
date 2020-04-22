@@ -13,7 +13,6 @@ data:
     metadata:
     - "@aporeto:author=aporeto"
     associatedTags:
-    - "aporeto:recipe:placement=getting-started"
     targetIdentities:
     - automation
     - hookpolicy

@@ -1,0 +1,137 @@
+# This recipe allows to create an Namespace tagging
+# that provides organizational metadata to policeable objects.
+
+APIVersion: 1
+label: recipe:namespace-organizational-metadata
+data:
+  recipes:
+  - name: Namespace organization metadata
+    description: Controls organizational metadata of your namespaces
+    label: recipe:namespace-organizational-metadata
+    propagate: false
+    deploymentMode: Unique
+    metadata:
+    - "@aporeto:author=aporeto"
+    associatedTags:
+    targetIdentities:
+    - automation
+    - hookpolicy
+    longDescription: |-
+
+      A metadata is a "key=value" pair, where value is the name of your namespace.
+
+      This workflow allows to define the keys of your organizational metadata that are used to represent
+      your namespace hiearchy.
+
+      By default, we suggest to consider the following keys:
+
+      1. workspace
+      2. platform
+      3. app
+
+      These metadata will be propagated to your processing units, enforcers, external networks and can then be used
+      in your policies rules.
+
+    template: |-
+      {{`
+      APIVersion: 1
+      label: "recipe:namespace-organizational-metadata"
+      data:
+        hookpolicies:
+          - name: "namespace-organizational-metadata-hook"
+            description: "Triggers automation called namespace-organizational-metadata"
+            endpointType: Automation
+            propagate: true
+            protected: true
+            subject:
+              - - "$identity=namespace"
+            selectors:
+              - - "$identity=automation"
+                - "$name=namespace-organizational-metadata"
+        automations:
+          - name: namespace-organizational-metadata
+            description: "Triggered by the hook called namespace-organizational-metadata-hook"
+            trigger: Webhook
+            propagate: true
+            protected: true
+            actions:
+              - |
+                function organizationalMetadataForNamespace(namespace) {
+
+                  {{- if .Values.keys }}
+                  keys = [{{range $index, $key := .Values.keys }}{{ if ne $index 0}}, {{end}}"{{ $key }}"{{ end }}];
+                  {{- else }}
+                  keys = [];
+                  {{- end}}
+
+                  parents = namespace.namespace.split("/");
+                  parents.shift()
+
+                  if (!parents || parents.length == 0) {
+                    return [];
+                  }
+
+                  // Root namespace case not handled in this workflow.
+                  if (parents[0] === "") {
+                    return [];
+                  }
+
+                  idx = parents.length - 1;
+                  if (idx >= keys.length) {
+                    return [];
+                  }
+
+                  k = keys[idx];
+                  if (k === "") {
+                    return [];
+                  }
+
+                  return ["@org:" + k + "=" + namespace.name];
+                }
+                /**
+                * This function will be executed when the automation condition is met:
+                * @param {object} api - api manipulator that allows CRUD operations.
+                * @param {object} params - the parameters configured in the automation.
+                * @param {object} payload - Payload returned by the condition.
+                */
+                function then(api, params) {
+
+                    var triggerPayload = JSON.parse(params.triggerPayload);
+                    var namespace = triggerPayload.input;
+
+                    if (triggerPayload.operation !== "create" || !namespace.name) {
+                      triggerPayload.output = triggerPayload.input;
+                      return {
+                        "statusCode": 200,
+                        "body": JSON.stringify(triggerPayload),
+                      }
+                    }
+
+                    namespace.organizationalMetadata = organizationalMetadataForNamespace(namespace);
+
+                    // populates the output field of the remote processor model with our modifications
+                    triggerPayload.output = namespace;
+
+                    return {
+                        "statusCode": 200,
+                        "body": JSON.stringify(triggerPayload),
+                    }
+
+                }
+      identities:
+        - hookpolicy
+        - automation
+      `}}
+    steps:
+    - name: Structure
+      description: |-
+        Provides the sorted list of key that describes best your namespace hiearchy.
+      parameters:
+      - key: keys
+        name: Keys
+        description: Sorted list of keys
+        type: StringSlice
+        defaultValue:
+        - workspace
+        - platform
+        - app

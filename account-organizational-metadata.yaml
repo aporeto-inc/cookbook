@@ -16,6 +16,7 @@ data:
       description: "Triggered by the hook called account-organizational-metadata-hook"
       trigger: Webhook
       protected: true
+      mode: Pre
       actions:
         - |
           function organizationalMetadataForNamespace(namespace) {
@@ -62,6 +63,78 @@ data:
               }
 
           }
+    - name: add-namespace-organizational-metadata
+      description: "Triggered after a namespace is created to install a recipe"
+      trigger: Event
+      protected: true
+      mode: Post
+      events:
+        namespace:
+          - create
+      entitlements:
+        import:
+          - create
+        recipe:
+          - create
+      condition: |-
+        function when(api, params) {
+            return { continue: true, payload: { namespace: params.eventPayload.entity } };
+        }
+      actions:
+        - |
+          function then(api, params, payload) {
+
+            var content = {
+              data: {
+                "APIVersion": 1,
+                "label": "recipe:namespace-organizational-metadata",
+                "data": {
+                  "recipes": [
+                    {
+                      "name": "Namespace organization metadata",
+                      "description": "Controls organizational metadata of your namespaces",
+                      "label": "recipe:namespace-organizational-metadata",
+                      "propagate": false,
+                      "deploymentMode": "Unique",
+                      "metadata": [
+                        "@aporeto:author=aporeto"
+                      ],
+                      "associatedTags": null,
+                      "targetIdentities": [
+                        "automation",
+                        "hookpolicy"
+                      ],
+                      "longDescription": "\nA metadata is a \"key=value\" pair, where value is the name of your namespace.\n\nThis workflow allows to define the keys of your organizational metadata that are used to represent\nyour namespace hiearchy.\n\nBy default, we suggest to consider the following keys:\n\n1. workspace\n2. platform\n3. app\n\nThese metadata will be propagated to your processing units, enforcers, external networks and can then be used\nin your policies rules.",
+                      "template": "{{`\nAPIVersion: 1\nlabel: \"recipe:namespace-organizational-metadata\"\ndata:\n  hookpolicies:\n    - name: \"namespace-organizational-metadata-hook\"\n      description: \"Triggers automation called namespace-organizational-metadata\"\n      endpointType: Automation\n      propagate: true\n      protected: true\n      subject:\n        - - \"$identity=namespace\"\n      selectors:\n        - - \"$identity=automation\"\n          - \"$name=namespace-organizational-metadata\"\n  automations:\n    - name: namespace-organizational-metadata\n      description: \"Triggered by the hook called namespace-organizational-metadata-hook\"\n      trigger: Webhook\n      propagate: true\n      protected: true\n      actions:\n        - |\n          function organizationalMetadataForNamespace(namespace) {\n\n            {{- if .Values.keys }}\n            keys = [{{range $index, $key := .Values.keys }}{{ if ne $index 0}}, {{end}}\"{{ $key }}\"{{ end }}];\n            {{- else }}\n            keys = [];\n            {{- end}}\n\n            parents = namespace.namespace.split(\"/\");\n            parents.shift()\n\n            if (!parents || parents.length == 0) {\n              return [];\n            }\n\n            // Root namespace case not handled in this workflow.\n            if (parents[0] === \"\") {\n              return [];\n            }\n\n            idx = parents.length - 1;\n            if (idx >= keys.length) {\n              return [];\n            }\n\n            k = keys[idx];\n            if (k === \"\") {\n              return [];\n            }\n\n            return [\"@org:\" + k + \"=\" + namespace.name];\n          }\n          /**\n          * This function will be executed when the automation condition is met:\n          * @param {object} api - api manipulator that allows CRUD operations.\n          * @param {object} params - the parameters configured in the automation.\n          * @param {object} payload - Payload returned by the condition.\n          */\n          function then(api, params) {\n\n              var triggerPayload = JSON.parse(params.triggerPayload);\n              var namespace = triggerPayload.input;\n\n              if (triggerPayload.operation !== \"create\" || !namespace.name) {\n                triggerPayload.output = triggerPayload.input;\n                return {\n                  \"statusCode\": 200,\n                  \"body\": JSON.stringify(triggerPayload),\n                }\n              }\n\n              namespace.organizationalMetadata = organizationalMetadataForNamespace(namespace);\n\n              // populates the output field of the remote processor model with our modifications\n              triggerPayload.output = namespace;\n\n              return {\n                  \"statusCode\": 200,\n                  \"body\": JSON.stringify(triggerPayload),\n              }\n\n          }\nidentities:\n  - hookpolicy\n  - automation\n`}}",
+                      "steps": [
+                        {
+                          "name": "Structure",
+                          "description": "Provides the sorted list of key that describes best your namespace hiearchy.",
+                          "parameters": [
+                            {
+                              "key": "keys",
+                              "name": "Keys",
+                              "description": "Sorted list of keys",
+                              "type": "StringSlice",
+                              "defaultValue": [
+                                "workspace",
+                                "platform",
+                                "app"
+                              ]
+                            }
+                          ]
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+
+            return api.Create('import', content, payload.namespace.name);
+
+          }
+
 identities:
   - hookpolicy
   - automation

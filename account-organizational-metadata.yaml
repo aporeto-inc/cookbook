@@ -15,6 +15,17 @@ data:
           - create
         recipe:
           - create
+          - retrieve-many
+        rendertemplate:
+          - create
+        importreference:
+          - create
+        hookpolicy:
+          - create
+          - retrieve-many
+        automation:
+          - create
+          - retrieve-many
       condition: |-
         function when(api, params) {
             return { continue: true, payload: { namespace: params.eventPayload.entity } };
@@ -70,8 +81,45 @@ data:
               }
             }
 
-            return api.Create('import', content, payload.namespace.name);
+            var namespace = payload.namespace.name;
 
+            // Import recipe
+            api.Create('import', content, namespace);
+
+            // TODO: Do not automatically deploy the recipe for now.
+            return deployRecipeWithLabelFilter(api, namespace, 'label == "recipe:namespace-organizational-metadata"')
+          }
+
+          function deployRecipeWithLabelFilter(api, namespace, filter) {
+
+            // Find recipe
+            var recipes = api.RetrieveMany('recipe', namespace, filter)
+
+            if (recipes.length !== 1) {
+              console.error("could not find recipe. Skipping");
+              return;
+            }
+
+            var recipe = recipes[0];
+
+            // Render template with default values
+            var render = api.Create('rendertemplate', {
+              parameters: {
+                keys: ["workspace", "platform", "app"]
+              },
+              template: recipe.template
+            }, namespace);
+
+
+            // Transform the rendered YAML into an gaia.Export object so it can be used
+            // in the next call.
+            data = aporeto.identityFromYaml('export', render.output);
+
+            // Deploy recipe
+            return api.Create('importreference', {
+              name: "Namespace organization metadata",
+              data: data
+            }, namespace, null, 'recipe', recipe.ID);
           }
 
 identities:

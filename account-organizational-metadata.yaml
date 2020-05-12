@@ -87,7 +87,7 @@ data:
             api.Create('import', content, namespace);
 
             // TODO: Do not automatically deploy the recipe for now.
-            return deployRecipeWithLabelFilter(api, namespace, 'label == "recipe:namespace-organizational-metadata"')
+            // return deployRecipeWithLabelFilter(api, namespace, 'label == "recipe:namespace-organizational-metadata"')
           }
 
           function deployRecipeWithLabelFilter(api, namespace, filter) {

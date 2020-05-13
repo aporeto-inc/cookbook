@@ -42,6 +42,7 @@ data:
             description: "Triggers automation called namespace-organizational-metadata"
             endpointType: Automation
             protected: true
+            propagate: true
             subject:
               - - "$identity=namespace"
             selectors:

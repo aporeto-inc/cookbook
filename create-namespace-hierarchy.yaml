@@ -1,0 +1,74 @@
+APIVersion: 1
+label: recipe:create-namespace-hierarchy
+data:
+  recipes:
+  - name: Create namespace hierarchy
+    label: recipe:create-namespace-hierarchy
+    deploymentMode: Unrestricted
+    metadata:
+    - "@aporeto:author=aporeto"
+    associatedTags:
+    - "aporeto:recipe:placement=getting-started"
+    targetIdentities:
+    - namespaces
+    longDescription: |-
+      Follow the steps to create your namespace hiearchy
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        {{- $pattern := cat "^" .Aporeto.Namespace "(/\\w+){0,2}$" | nospace }}
+        {{- if (regexMatch $pattern .Values.existing_namespace) }}
+        {{- $suffix := .Values.existing_namespace | trimPrefix .Aporeto.Namespace }}
+        namespaces:
+        {{- if (regexMatch "^(\\/{1}\\w+)?(\\/)?$" .Values.existing_namespace) }}
+        - name: {{ required "Workspace is required" .Values.workspace }}
+        {{- end }} 
+        {{- if (regexMatch "^(\\/{1}\\w+){0,2}(\\/)?$" .Values.existing_namespace) }}
+        - name: {{ required "Platform is required" .Values.platform}}
+          namespace: {{ cat $suffix .Values.workspace | replace " " "/" | trimSuffix "/"}}
+        {{- end }} 
+        {{- if (regexMatch "^(\\/{1}\\w+){0,3}(\\/)?$" .Values.existing_namespace) }}
+        - name: {{ required "App is required" .Values.app}}
+          namespace: {{ cat $suffix .Values.workspace .Values.platform | replace " " "/" | trimSuffix "/"}}
+        {{- end }} 
+        {{- else }}
+        {{- fail "Invalid starting namespace pattern"}}
+        {{- end }}
+      `}}
+    steps:
+    - name: Namespaces
+      parameters:
+      - key: existing_namespace
+        name: Starting namespace
+        description: Specify an existing namespace. Cannot end with '/'
+        optional: true
+        type: Namespace
+        defaultValue: /apomux
+      - key: workspace
+        name: Workspace
+        description: Create your workspace. Alphanumeric characters only
+        type: String
+        optional: true
+        visibilityCondition:
+        - - key: existing_namespace
+            operator: Match
+            value: "^(\\/{1}\\w+)?(\\/)?$"
+      - key: platform
+        name: Platform
+        description: Create your platform. Alphanumeric characters only
+        type: String
+        optional: true
+        visibilityCondition:
+        - - key: existing_namespace
+            operator: Match
+            value: "^(\\/{1}\\w+){0,2}(\\/)?$"
+      - key: app
+        name: App
+        description: Create your App. Alphanumeric characters only
+        type: String
+        optional: true
+        visibilityCondition:
+        - - key: existing_namespace
+            operator: Match
+            value: "^(\\/{1}\\w+){0,3}(\\/)?$"

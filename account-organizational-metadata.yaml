@@ -23,12 +23,12 @@ data:
         hookpolicy:
           - create
           - retrieve-many
-        automation:
-          - create
-          - retrieve-many
+        # automation:
+        #   - create
+        #   - retrieve-many
       condition: |-
         function when(api, params) {
-            return { continue: true, payload: { namespace: params.eventPayload.entity } };
+            return { continue: params.eventPayload.entity.namespace === "/", payload: { namespace: params.eventPayload.entity } };
         }
       actions:
         - |

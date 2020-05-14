@@ -19,18 +19,22 @@ data:
       data:
         {{- $pattern := cat "^" .Aporeto.Namespace "(/\\w+){0,2}$" | nospace }}
         {{- if (regexMatch $pattern .Values.existing_namespace) }}
-        {{- $suffix := .Values.existing_namespace | trimPrefix .Aporeto.Namespace }}
+        {{- $existing_ns := .Values.existing_namespace | trimPrefix .Aporeto.Namespace }}
+        {{- $workspace := ""}}
+        {{- $platform := ""}}
         namespaces:
-        {{- if (regexMatch "^(\\/{1}\\w+)?(\\/)?$" .Values.existing_namespace) }}
+        {{- if (regexMatch "^(/{1}\\w+)?(/)?$" .Values.existing_namespace) }}
+        {{- $workspace = .Values.workspace}}
         - name: {{ required "Workspace is required" .Values.workspace }}
         {{- end }} 
-        {{- if (regexMatch "^(\\/{1}\\w+){0,2}(\\/)?$" .Values.existing_namespace) }}
+        {{- if (regexMatch "^(/{1}\\w+){0,2}(/)?$" .Values.existing_namespace) }}
+        {{- $platform = .Values.platform}}
         - name: {{ required "Platform is required" .Values.platform}}
-          namespace: {{ cat $suffix .Values.workspace | replace " " "/" | trimSuffix "/"}}
+          namespace: {{ cat $existing_ns $workspace | replace " " "/" | trimSuffix "/"}}
         {{- end }} 
-        {{- if (regexMatch "^(\\/{1}\\w+){0,3}(\\/)?$" .Values.existing_namespace) }}
+        {{- if (regexMatch "^(/{1}\\w+){0,3}(/)?$" .Values.existing_namespace) }}
         - name: {{ required "App is required" .Values.app}}
-          namespace: {{ cat $suffix .Values.workspace .Values.platform | replace " " "/" | trimSuffix "/"}}
+          namespace: {{ cat $existing_ns $workspace $platform | replace " " "/" | replace "//" "/" | trimSuffix "/"}}
         {{- end }} 
         {{- else }}
         {{- fail "Invalid starting namespace pattern"}}
@@ -53,7 +57,7 @@ data:
         visibilityCondition:
         - - key: existing_namespace
             operator: Match
-            value: "^(\\/{1}\\w+)?(\\/)?$"
+            value: "^(/{1}\\w+)?(/)?$"
       - key: platform
         name: Platform
         description: Create your platform. Alphanumeric characters only
@@ -62,7 +66,7 @@ data:
         visibilityCondition:
         - - key: existing_namespace
             operator: Match
-            value: "^(\\/{1}\\w+){0,2}(\\/)?$"
+            value: "^(/{1}\\w+){0,2}(/)?$"
       - key: app
         name: App
         description: Create your App. Alphanumeric characters only
@@ -71,4 +75,4 @@ data:
         visibilityCondition:
         - - key: existing_namespace
             operator: Match
-            value: "^(\\/{1}\\w+){0,3}(\\/)?$"
+            value: "^(/{1}\\w+){0,3}(/)?$"

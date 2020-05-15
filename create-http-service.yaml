@@ -10,8 +10,8 @@ data:
     metadata:
     - "@aporeto:author=aporeto"
     associatedTags:
-    - "aporeto:recipe:placement=toolbar"
     - "aporeto:recipe:identity=service"
+    - "aporeto:recipe:placement=create-button"
     - "aporeto:recipe:filter:$type=HTTP"
     targetIdentities:
     - externalnetwork

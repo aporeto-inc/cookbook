@@ -1,0 +1,283 @@
+APIVersion: 1
+label: recipe:create-http-service
+data:
+  recipes:
+  - name: Create an HTTP Service
+    description: TODO
+    label: recipe:create-http-service
+    propagate: true
+    deploymentMode: Unrestricted
+    metadata:
+    - "@aporeto:author=aporeto"
+    associatedTags:
+    - "aporeto:recipe:placement=toolbar"
+    - "aporeto:recipe:identity=service"
+    - "aporeto:recipe:filter:$type=HTTP"
+    targetIdentities:
+    - externalnetwork
+    - networkaccesspolicy
+    - service
+    - httpresourcespec
+    longDescription: |-
+      This is an attempt to simplify HTTP Service.
+
+      Bear with me, it's still a work in progress :)
+    template: |-
+      {{`
+      APIVersion: 1
+      label: recipe:create-http-service
+      data:
+        {{- if .Values.hasLoadBalancer }}
+        externalnetworks:
+        - name: "{{ .Values.extnetName }}"
+          entries:
+          {{- range $idx, $ip := .Values.extnetEntries }}
+          - "{{ $ip }}"
+          {{- end }}
+          associatedTags:
+          - "extnet:http={{ .Values.extnetName }}-{{ .RenderID }}"
+          ports:
+          - "1:65535"
+          protocols:
+          - "tcp"
+        networkaccesspolicies:
+        - name: "traffic for {{ .Values.serviceName }} healthcheck"
+          description: "Allow traffic from service PUs to {{ .Values.extnetName }}"
+          logsEnabled: true
+          object:
+          {{- range $id, $ands := .Values.serviceSelectors }}
+          - {{ range $idx, $orTag := $ands -}}
+            {{- if gt $idx 0 }}
+            {{ end -}}
+            - "{{ $orTag }}"
+            {{- end -}}
+          {{- end }}
+          ports:
+          - "tcp/{{ .Values.servicePublicApplicationPort }}"
+          subject:
+          - - "extnet:http={{ .Values.extnetName }}-{{ .RenderID }}"
+        {{- end }}
+        {{- if or .Values.hasHealthCheck (gt (len .Values.specEndpoints) 0) }}
+        httpresourcespecs:
+        {{- if .Values.hasHealthCheck }}
+        - name: "healthcheck {{ .Values.serviceName }}"
+          associatedTags:
+          - "httpresspec:http=healthcheck-{{ .RenderID }}"
+          endpoints:
+          - URI: {{ .Values.specURI }}
+            allowedScopes:
+            - - "extnet:http={{ .Values.extnetName }}-{{ .RenderID }}"
+            methods:
+            - GET
+            public: false
+        {{- end }}
+        {{- if gt (len .Values.specEndpoints) 0 }}
+        - name: "API for HTTP service {{ .Values.serviceName }}"
+          associatedTags:
+          - "httpresspec:http=apis-{{ .RenderID }}"
+          endpoints:
+          {{- range $id, $endpoint := .Values.specEndpoints }}
+          - URI: {{ $endpoint.URI | quote }}
+            {{- if $endpoint.allowedScopes }}
+            allowedScopes:
+            {{- range $id, $ands := $endpoint.allowedScopes }}
+            - {{ range $idx, $orTag := $ands -}}
+              {{- if gt $idx 0 }}
+              {{ end -}}
+              - "{{ $orTag }}"
+              {{- end -}}
+            {{- end -}}
+            {{- end }}
+            methods:
+            {{- range $id, $method := $endpoint.methods }}
+            - {{ $method }}
+            {{- end }}
+            public: {{ $endpoint.public | default false }}
+          {{- end -}}
+        {{- end -}}
+        {{- end }}
+        services:
+        - name: {{ .Values.serviceName }}
+          description: {{ .Values.serviceDescription | default "" }}
+          associatedTags:
+          - "srv:http={{ .Values.serviceName }}-{{ .RenderID }}"
+          exposedPort: {{ .Values.serviceExposedPort }}
+          {{- if eq .Values.networkType "fqdn" }}
+          hosts:
+          {{- range $idx, $fqdn := .Values.serviceFQDNs }}
+          - "{{ $fqdn }}"
+          {{- end -}}
+          {{- else }}
+          IPs:
+          {{- range $idx, $ip := .Values.serviceIPs }}
+          - "{{ $ip }}"
+          {{- end -}}
+          {{- end }}
+          TLSType: Aporeto
+          port: {{ .Values.serviceListeningPort }}
+          publicApplicationPort: {{ .Values.servicePublicApplicationPort | default "" }}
+          selectors:
+          {{- range $id, $ands := .Values.serviceSelectors }}
+          - {{ range $idx, $orTag := $ands -}}
+            {{- if gt $idx 0 }}
+            {{ end -}}
+            - "{{ $orTag }}"
+            {{- end -}}
+          {{- end }}
+          {{- if .Values.serviceTrustedCA }}
+          trustedCertificateAuthorities: |-
+          {{- .Values.serviceTrustedCA | nindent 6 }}
+          {{- end }}
+          exposedAPIs:
+          - - "httpresspec:http=healthcheck-{{ .RenderID }}"
+      identities:
+      - externalnetwork
+      - httpresourcespec
+      - networkaccesspolicy
+      - service
+      `}}
+    steps:
+
+    - name: General
+      description: |-
+        Define the general information about the service.
+      parameters:
+      - key: serviceName
+        name: Name
+        description: Name of the service
+        type: String
+      - key: serviceDescription
+        name: Description
+        description: Description of the service
+        optional: true
+        type: String
+
+    - name: Access
+      description: |-
+        Define how to access this service
+      parameters:
+      - key: networkType
+        name: Type
+        description: Access this service using
+        type: Enum
+        allowedChoices:
+          fqdn: using FQDN(s)
+          ip: using IP Address(es)
+        defaultValue: fqdn
+      - key: serviceFQDNs
+        name: FQDN(s)
+        description: List of FQDNs to access the service
+        type: StringSlice
+        width: 69%
+        optional: true
+        visibilityCondition:
+        - - key: networkType
+            operator: Equal
+            value: "fqdn"
+      - key: serviceIPs
+        name: IP Addresses(s)
+        description: List of IPs to access the service
+        type: StringSlice
+        width: 69%
+        optional: true
+        visibilityCondition:
+        - - key: networkType
+            operator: Equal
+            value: "ip"
+
+      - key: serviceExposedPort
+        name: Port
+        description: Port to access your service
+        type: Integer
+        width: 29%
+
+    - name: Destination
+      description: |-
+        Define the information about the destination that sits behind the service.
+      parameters:
+      - key: serviceSelectors
+        name: Destination Processing Units
+        description: Processing units that are matching the following tag expression provides the service
+        type: TagsExpression
+      - key: serviceListeningPort
+        name: Listening port
+        description: Processing units are listening on this port
+        type: Integer
+
+    - name: Endpoints
+      description: |-
+        Define the list of endpoints provided by the service
+      parameters:
+      - key: specEndpoints
+        name: Destination Processing Units
+        description: Processing units that are matching the following tag expression provides the service
+        type: List
+        subtype: Endpoint
+
+    - name: Use
+      description: |-
+        Define the following information if the service is having a health check endpoint
+      parameters:
+      # Load balancer
+      - key: hasLoadBalancer
+        description: Is there an HTTPS terminating load balancer frontending the service?
+        type: Checkbox
+        optional: true
+        defaultValue: false
+      - key: extnetName
+        name: Name
+        description: Name of the loadbalancer
+        type: String
+        optional: true
+        visibilityCondition:
+        - - key: hasLoadBalancer
+            operator: Equal
+            value: true
+      - key: extnetEntries
+        name: Load balancer IPs or CIDRs
+        description: IP of the load balancer
+        type: StringSlice
+        optional: true
+        visibilityCondition:
+        - - key: hasLoadBalancer
+            operator: Equal
+            value: true
+
+      # Health check
+      - key: hasHealthCheck
+        description: Is the healtcheck occuring on the listening port?
+        type: Checkbox
+        defaultValue: false
+        optional: true
+      - key: specURI
+        name: Endpoint path
+        description: /healthcheck
+        type: String
+        width: 69%
+        optional: true
+        visibilityCondition:
+        - - key: hasHealthCheck
+            operator: Equal
+            value: true
+      - key: servicePublicApplicationPort
+        name: Port
+        description: health check port
+        type: Integer
+        width: 29%
+        optional: true
+        visibilityCondition:
+        - - key: hasHealthCheck
+            operator: Equal
+            value: true
+
+      # Trusted CA
+      - key: serviceTrustedCA
+        name: Trusted CA
+        description: |-
+          Provide the trusted CA certificate chain in the server certificate as prsented by
+          the load balancer to the consumers
+        type: FileDrop
+        optional: true
+        allowedValues:
+        - .cert
+        - .pem

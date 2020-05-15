@@ -1,9 +1,9 @@
 APIVersion: 1
-label: recipe:create-namespace-hierarchy
+label: recipe:create-workspace-platform-app
 data:
   recipes:
-  - name: Create namespace hierarchy
-    label: recipe:create-namespace-hierarchy
+  - name: Create a new workspace
+    label: recipe:create-workspace-platform-app
     deploymentMode: Unrestricted
     metadata:
     - "@aporeto:author=aporeto"
@@ -12,46 +12,58 @@ data:
     targetIdentities:
     - namespaces
     longDescription: |-
-      Follow the steps to create your namespace hiearchy
+      Follow these steps to create a new workspace, platform and App.
+
+      /account/workspace/platform/app is a simple and recommended namespace hierarchy to organize
+      your workloads.
+
+      In these steps, start by selecting where you want to create your namespace hierarchy.
+      Depending on which namespace you choose to start with, you will be invited to create
+      the child namespace
+
+      Each namespace will have a specific tag that you can use to define your network policies.
+
+      Note: Two namespaces with the same name cannot exist at the same level.
     template: |-
       {{`
       APIVersion: 1
+      label: recipe:create-workspace-platform-app
       data:
         {{- $pattern := cat "^" .Aporeto.Namespace "(/\\w+){0,2}$" | nospace }}
         {{- if (regexMatch $pattern .Values.existing_namespace) }}
         {{- $existing_ns := .Values.existing_namespace | trimPrefix .Aporeto.Namespace }}
-        {{- $workspace := ""}}
-        {{- $platform := ""}}
+        {{- $workspace := "" }}
+        {{- $platform := "" }}
         namespaces:
         {{- if (regexMatch "^(/{1}\\w+)?(/)?$" .Values.existing_namespace) }}
-        {{- $workspace = .Values.workspace}}
+        {{- $workspace = .Values.workspace }}
         - name: {{ required "Workspace is required" .Values.workspace }}
-        {{- end }} 
+        {{- end }}
         {{- if (regexMatch "^(/{1}\\w+){0,2}(/)?$" .Values.existing_namespace) }}
-        {{- $platform = .Values.platform}}
-        - name: {{ required "Platform is required" .Values.platform}}
+        {{- $platform = .Values.platform }}
+        - name: {{ required "Platform is required" .Values.platform }}
           namespace: {{ cat $existing_ns $workspace | replace " " "/" | trimSuffix "/"}}
-        {{- end }} 
+        {{- end }}
         {{- if (regexMatch "^(/{1}\\w+){0,3}(/)?$" .Values.existing_namespace) }}
-        - name: {{ required "App is required" .Values.app}}
-          namespace: {{ cat $existing_ns $workspace $platform | replace " " "/" | replace "//" "/" | trimSuffix "/"}}
-        {{- end }} 
+        - name: {{ required "App is required" .Values.app }}
+          namespace: {{ cat $existing_ns $workspace $platform | replace " " "/" | replace "//" "/" | trimSuffix "/" }}
+        {{- end }}
         {{- else }}
-        {{- fail "Invalid starting namespace pattern"}}
+        {{- fail "Invalid starting namespace pattern" }}
         {{- end }}
       `}}
     steps:
     - name: Namespaces
       parameters:
       - key: existing_namespace
-        name: Starting namespace
-        description: Specify an existing namespace. Cannot end with '/'
+        name: Select an existing where you want to start creating child namespaces
+        description: By default,
         optional: true
         type: Namespace
         defaultValue: /apomux
       - key: workspace
         name: Workspace
-        description: Create your workspace. Alphanumeric characters only
+        description: Define your workspace name
         type: String
         optional: true
         visibilityCondition:
@@ -60,7 +72,7 @@ data:
             value: "^(/{1}\\w+)?(/)?$"
       - key: platform
         name: Platform
-        description: Create your platform. Alphanumeric characters only
+        description: Define your platform name
         type: String
         optional: true
         visibilityCondition:
@@ -69,7 +81,7 @@ data:
             value: "^(/{1}\\w+){0,2}(/)?$"
       - key: app
         name: App
-        description: Create your App. Alphanumeric characters only
+        description: Define your application name
         type: String
         optional: true
         visibilityCondition:

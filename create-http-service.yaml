@@ -29,9 +29,9 @@ data:
       data:
         {{- if .Values.hasLoadBalancer }}
         externalnetworks:
-        - name: "{{ .Values.extnetName }}"
+        - name: "{{ required "Name of the load balancer is required in step 6" .Values.extnetName }}"
           entries:
-          {{- range $idx, $ip := .Values.extnetEntries }}
+          {{- range $idx, $ip := (required "No load balancer IP or CIDR provided in step 6" .Values.extnetEntries) }}
           - "{{ $ip }}"
           {{- end }}
           associatedTags:
@@ -53,7 +53,7 @@ data:
             {{- end -}}
           {{- end }}
           ports:
-          - "tcp/{{ .Values.servicePublicApplicationPort }}"
+          - "tcp/{{ required "No health check port provided in step 6" .Values.servicePublicApplicationPort }}"
           subject:
           - - "extnet:http={{ .Values.extnetName }}-{{ .RenderID }}"
         {{- end }}
@@ -104,17 +104,17 @@ data:
           exposedPort: {{ .Values.serviceExposedPort }}
           {{- if eq .Values.networkType "fqdn" }}
           hosts:
-          {{- range $idx, $fqdn := .Values.serviceFQDNs }}
+          {{- range $idx, $fqdn := (required "No FQDN specified in step 3" .Values.serviceFQDNs) }}
           - "{{ $fqdn }}"
           {{- end -}}
           {{- else }}
           IPs:
-          {{- range $idx, $ip := .Values.serviceIPs }}
+          {{- range $idx, $ip := (required "No IPs specified in step 3" .Values.serviceIPs) }}
           - "{{ $ip }}"
           {{- end -}}
           {{- end }}
           TLSType: Aporeto
-          port: {{ .Values.serviceListeningPort }}
+          port: {{ required "No listening port defined in step 4" .Values.serviceListeningPort }}
           publicApplicationPort: {{ .Values.servicePublicApplicationPort | default "" }}
           selectors:
           {{- range $id, $ands := .Values.serviceSelectors }}

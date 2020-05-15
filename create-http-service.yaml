@@ -209,8 +209,8 @@ data:
         Define the list of endpoints provided by the service
       parameters:
       - key: specEndpoints
-        name: Define API endpoints
-        description: Processing units that are matching the following tag expression provides the service
+        name: Endpoits
+        description: Define the HTTP calls the service can handled
         type: List
         optional: true
         subtype: Endpoint

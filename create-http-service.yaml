@@ -209,9 +209,10 @@ data:
         Define the list of endpoints provided by the service
       parameters:
       - key: specEndpoints
-        name: Destination Processing Units
+        name: Define API endpoints
         description: Processing units that are matching the following tag expression provides the service
         type: List
+        optional: true
         subtype: Endpoint
 
     - name: Use

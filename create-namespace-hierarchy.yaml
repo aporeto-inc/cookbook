@@ -51,7 +51,7 @@ data:
         - name: {{ $platform }}
           namespace: {{ regexReplaceAll "\\s+" (cat $existing_ns $workspace) "/" | trimSuffix "/"}}
         {{- end }}
-        {{- if and (regexMatch "^(/{1}\\w+){0,3}(/)?$" .Values.existing_namespace) (ne .Values.mode "oc") }}
+        {{- if and (regexMatch "^(/{1}\\w+){0,3}(/)?$" .Values.existing_namespace) (ne .Values.mode "kubernetes") }}
         {{- $app = required "App is required" .Values.app}}
         {{- if not (regexMatch "^\\w+$" $app) }}
         {{- fail "namespace can only contain alphanumeric characters"}}
@@ -67,20 +67,20 @@ data:
     - name: Namespaces
       parameters:
       - key: existing_namespace
-        name: Select an existing where you want to start creating child namespaces
-        description: By default,
+        name: Select an existing where to create child namespaces
+        description: Select your account namespace to create a workspace, platform and app.
         type: Namespace
         defaultValue: /apomux
-      
+
       - key: starting_ns_warning
-        name: Starting namespace warning
+        name: Incorrect namespace
         type: WarningMessage
         defaultValue: Invalid starting namespace
         visibilityCondition:
         - - key: existing_namespace
             operator: NotMatch
             value: "^(/{1}\\w+){0,3}(/)?$"
-        
+
       - key: workspace
         name: Workspace
         description: Define your workspace name
@@ -98,15 +98,15 @@ data:
         defaultValue: hosts
         allowedChoices:
           hosts: Hosts(Bare Metal, VMs)
-          noc: Non-Orchestrated containers (Standalone Docker)
-          oc: Orchestrated containers (OpenShift, Kubernetes)
+          docker: Non-Orchestrated containers (Standalone Docker)
+          kubernetes: Orchestrated containers (OpenShift, Kubernetes)
         visibilityCondition:
         - - key: existing_namespace
             operator: Match
             value: "^(/{1}\\w+){0,3}(/)?$"
 
       - key: platform
-        name: Name
+        name: Platform Name
         type: String
         optional: true
         visibilityCondition:
@@ -124,10 +124,10 @@ data:
             value: "^(/{1}\\w+){0,3}(/)?$"
           - key: mode
             operator: NotEqual
-            value: oc
+            value: kubernetes
 
-      - key: oc_warning
-        name: OC warning
+      - key: kubernetes_warning
+        name: Warning
         type: WarningMessage
         defaultValue: Invalid starting namespace for orchestrated containers
         visibilityCondition:
@@ -136,5 +136,4 @@ data:
             value: "^(/{1}\\w+){3}(/)?$"
           - key: mode
             operator: Equal
-            value: oc
-        
+            value: kubernetes

@@ -3,6 +3,7 @@ label: recipe:create-workspace-platform-app
 data:
   recipes:
   - name: Create a new workspace
+    description: Starting workflow to create your namespace hierarchy
     label: recipe:create-workspace-platform-app
     deploymentMode: Unrestricted
     metadata:
@@ -70,7 +71,7 @@ data:
         name: Select an existing where to create child namespaces
         description: Select your account namespace to create a workspace, platform and app.
         type: Namespace
-        defaultValue: /apomux
+        defaultValue: {{ .Aporeto.Namespace }}
 
       - key: starting_ns_warning
         name: Incorrect namespace

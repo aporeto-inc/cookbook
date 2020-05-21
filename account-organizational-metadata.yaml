@@ -33,60 +33,198 @@ data:
       actions:
         - |
           function then(api, params, payload) {
+            var namespace = payload.namespace.name;
+
+            var recipeNamespaceOrganizationlMetadata = {
+              "name": "Namespace organization metadata",
+              "description": "Controls organizational metadata of your namespaces",
+              "label": "recipe:namespace-organizational-metadata",
+              "propagate": false,
+              "deploymentMode": "Unique",
+              "metadata": [
+                "@aporeto:author=aporeto"
+              ],
+              "associatedTags": null,
+              "targetIdentities": [
+                "automation",
+                "hookpolicy"
+              ],
+              "longDescription": "\nA metadata is a \"key=value\" pair, where value is the name of your namespace.\n\nThis workflow allows to define the keys of your organizational metadata that are used to represent\nyour namespace hiearchy.\n\nBy default, we suggest to consider the following keys:\n\n1. workspace\n2. platform\n3. app\n\nThese metadata will be propagated to your processing units, enforcers, external networks and can then be used\nin your policies rules.",
+              "template": "{{`\nAPIVersion: 1\nlabel: \"recipe:namespace-organizational-metadata\"\ndata:\n  hookpolicies:\n    - name: \"namespace-organizational-metadata-hook\"\n      description: \"Triggers automation called namespace-organizational-metadata\"\n      endpointType: Automation\n      propagate: true\n      protected: true\n      subject:\n        - - \"$identity=namespace\"\n      selectors:\n        - - \"$identity=automation\"\n          - \"$name=namespace-organizational-metadata\"\n  automations:\n    - name: namespace-organizational-metadata\n      description: \"Triggered by the hook called namespace-organizational-metadata-hook\"\n      trigger: Webhook\n      propagate: true\n      protected: true\n      actions:\n        - |\n          function organizationalMetadataForNamespace(namespace) {\n\n            {{- if .Values.keys }}\n            keys = [{{range $index, $key := .Values.keys }}{{ if ne $index 0}}, {{end}}\"{{ $key }}\"{{ end }}];\n            {{- else }}\n            keys = [];\n            {{- end}}\n\n            parents = namespace.namespace.split(\"/\");\n            parents.shift()\n\n            if (!parents || parents.length == 0) {\n              return [];\n            }\n\n            // Root namespace case not handled in this workflow.\n            if (parents[0] === \"\") {\n              return [];\n            }\n\n            idx = parents.length - 1;\n            if (idx >= keys.length) {\n              return [];\n            }\n\n            k = keys[idx];\n            if (k === \"\") {\n              return [];\n            }\n\n            return [\"@org:\" + k + \"=\" + namespace.name];\n          }\n          /**\n          * This function will be executed when the automation condition is met:\n          * @param {object} api - api manipulator that allows CRUD operations.\n          * @param {object} params - the parameters configured in the automation.\n          * @param {object} payload - Payload returned by the condition.\n          */\n          function then(api, params) {\n\n              var triggerPayload = JSON.parse(params.triggerPayload);\n              var namespace = triggerPayload.input;\n\n              if (triggerPayload.operation !== \"create\" || !namespace.name) {\n                triggerPayload.output = triggerPayload.input;\n                return {\n                  \"statusCode\": 200,\n                  \"body\": JSON.stringify(triggerPayload),\n                }\n              }\n\n              namespace.organizationalMetadata = organizationalMetadataForNamespace(namespace);\n\n              // populates the output field of the remote processor model with our modifications\n              triggerPayload.output = namespace;\n\n              return {\n                  \"statusCode\": 200,\n                  \"body\": JSON.stringify(triggerPayload),\n              }\n\n          }\nidentities:\n  - hookpolicy\n  - automation\n`}}",
+              "steps": [
+                {
+                  "name": "Structure",
+                  "description": "Provides the sorted list of key that describes best your namespace hiearchy.",
+                  "parameters": [
+                    {
+                      "key": "keys",
+                      "name": "Keys",
+                      "description": "Sorted list of keys",
+                      "type": "StringSlice",
+                      "defaultValue": [
+                        "workspace",
+                        "platform",
+                        "app"
+                      ]
+                    }
+                  ]
+                }
+              ]
+            }
+            var recipeCreateNewWorkspace = {
+              "name": "Create a new workspace",
+              "description": "Starting workflow to create your namespace hierarchy",
+              "label": "recipe:create-workspace-platform-app",
+              "deploymentMode": "Unrestricted",
+              "metadata": [
+                  "@aporeto:author=aporeto"
+              ],
+              "associatedTags": [
+                  "aporeto:recipe:placement=getting-started"
+              ],
+              "targetIdentities": [
+                  "namespaces"
+              ],
+              "longDescription": "Follow these steps to create a new workspace, platform and App.\n\n/account/workspace/platform/app is a simple and recommended namespace hierarchy to organize\nyour workloads.\n\nIn these steps, start by selecting where you want to create your namespace hierarchy.\nDepending on which namespace you choose to start with, you will be invited to create\nthe child namespace\n\nEach namespace will have a specific tag that you can use to define your network policies.\n\nNote: Two namespaces with the same name cannot exist at the same level.",
+              "template": "{{`\nAPIVersion: 1\nlabel: recipe:create-workspace-platform-app\ndata:\n  {{- $pattern := cat \"^\" .Aporeto.Namespace \"(/\\\\w+){0,2}$\" | nospace }}\n  {{- if (regexMatch $pattern .Values.existing_namespace) }}\n  {{- $existing_ns := .Values.existing_namespace | trimPrefix .Aporeto.Namespace }}\n  {{- $workspace := \"\" }}\n  {{- $platform := \"\" }}\n  {{- $app := \"\" }}\n  namespaces:\n  {{- if (regexMatch \"^(/{1}\\\\w+)?(/)?$\" .Values.existing_namespace) }}\n  {{- $workspace = required \"Workspace is required\" .Values.workspace }}\n  {{- if not (regexMatch \"^\\\\w+$\" $workspace) }}\n  {{- fail \"namespace can only contain alphanumeric characters\"}}\n  {{- end }}\n  - name: {{ $workspace }}\n  {{- end }}\n  {{- if (regexMatch \"^(/{1}\\\\w+){0,2}(/)?$\" .Values.existing_namespace) }}\n  {{- $platform = required \"Platform name is required\" .Values.platform }}\n  {{- if not (regexMatch \"^\\\\w+$\" $platform) }}\n  {{- fail \"namespace can only contain alphanumeric characters\"}}\n  {{- end }}\n  - name: {{ $platform }}\n    namespace: {{ regexReplaceAll \"\\\\s+\" (cat $existing_ns $workspace) \"/\" | trimSuffix \"/\"}}\n  {{- end }}\n  {{- if and (regexMatch \"^(/{1}\\\\w+){0,3}(/)?$\" .Values.existing_namespace) (ne .Values.mode \"kubernetes\") }}\n  {{- $app = required \"App is required\" .Values.app}}\n  {{- if not (regexMatch \"^\\\\w+$\" $app) }}\n  {{- fail \"namespace can only contain alphanumeric characters\"}}\n  {{- end }}\n  - name: {{ $app }}\n    namespace: {{ regexReplaceAll \"\\\\s+\" (cat $existing_ns $workspace $platform) \"/\" | trimSuffix \"/\"}}\n  {{- end }}\n  {{- else }}\n  {{- fail \"Invalid starting namespace pattern\" }}\n  {{- end }}\n`}}",
+              "steps": [
+                  {
+                    "name": "Namespaces",
+                    "parameters": [
+                      {
+                        "key": "existing_namespace",
+                        "name": "Select an existing where to create child namespaces",
+                        "description": "Select your account namespace to create a workspace, platform and app.",
+                        "type": "Namespace",
+                        "defaultValue": namespace
+                      },
+                      {
+                        "key": "starting_ns_warning",
+                        "name": "Incorrect namespace",
+                        "type": "WarningMessage",
+                        "defaultValue": "Invalid starting namespace",
+                        "visibilityCondition": [
+                            [
+                              {
+                                  "key": "existing_namespace",
+                                  "operator": "NotMatch",
+                                  "value": "^(/{1}\\w+){0,3}(/)?$"
+                              }
+                            ]
+                        ]
+                      },
+                      {
+                        "key": "workspace",
+                        "name": "Workspace",
+                        "description": "Define your workspace name",
+                        "type": "String",
+                        "optional": true,
+                        "visibilityCondition": [
+                            [
+                              {
+                                  "key": "existing_namespace",
+                                  "operator": "Match",
+                                  "value": "^(/{1}\\w+)?(/)?$"
+                              }
+                            ]
+                        ]
+                      },
+                      {
+                        "key": "mode",
+                        "name": "Platform",
+                        "description": "Select the option that applies to your workspace",
+                        "type": "Enum",
+                        "defaultValue": "hosts",
+                        "allowedChoices": {
+                            "hosts": "Hosts(Bare Metal, VMs)",
+                            "docker": "Non-Orchestrated containers (Standalone Docker)",
+                            "kubernetes": "Orchestrated containers (OpenShift, Kubernetes)"
+                        },
+                        "visibilityCondition": [
+                            [
+                              {
+                                  "key": "existing_namespace",
+                                  "operator": "Match",
+                                  "value": "^(/{1}\\w+){0,3}(/)?$"
+                              }
+                            ]
+                        ]
+                      },
+                      {
+                        "key": "platform",
+                        "name": "Platform Name",
+                        "type": "String",
+                        "optional": true,
+                        "visibilityCondition": [
+                            [
+                              {
+                                  "key": "existing_namespace",
+                                  "operator": "Match",
+                                  "value": "^(/{1}\\w+){0,2}(/)?$"
+                              }
+                            ]
+                        ]
+                      },
+                      {
+                        "key": "app",
+                        "name": "Application name",
+                        "type": "String",
+                        "optional": true,
+                        "visibilityCondition": [
+                            [
+                              {
+                                  "key": "existing_namespace",
+                                  "operator": "Match",
+                                  "value": "^(/{1}\\w+){0,3}(/)?$"
+                              },
+                              {
+                                  "key": "mode",
+                                  "operator": "NotEqual",
+                                  "value": "kubernetes"
+                              }
+                            ]
+                        ]
+                      },
+                      {
+                        "key": "kubernetes_warning",
+                        "name": "Warning",
+                        "type": "WarningMessage",
+                        "defaultValue": "Invalid starting namespace for orchestrated containers",
+                        "visibilityCondition": [
+                          [
+                            {
+                                "key": "existing_namespace",
+                                "operator": "Match",
+                                "value": "^(/{1}\\w+){3}(/)?$"
+                            },
+                            {
+                                "key": "mode",
+                                "operator": "Equal",
+                                "value": "kubernetes"
+                            }
+                          ]
+                        ]
+                      }
+                    ]
+                  }
+              ]
+            }
 
             var content = {
               data: {
                 "APIVersion": 1,
                 "label": "recipe:namespace-organizational-metadata",
                 "data": {
-                  "recipes": [
-                    {
-                      "name": "Namespace organization metadata",
-                      "description": "Controls organizational metadata of your namespaces",
-                      "label": "recipe:namespace-organizational-metadata",
-                      "propagate": false,
-                      "deploymentMode": "Unique",
-                      "metadata": [
-                        "@aporeto:author=aporeto"
-                      ],
-                      "associatedTags": null,
-                      "targetIdentities": [
-                        "automation",
-                        "hookpolicy"
-                      ],
-                      "longDescription": "\nA metadata is a \"key=value\" pair, where value is the name of your namespace.\n\nThis workflow allows to define the keys of your organizational metadata that are used to represent\nyour namespace hiearchy.\n\nBy default, we suggest to consider the following keys:\n\n1. workspace\n2. platform\n3. app\n\nThese metadata will be propagated to your processing units, enforcers, external networks and can then be used\nin your policies rules.",
-                      "template": "{{`\nAPIVersion: 1\nlabel: \"recipe:namespace-organizational-metadata\"\ndata:\n  hookpolicies:\n    - name: \"namespace-organizational-metadata-hook\"\n      description: \"Triggers automation called namespace-organizational-metadata\"\n      endpointType: Automation\n      propagate: true\n      protected: true\n      subject:\n        - - \"$identity=namespace\"\n      selectors:\n        - - \"$identity=automation\"\n          - \"$name=namespace-organizational-metadata\"\n  automations:\n    - name: namespace-organizational-metadata\n      description: \"Triggered by the hook called namespace-organizational-metadata-hook\"\n      trigger: Webhook\n      propagate: true\n      protected: true\n      actions:\n        - |\n          function organizationalMetadataForNamespace(namespace) {\n\n            {{- if .Values.keys }}\n            keys = [{{range $index, $key := .Values.keys }}{{ if ne $index 0}}, {{end}}\"{{ $key }}\"{{ end }}];\n            {{- else }}\n            keys = [];\n            {{- end}}\n\n            parents = namespace.namespace.split(\"/\");\n            parents.shift()\n\n            if (!parents || parents.length == 0) {\n              return [];\n            }\n\n            // Root namespace case not handled in this workflow.\n            if (parents[0] === \"\") {\n              return [];\n            }\n\n            idx = parents.length - 1;\n            if (idx >= keys.length) {\n              return [];\n            }\n\n            k = keys[idx];\n            if (k === \"\") {\n              return [];\n            }\n\n            return [\"@org:\" + k + \"=\" + namespace.name];\n          }\n          /**\n          * This function will be executed when the automation condition is met:\n          * @param {object} api - api manipulator that allows CRUD operations.\n          * @param {object} params - the parameters configured in the automation.\n          * @param {object} payload - Payload returned by the condition.\n          */\n          function then(api, params) {\n\n              var triggerPayload = JSON.parse(params.triggerPayload);\n              var namespace = triggerPayload.input;\n\n              if (triggerPayload.operation !== \"create\" || !namespace.name) {\n                triggerPayload.output = triggerPayload.input;\n                return {\n                  \"statusCode\": 200,\n                  \"body\": JSON.stringify(triggerPayload),\n                }\n              }\n\n              namespace.organizationalMetadata = organizationalMetadataForNamespace(namespace);\n\n              // populates the output field of the remote processor model with our modifications\n              triggerPayload.output = namespace;\n\n              return {\n                  \"statusCode\": 200,\n                  \"body\": JSON.stringify(triggerPayload),\n              }\n\n          }\nidentities:\n  - hookpolicy\n  - automation\n`}}",
-                      "steps": [
-                        {
-                          "name": "Structure",
-                          "description": "Provides the sorted list of key that describes best your namespace hiearchy.",
-                          "parameters": [
-                            {
-                              "key": "keys",
-                              "name": "Keys",
-                              "description": "Sorted list of keys",
-                              "type": "StringSlice",
-                              "defaultValue": [
-                                "workspace",
-                                "platform",
-                                "app"
-                              ]
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
+                  "recipes": [recipeNamespaceOrganizationlMetadata, recipeCreateNewWorkspace]
                 }
               }
             }
 
-            var namespace = payload.namespace.name;
-
-            // Import recipe
+            // Import recipes
             api.Create('import', content, namespace);
 
             // TODO: Do not automatically deploy the recipe for now.
+            // Auto deploy recipe for organizational metadata workspace/platform/app
             // return deployRecipeWithLabelFilter(api, namespace, 'label == "recipe:namespace-organizational-metadata"')
           }
 

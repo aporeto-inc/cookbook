@@ -1,0 +1,140 @@
+APIVersion: 1
+label: recipe:create-workspace-platform-app
+data:
+  recipes:
+  - name: Create a new workspace
+    description: Starting workflow to create your namespace hierarchy
+    label: recipe:create-workspace-platform-app
+    deploymentMode: Unrestricted
+    metadata:
+    - "@aporeto:author=aporeto"
+    associatedTags:
+    - "aporeto:recipe:placement=getting-started"
+    targetIdentities:
+    - namespaces
+    longDescription: |-
+      Follow these steps to create a new workspace, platform and App.
+
+      /account/workspace/platform/app is a simple and recommended namespace hierarchy to organize
+      your workloads.
+
+      In these steps, start by selecting where you want to create your namespace hierarchy.
+      Depending on which namespace you choose to start with, you will be invited to create
+      the child namespace
+
+      Each namespace will have a specific tag that you can use to define your network policies.
+
+      Note: Two namespaces with the same name cannot exist at the same level.
+    template: |-
+      {{`
+      APIVersion: 1
+      label: recipe:create-workspace-platform-app
+      data:
+        {{- $pattern := cat "^" .Aporeto.Namespace "(/\\w+){0,2}$" | nospace }}
+        {{- if (regexMatch $pattern .Values.existing_namespace) }}
+        {{- $existing_ns := .Values.existing_namespace | trimPrefix .Aporeto.Namespace }}
+        {{- $workspace := "" }}
+        {{- $platform := "" }}
+        {{- $app := "" }}
+        namespaces:
+        {{- if (regexMatch "^(/{1}\\w+)?(/)?$" .Values.existing_namespace) }}
+        {{- $workspace = required "Workspace is required" .Values.workspace }}
+        {{- if not (regexMatch "^\\w+$" $workspace) }}
+        {{- fail "namespace can only contain alphanumeric characters"}}
+        {{- end }}
+        - name: {{ $workspace }}
+        {{- end }}
+        {{- if (regexMatch "^(/{1}\\w+){0,2}(/)?$" .Values.existing_namespace) }}
+        {{- $platform = required "Platform name is required" .Values.platform }}
+        {{- if not (regexMatch "^\\w+$" $platform) }}
+        {{- fail "namespace can only contain alphanumeric characters"}}
+        {{- end }}
+        - name: {{ $platform }}
+          namespace: {{ regexReplaceAll "\\s+" (cat $existing_ns $workspace) "/" | trimSuffix "/"}}
+        {{- end }}
+        {{- if and (regexMatch "^(/{1}\\w+){0,3}(/)?$" .Values.existing_namespace) (ne .Values.mode "kubernetes") }}
+        {{- $app = required "App is required" .Values.app}}
+        {{- if not (regexMatch "^\\w+$" $app) }}
+        {{- fail "namespace can only contain alphanumeric characters"}}
+        {{- end }}
+        - name: {{ $app }}
+          namespace: {{ regexReplaceAll "\\s+" (cat $existing_ns $workspace $platform) "/" | trimSuffix "/"}}
+        {{- end }}
+        {{- else }}
+        {{- fail "Invalid starting namespace pattern" }}
+        {{- end }}
+      `}}
+    steps:
+    - name: Namespaces
+      parameters:
+      - key: existing_namespace
+        name: Select an existing where to create child namespaces
+        description: Select your account namespace to create a workspace, platform and app.
+        type: Namespace
+        defaultValue: {{ .Aporeto.Namespace }}
+
+      - key: starting_ns_warning
+        name: Incorrect namespace
+        type: WarningMessage
+        defaultValue: Invalid starting namespace
+        visibilityCondition:
+        - - key: existing_namespace
+            operator: NotMatch
+            value: "^(/{1}\\w+){0,3}(/)?$"
+
+      - key: workspace
+        name: Workspace
+        description: Define your workspace name
+        type: String
+        optional: true
+        visibilityCondition:
+        - - key: existing_namespace
+            operator: Match
+            value: "^(/{1}\\w+)?(/)?$"
+
+      - key: mode
+        name: Platform
+        description: Select the option that applies to your workspace
+        type: Enum
+        defaultValue: hosts
+        allowedChoices:
+          hosts: Hosts(Bare Metal, VMs)
+          docker: Non-Orchestrated containers (Standalone Docker)
+          kubernetes: Orchestrated containers (OpenShift, Kubernetes)
+        visibilityCondition:
+        - - key: existing_namespace
+            operator: Match
+            value: "^(/{1}\\w+){0,3}(/)?$"
+
+      - key: platform
+        name: Platform Name
+        type: String
+        optional: true
+        visibilityCondition:
+        - - key: existing_namespace
+            operator: Match
+            value: "^(/{1}\\w+){0,2}(/)?$"
+
+      - key: app
+        name: Application name
+        type: String
+        optional: true
+        visibilityCondition:
+        - - key: existing_namespace
+            operator: Match
+            value: "^(/{1}\\w+){0,3}(/)?$"
+          - key: mode
+            operator: NotEqual
+            value: kubernetes
+
+      - key: kubernetes_warning
+        name: Warning
+        type: WarningMessage
+        defaultValue: Invalid starting namespace for orchestrated containers
+        visibilityCondition:
+        - - key: existing_namespace
+            operator: Match
+            value: "^(/{1}\\w+){3}(/)?$"
+          - key: mode
+            operator: Equal
+            value: kubernetes

@@ -210,7 +210,6 @@ data:
               ]
             }
 
-
             var content = {
               data: {
                 "APIVersion": 1,
@@ -220,8 +219,6 @@ data:
                 }
               }
             }
-
-            console.error(JSON.stringify(recipeCreateNewWorkspace));
 
             // Import recipes
             api.Create('import', content, namespace);

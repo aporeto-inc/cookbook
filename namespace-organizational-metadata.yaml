@@ -118,7 +118,7 @@ data:
                     }
 
                 }
-          - name: Autodeploy design mode
+          - name: auto-deploy-design-mode
             description: "Automatic deployment of design mode in app namespaces"
             trigger: Event
             events:

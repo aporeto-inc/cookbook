@@ -54,7 +54,6 @@ data:
             trigger: Webhook
             propagate: true
             protected: true
-            mode: Pre
             actions:
               - |
                 function organizationalMetadataForNamespace(namespace) {
@@ -119,6 +118,59 @@ data:
                     }
 
                 }
+          - name: Autodeploy design mode
+            description: "Automatic deployment of design mode in app namespaces"
+            trigger: Event
+            events:
+              namespace:
+                - create
+            entitlements:
+              recipe:
+                - retrieve-many
+              rendertemplate:
+                - create
+              importreference:
+                - create
+              networkaccesspolicies:
+                - create
+                - retrieve-many
+              externalnetworks:
+                - create
+                - retrieve-many
+            propagate: true
+            protected: true
+            condition: |-
+              /* When creating a namespace that contains app */
+              function when(api, params, payload) {
+                var namespace = params.eventPayload.entity.namespace;
+
+                {{- if .Values.keys }}
+                keys = [{{range $index, $key := .Values.keys }}{{ if ne $index 0}}, {{end}}"{{ $key }}"{{ end }}];
+                {{- else }}
+                keys = [];
+                {{- end}}
+
+                appIndex = _.indexOf(keys, {{ .Values.app_level | quote }})
+
+                if (appIndex < 1) {
+                  return { continue: false };
+                }
+
+                parents = namespace.split("/");
+                // remove root and account namespaces.
+                parents.shift();
+                parents.shift();
+
+                console.error("Continue?", parents.length, appIndex);
+                return { continue: parents.length === appIndex, payload: { targetNamespace: params.eventPayload.entity.name } };
+              }
+            actions:
+              - |
+                /* Deploy the discovery mode recipe */
+                function then(api, params, payload) {
+                  console.error("deploying recipe...");
+                  return aporeto.deployRecipeWithLabelFilter(api, payload.targetNamespace, 'label == "recipe:design-mode"', {"propagated": true});
+                }
       identities:
         - hookpolicy
         - automation
@@ -126,7 +178,7 @@ data:
     steps:
     - name: Structure
       description: |-
-        Provides the sorted list of key that describes best your namespace hiearchy.
+        Provides the sorted list of key that describes best your namespace hierarchy.
       parameters:
       - key: keys
         name: Keys
@@ -136,3 +188,8 @@ data:
         - workspace
         - platform
         - app
+      - key: app_level
+        name: App level
+        description: Indicate the namespace keyword that contains your apps.
+        type: String
+        defaultValue: "app"

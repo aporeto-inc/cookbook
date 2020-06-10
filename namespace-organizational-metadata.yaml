@@ -51,7 +51,7 @@ data:
         automations:
           - name: namespace-organizational-metadata
             description: "Triggered by the hook called namespace-organizational-metadata-hook"
-            signature: "MEUCIQDGhRfSKsgW44Eg33L3ETpTBgXpO+WFvaHsSIFOgsc/RAIgf0ffjcssSWz68zBlUIzseeA6OOoGKOGOoDJu9/EjNso="
+            signature: "MEYCIQCqHaX9AVxadlU8seTKZrlMxR+7/tlweAxxfkECUQPeTgIhAMlGZWcxbvakqG64oyQm/LRW6V+hXMi1+KWSsDv5ji7e"
             trigger: Webhook
             propagate: true
             protected: true
@@ -121,7 +121,7 @@ data:
                 }
           - name: auto-deploy-design-mode
             description: "Automatic deployment of design mode in app namespaces"
-            signature: "MEUCIQDuMokO5FFZ//kTZf+95ytSq5BFbMu6RIqHTF1BFGBmwgIgAwV+kHQCRvSI9vd4c1QhrNvxi3FFV22zZ+IEUtRn3XM="
+            signature: "MEUCIQC92CXL6HlVbCjjmo6B2DnbiwlNN3Eq68tux+CUIiUJmAIgaKn3juV2lYJgJHYQbul+w1IuAN6X4/GfiHWYsd9sq6A="
             trigger: Event
             events:
               namespace:

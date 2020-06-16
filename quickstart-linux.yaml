@@ -18,21 +18,21 @@ data:
       - hostservicemappingpolicy
       - externalnetwork
       - networkaccesspolicy
-      description: Secure a host with Aporeto Enforcerd.
+      description: Secure a host with Segment Defender.
       longDescription: |-
 
         ### Start onboarding your Linux VM
 
-        Follow these steps to onboard an enforcerd in your Linux VM.
+        Follow these steps to onboard an defender in your Linux VM.
 
         #### Prerequisites
 
         Before diving into the steps, make sure you have:
 
         - A compatible distribution
-        - Aporeto Repository added to your package manager
+        - Segment Repository added to your package manager
 
-        Check out our complete documentation page about [Enforcerd installation on Linux](.Aporeto.junonUrl/docs/main/installation/install-on-linux/)
+        Check out our complete documentation page about [Defender installation on Linux](.Aporeto.junonUrl/docs/main/installation/install-on-linux/)
 
         #### Summary
         1. Define a [Namespace](.Aporeto.junonUrl/saas/concepts/#namespaces) that will store all your data in a single folder-like structure.
@@ -43,11 +43,11 @@ data:
 
         _(See all Host Services from the left menu under "Node")_
 
-        3. Create an **AppCredential** that will be given to the enforcerd to register and discuss with the control plane.
+        3. Create an **AppCredential** that will be given to the defender to register and discuss with the control plane.
 
         _(See all AppCredentials from the left menu under "Namespace Settings")_
 
-        4. Install and start your enforcerd
+        4. Install and start your defender
 
         Click **Next** to go to the next step.
 
@@ -106,7 +106,7 @@ data:
 
           hostservicemappingpolicies:
           {{- if or .Values.protection_incoming_ssh .Values.protection_incoming_http .Values.protection_incoming_https }}
-          - name: "All enforcers implement protection and services"
+          - name: "All defenders implement protection and services"
             description: "This policy has been created from the linux workflow"
             {{- if .Values.create_new_namespace }}
             namespace: "{{ .Values.namespace_name }}"
@@ -129,7 +129,7 @@ data:
               - "hs:name=services"
             {{- end}}
           {{- else }}
-          - name: "All enforcers implement protection"
+          - name: "All defenders implement protection"
             description: "This policy has been created from the linux workflow"
             {{- if .Values.create_new_namespace }}
             namespace: "{{ .Values.namespace_name }}"
@@ -266,7 +266,7 @@ data:
             - [Namespaces](.Aporeto.junonUrl/saas/concepts/#namespaces)
             - [Authentications and authorizations](.Aporeto.junonUrl/saas/concepts/#authentication)
 
-            Clicking **Next** once you have defined your Aporeto namespace.
+            Clicking **Next** once you have defined your Segment namespace.
 
           parameters:
             - key: create_new_namespace
@@ -303,7 +303,7 @@ data:
 
             Define how your VM should be protected. The default suggestion, will allow:
 
-            * Enforcer to protect the entire host
+            * Defender to protect the entire host
             * Only SSH access is allowed to the VM
             * All outgoing traffic is allowed
 
@@ -341,7 +341,7 @@ data:
 
             ### Define an app credential
 
-            In this step, we will create an AppCredential for the enforcerd.
+            In this step, we will create an AppCredential for the defender.
 
             #### What is an App Credential ?
             An App Credential is a yaml file that contains all the necessary information to connect to the platform.
@@ -354,16 +354,16 @@ data:
               name: Name
               description: Define your credential name.
               type: String
-              defaultValue: enforcerd
+              defaultValue: defender
             - key: credentials_description
               name: Description
               description: Description of the appcredentials.
               type: String
               optional: true
-              defaultValue: AppCredential for the enforcerd on linux.
+              defaultValue: AppCredential for the defender on linux.
 
       successfullMessage: |-
-        ### Start your enforcerd in Linux
+        ### Start your defender in Linux
 
-        Use the AppCredential to start your enforcer.
+        Use the AppCredential to start your defender.
         (See installation instructions from our [official documentation](.Aporeto.junonUrl/docs/main/installation/install-on-linux/))

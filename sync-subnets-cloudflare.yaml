@@ -9,7 +9,7 @@ data:
     - "@aporeto:author=aporeto"
     targetIdentities:
     - automation
-    description: Regularly synchronizes Cloudflare public subnets as Aporeto External Networks.
+    description: Regularly synchronizes Cloudflare public subnets as Segment External Networks.
     longDescription: |-
       ### Synchronize Cloudflare public subnets
 

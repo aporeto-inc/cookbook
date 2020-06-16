@@ -2,18 +2,18 @@ APIVersion: 1
 label: recipe:alerts:disconnected-enforcers
 data:
   recipes:
-  - name: Alert on disconnected enforcers
+  - name: Alert on disconnected defenders
     label: recipe:alerts:disconnected-enforcers
     propagate: true
     metadata:
     - "@aporeto:author=aporeto"
     targetIdentities:
     - automation
-    description: Raises an alarm if some enforcerd instances are disconnected for too long.
+    description: Raises an alarm if some defender instances are disconnected for too long.
     longDescription: |-
-      ### Raise Alarm on Disconnected Enforcers
+      ### Raise Alarm on Disconnected Defenders
 
-      This recipe deploys an automation that will create an alarm when some enforcers are found
+      This recipe deploys an automation that will create an alarm when some defenders are found
       disconnected for more than 24h.
 
     template: |-
@@ -54,17 +54,17 @@ data:
                 var nb = payload.enforcers.length;
 
                 m.Create('alarm', {
-                    name: 'Disconnected enforcers',
+                    name: 'Disconnected defenders',
                     kind: 'recipes.automations.disconnected-enforcers',
-                    content: "Found " + nb + "enforcer(s) disconnected for more than 24h",
+                    content: "Found " + nb + "defender(s) disconnected for more than 24h",
                 });
               }
       `}}
     steps:
     - name: Recursive
-      description: Configure if the automation should look for disconnected enforcers in child namespaces.
+      description: Configure if the automation should look for disconnected defenders in child namespaces.
       parameters:
       - key: recursive
         name: Recursive
-        description: Looks for disconnected enforcers in child namespaces.
+        description: Looks for disconnected defenders in child namespaces.
         type: Boolean

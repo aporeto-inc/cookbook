@@ -18,12 +18,12 @@ data:
     - enforcerprofile
     - enforcerprofilemappingpolicy
     - automation
-    description: Secure a Kubernetes cluster with Aporeto Enforcerd and Operator.
+    description: Secure a Kubernetes cluster with Segment Defender and Operator.
     longDescription: |-
 
-      ### Secure your Kubernetes cluster with Aporeto
+      ### Secure your Kubernetes cluster with Segment
 
-      Follow these steps to install the Aporeto operator and enforcer into your Kubernetes cluster.
+      Follow these steps to install the Segment operator and defender into your Kubernetes cluster.
 
       #### Prerequisites
 
@@ -31,7 +31,7 @@ data:
 
       - [Created the tiller service account](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#1-create-the-tiller-service-account)
       - [Initialized Helm and deployed tiller](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#2-initialize-helm-and-deploy-tiller)
-      - [Added the Aporeto helm repository](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#3-add-the-aporeto-repository-to-helm)
+      - [Added the Segment helm repository](https://docs.aporeto.com/docs/main/k8s-install/k8s-quickstart/#3-add-the-aporeto-repository-to-helm)
 
       You can use steps 1-3 from the [official documentation page](https://docs.aporeto.com/saas/start/enforcer/k8s/) for that.
 
@@ -43,11 +43,11 @@ data:
 
       2. In the dialog here: choose your default trust model for Kubernetes namespaces - Kubernetes vs Zero Trust
 
-      3. An enforcer profile with working defaults for a Kubernetes cluster will be created for you automatically.
+      3. An defender profile with working defaults for a Kubernetes cluster will be created for you automatically.
 
       4. Two app credentials will be created for you automatically.
-          - One will be given to the **enforcer** to register and communicate with the Aporeto control plane.
-          - One will be given to the **Aporeto operator** which provides a bridge between Aporeto and Kubernetes.
+          - One will be given to the **defender** to register and communicate with the Segment control plane.
+          - One will be given to the **Segment operator** which provides a bridge between Segment and Kubernetes.
 
         _(See all "App Credentials" from the left menu under "Authentication Sources")_
 
@@ -55,7 +55,7 @@ data:
 
         _(See all "Automations" from the left menu under "Integrations")_
 
-      6. Install the Aporeto operator, CRDs and enforcer using helm (commands will be displayed in the summary at the end).
+      6. Install the Segment operator, CRDs and defender using helm (commands will be displayed in the summary at the end).
 
     template: |-
       {{`
@@ -91,14 +91,14 @@ data:
           subject:
           - - $identity=enforcer
         appcredentials:
-        - name: "enforcerd"
+        - name: "defender"
           namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
-          description: "Credentials used by the enforcer running in Kubernetes"
+          description: "Credentials used by the defender running in Kubernetes"
           roles:
           - "@auth:role=enforcer"
         - name: "aporeto-operator"
           namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
-          description: "Credentials used by the Aporeto operator"
+          description: "Credentials used by the Segment operator"
           roles:
           - "@auth:role=aporeto-operator"
         {{- if (eq .Values.trust_model "kubernetes") }}
@@ -212,17 +212,17 @@ data:
         Choosing the Kubernetes trust model means that unless you have created policies that match your processing units,
         your processing units are allowed everything by default.
 
-        This will effectively install an automation into your Aporeto namespace which will create the required external networks
-        and fallback network policies for every new Kubernetes namespace that gets synchronized with Aporeto.
+        This will effectively install an automation into your Segment namespace which will create the required external networks
+        and fallback network policies for every new Kubernetes namespace that gets synchronized with Segment.
 
         This is the _recommended_ way to get started with a cluster. It allows you to install all software with helm or through
-        the OperatorHub in OpenShift and Aporeto will not get in the way. You can then go ahead and create the necessary policies
+        the OperatorHub in OpenShift and Segment will not get in the way. You can then go ahead and create the necessary policies
         for your namespace as you require. If you are ready for _Zero Trust_ simply remove (or disable) the fallback policies
         in the namespace. The fallback policies are not synchronized, so they will only appear for a new namespace.
 
         #### Zero Trust
 
-        This is Aporeto's default operating model. Nothing is allowed unless explicitly allowed by policies. Choose this model
+        This is Segment's default operating model. Nothing is allowed unless explicitly allowed by policies. Choose this model
         if you are already confident about your policies or you are not afraid of denied flows.
 
         This will effectively skip to install the above mentioned automation.
@@ -239,7 +239,7 @@ data:
 
     successfullMessage: |-
 
-        #### Create Kubernetes namespaces to deploy Aporeto
+        #### Create Kubernetes namespaces to deploy Segment
 
         ```shell
         kubectl create namespace aporeto-operator
@@ -249,7 +249,7 @@ data:
         #### Install the secrets
 
         A zip file has been dowloaded to your computer. it contains application credentials
-        that will be used to authenticate your cluster with Aporeto. Unzip the archive
+        that will be used to authenticate your cluster with Segment. Unzip the archive
         (for example by running _unzip credentials.zip_), then run:
 
         ```shell
@@ -257,15 +257,15 @@ data:
         kubectl apply -n aporeto -f enforcerd.yaml
         ```
 
-        #### Install CRDs, Aporeto operator and enforcer
+        #### Install CRDs, Segment operator and enforcer
 
-        Install the Aporeto CRDs into your cluster:
+        Install the Segment CRDs into your cluster:
 
         ```shell
         helm install aporeto/aporeto-crds --name aporeto-crds
         ```
 
-        Install the Aporeto operator:
+        Install the Segment operator:
 
         ```shell
         helm install aporeto/aporeto-operator --name aporeto-operator --namespace aporeto-operator

@@ -20,19 +20,19 @@ data:
 
       ### Context
 
-      Aporeto allows you to manage, control, and monitor secure shell (SSH) access to remote hosts.
+      Segment allows you to manage, control, and monitor secure shell (SSH) access to remote hosts.
 
       ### Prerequisites
 
       Before you begin, ensure that you have:
-      * [Added Aporeto to your Identity provider](.Aporeto.junonUrl/saas/setup/idp/ssh-ctrl-plane/#adding-aporeto-to-the-identity-provider)
-      * Configured each host to trust the Aporeto SSH certificate authority
+      * [Added Segment to your Identity provider](.Aporeto.junonUrl/saas/setup/idp/ssh-ctrl-plane/#adding-aporeto-to-the-identity-provider)
+      * Configured each host to trust the Segment SSH certificate authority
 
       ### Follow these steps
 
       Complete the following steps to complete this guide:
 
-      1. Define the **Authentication Source** that will allow your users to authenticate to Aporeto.
+      1. Define the **Authentication Source** that will allow your users to authenticate to Segment.
       2. Allow an authenticated user to request an SSH certificate via an **Authorization**.
       3. Allow an authenticated user to obtain an SSH Certificate via an **SSH Authorization**.
 
@@ -118,11 +118,11 @@ data:
     steps:
     - name: Authentication Source
       description: |-
-        Aporeto provides multiple authentication sources.
+        Segment provides multiple authentication sources.
 
         In this step, you will define how your users should authenticate to your namespace.
 
-        _Note: Read more about [configuring OIDC for Aporeto](.Aporeto.junonUrl/saas/setup/idp/ssh-ctrl-plane/)_
+        _Note: Read more about [configuring OIDC for Segment](.Aporeto.junonUrl/saas/setup/idp/ssh-ctrl-plane/)_
 
       parameters:
       - key: realm
@@ -261,7 +261,7 @@ data:
         - "@auth:organization="
       - key: sshauthorizationpolicy_principals
         name: Principals
-        description: Principals to add to the SSH Certificate. In any case, the certificate will always contain the Aporeto Token subject as principal.
+        description: Principals to add to the SSH Certificate. In any case, the certificate will always contain the Segment Token subject as principal.
         optional: true
         type: StringSlice
 
@@ -284,10 +284,10 @@ data:
         apoctl ssh cert --namespace .Aporeto.Namespace
         ```
 
-        The above command will generate an Aporeto SSH Certificate that you can now use to access the resources.
+        The above command will generate an Segment SSH Certificate that you can now use to access the resources.
 
         [Share these instructions with your users](.Aporeto.junonUrl/docs/main/guides/ssh/ssh-access/).
 
         #### Apoctl
 
-        **apoctl** is the official Aporeto CLI. To learn how to create a configuration file, read more about [apoctl](.Aporeto.junonUrl/saas/start/apoctl/#for-users)
+        **apoctl** is the official Segment CLI. To learn how to create a configuration file, read more about [apoctl](.Aporeto.junonUrl/saas/start/apoctl/#for-users)

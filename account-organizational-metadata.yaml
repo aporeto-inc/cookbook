@@ -4,7 +4,7 @@ data:
   automations:
     - name: add-namespace-organizational-metadata
       description: "Triggered after a namespace is created to install a recipe"
-      signature: "MEYCIQDihOphYUJRD1jSbUtk7pwcoa4i2BYofsGv+7tSVGR75wIhAIv1yu32ROlTkIOs7TdjO5N4nnVu7R71A+Wdu7D5Gz4z"
+      signature: "MEYCIQDJ38cMACeJyv0+IL7e4uzltOFvwJfE4n7F3vmO4YcTeQIhANRhJabxe615mapBpdgNeWJoZI9ri0OlFVrxKR0gp8tY"
       trigger: Event
       protected: true
       mode: Post

@@ -51,7 +51,7 @@ data:
         automations:
           - name: namespace-organizational-metadata
             description: "Triggered by the hook called namespace-organizational-metadata-hook"
-            signature: "MEYCIQCqHaX9AVxadlU8seTKZrlMxR+7/tlweAxxfkECUQPeTgIhAMlGZWcxbvakqG64oyQm/LRW6V+hXMi1+KWSsDv5ji7e"
+            signature: "MEYCIQCtxXZ/hsNRIaYCicSvtabfhcwcZ3PsB2RI+kmlCBBLIwIhAP9ANVmkDOCX9tQm6LjvqPYYL9yynZGqiduuvT9LsH+7"
             trigger: Webhook
             propagate: true
             protected: true
@@ -121,7 +121,7 @@ data:
                 }
           - name: auto-deploy-design-mode
             description: "Automatic deployment of design mode in app namespaces"
-            signature: "MEUCIQC92CXL6HlVbCjjmo6B2DnbiwlNN3Eq68tux+CUIiUJmAIgaKn3juV2lYJgJHYQbul+w1IuAN6X4/GfiHWYsd9sq6A="
+            signature: "MEQCIHcYf2z2V/ChPTy9fWVrmHHQbdxtv4HvnYAQg5OboitlAiA1tfDPfgzWqS/Q9JBW+Abi6reKx97ViSLynG+Cw5tbYA=="
             trigger: Event
             events:
               namespace:
@@ -163,15 +163,13 @@ data:
                 parents.shift();
                 parents.shift();
 
-                console.error("Continue?", parents.length, appIndex);
                 return { continue: parents.length === appIndex, payload: { targetNamespace: params.eventPayload.entity.name } };
               }
             actions:
               - |
                 /* Deploy the discovery mode recipe */
                 function then(api, params, payload) {
-                  console.error("deploying recipe...");
-                  return aporeto.deployRecipeWithLabelFilter(api, payload.targetNamespace, 'label == "recipe:design-mode"', {"propagated": true});
+                  return aporeto.deployRecipeWithLabelFilter(api, payload.targetNamespace, 'label == "recipe:design-mode"', {"propagate": true});
                 }
       identities:
         - hookpolicy

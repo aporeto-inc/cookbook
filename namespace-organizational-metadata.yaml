@@ -51,13 +51,13 @@ data:
         automations:
           - name: namespace-organizational-metadata
             description: "Triggered by the hook called namespace-organizational-metadata-hook"
-            signature: "MEYCIQCtxXZ/hsNRIaYCicSvtabfhcwcZ3PsB2RI+kmlCBBLIwIhAP9ANVmkDOCX9tQm6LjvqPYYL9yynZGqiduuvT9LsH+7"
+            signature: "MEUCIQDs6mza/prdWuqTA6CP3kiTyjG0oOCwDLsjmKm56HBN8gIgPNZT7pXRiKwZBcVTZzy2EaLD22g8QnR4+kL+bIHTj7U="
             trigger: Webhook
             propagate: true
             protected: true
             actions:
               - |
-                function organizationalMetadataForNamespace(namespace) {
+                function organizationalMetadataForNamespace(namespace, automation_namespace) {
 
                   {{- if .Values.keys }}
                   keys = [{{range $index, $key := .Values.keys }}{{ if ne $index 0}}, {{end}}"{{ $key }}"{{ end }}];
@@ -65,19 +65,15 @@ data:
                   keys = [];
                   {{- end}}
 
-                  parents = namespace.namespace.split("/");
+                  parentNamespace = namespace.namespace;
+                  if (automation_namespace !== "/") {
+                    parentNamespace = parentNamespace.replace(automation_namespace, "");
+                  }
+
+                  parents = parentNamespace.split("/");
                   parents.shift()
 
-                  if (!parents || parents.length == 0) {
-                    return [];
-                  }
-
-                  // Root namespace case not handled in this workflow.
-                  if (parents[0] === "") {
-                    return [];
-                  }
-
-                  idx = parents.length - 1;
+                  idx = parents.length;
                   if (idx >= keys.length) {
                     return [];
                   }
@@ -108,7 +104,7 @@ data:
                       }
                     }
 
-                    namespace.organizationalMetadata = organizationalMetadataForNamespace(namespace);
+                    namespace.organizationalMetadata = organizationalMetadataForNamespace(namespace, params.automation_namespace);
 
                     // populates the output field of the remote processor model with our modifications
                     triggerPayload.output = namespace;

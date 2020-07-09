@@ -39,23 +39,23 @@ data:
         namespaces:
         {{- if (regexMatch "^(/{1}\\w+)?(/)?$" .Values.existing_namespace) }}
         {{- $workspace = required "Workspace is required" .Values.workspace }}
-        {{- if not (regexMatch "^\\w+$" $workspace) }}
-        {{- fail "namespace can only contain alphanumeric characters"}}
+        {{- if not (regexMatch "^\\[a-zA-Z0-9-_/]+$" $workspace) }}
+        {{- fail "namespace must only contain alpha numerical characters, '-' or '_'"}}
         {{- end }}
         - name: {{ $workspace }}
         {{- end }}
         {{- if (regexMatch "^(/{1}\\w+){0,2}(/)?$" .Values.existing_namespace) }}
         {{- $platform = required "Platform name is required" .Values.platform }}
-        {{- if not (regexMatch "^\\w+$" $platform) }}
-        {{- fail "namespace can only contain alphanumeric characters"}}
+        {{- if not (regexMatch "^\\[a-zA-Z0-9-_/]+$" $platform) }}
+        {{- fail "namespace must only contain alpha numerical characters, '-' or '_'"}}
         {{- end }}
         - name: {{ $platform }}
           namespace: {{ regexReplaceAll "\\s+" (cat $existing_ns $workspace) "/" | trimSuffix "/"}}
         {{- end }}
         {{- if and (regexMatch "^(/{1}\\w+){0,3}(/)?$" .Values.existing_namespace) (ne .Values.mode "kubernetes") }}
         {{- $app = required "App is required" .Values.app}}
-        {{- if not (regexMatch "^\\w+$" $app) }}
-        {{- fail "namespace can only contain alphanumeric characters"}}
+        {{- if not (regexMatch "^\\[a-zA-Z0-9-_/]+$" $app) }}
+        {{- fail "namespace must only contain alpha numerical characters, '-' or '_'"}}
         {{- end }}
         - name: {{ $app }}
           namespace: {{ regexReplaceAll "\\s+" (cat $existing_ns $workspace $platform) "/" | trimSuffix "/"}}

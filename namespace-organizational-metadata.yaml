@@ -133,10 +133,10 @@ data:
                 - create
               importreference:
                 - create
-              networkaccesspolicies:
+              networkaccesspolicy:
                 - create
                 - retrieve-many
-              externalnetworks:
+              externalnetwork:
                 - create
                 - retrieve-many
             propagate: true

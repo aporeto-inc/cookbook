@@ -51,10 +51,8 @@ data:
           entries:
           - "0.0.0.0/0"
           - "::/0"
-          protocols:
-          - udp
-          ports:
-          - "1:65535"
+          servicePorts:
+          - "udp/1:65535"
         - name: "any-tcp"
           description: "Represents any TCP traffic"
           {{- if .Values.propagate }}
@@ -63,10 +61,8 @@ data:
           entries:
           - "0.0.0.0/0"
           - "::/0"
-          protocols:
-          - tcp
-          ports:
-          - "1:65535"
+          servicePorts:
+          - "tcp/1:65535"
         - name: "any-icmp"
           description: "Represents any ICMP traffic"
           {{- if .Values.propagate }}
@@ -75,10 +71,8 @@ data:
           entries:
           - "0.0.0.0/0"
           - "::/0"
-          protocols:
-          - icmp
-          ports:
-          - "1:65535"
+          servicePorts:
+          - "icmp"
         - name: "any-other-protocol"
           description: "Represents any other traffic"
           {{- if .Values.propagate }}
@@ -87,17 +81,14 @@ data:
           entries:
           - "0.0.0.0/0"
           - "::/0"
-          protocols:
-          - IGMP
-          - SCTP
-          - IPIP
-          - GRE
-          - PIM
-          - VRRP
-          - L2TP
-          ports:
-          - "1:65535"
-
+          servicePorts:
+          - "IGMP"
+          - "SCTP"
+          - "IPIP"
+          - "GRE"
+          - "PIM"
+          - "VRRP"
+          - "L2TP"
       `}}
     steps:
     - name: Propagation

@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:design-mode
 data:
   recipes:
-  - name: Enable Design Mode
+  - name: Enable Discovery Mode
     description: Allow all traffic.
     label: recipe:design-mode
     propagate: true
@@ -15,15 +15,11 @@ data:
     - externalnetwork
     - networkaccesspolicy
     longDescription: |-
-      ### Enable Design Mode
+      ### Enable Discovery Mode
 
-      When **Discovery Mode is enabled**, all flows are accepted and will appear as dotted line in your Platform view.
+      When discovery mode is enabled, **all flows are accepted**.
 
-      How to use the Design Mode ?
-      * Enable this mode to accept all the flows and report them as dotted lines in the Platform View.
-      * Declare the **External Networks** the system will need to communicate.
-      * Create the **Network Policies** to convert dotted flows to solid green line. This means they will be authorized and enforced.
-      * When all policies have been defined, disable the discovery mode and expect the traffic to be enforced according to your policies. Traffic without policies will be dropped by default.
+      Flows which do not match an existing network policy will be represented by a dotted line in your Platform view
 
     template: |-
       {{`
@@ -105,7 +101,7 @@ data:
       `}}
     steps:
     - name: Propagation
-      description: Configure if the Design Mode should be enabled in the child namespaces.
+      description: Configure if the Discovery Mode should be enabled in the child namespaces.
       parameters:
       - key: propagate
         name: Propagate

@@ -51,19 +51,19 @@ data:
         automations:
           - name: namespace-organizational-metadata
             description: "Triggered by the hook called namespace-organizational-metadata-hook"
-            signature: "MEYCIQCtxXZ/hsNRIaYCicSvtabfhcwcZ3PsB2RI+kmlCBBLIwIhAP9ANVmkDOCX9tQm6LjvqPYYL9yynZGqiduuvT9LsH+7"
+            signature: "MEUCIQCC+VY2MlOopMOACN0oErTH7/3bsZ/WBStPaxbu2ANSpgIgQWDqVsh17dsMssc87o1tP2WBAlLLVqfdhD53CqLh2/g="
             trigger: Webhook
             propagate: true
             protected: true
+            parameters:
+              keys:
+                {{- range $index, $key := .Values.keys }}
+                - {{ $key | quote }}
+                {{- end }}
+              app_level: {{ .Values.app_level | quote }}
             actions:
               - |
-                function organizationalMetadataForNamespace(namespace) {
-
-                  {{- if .Values.keys }}
-                  keys = [{{range $index, $key := .Values.keys }}{{ if ne $index 0}}, {{end}}"{{ $key }}"{{ end }}];
-                  {{- else }}
-                  keys = [];
-                  {{- end}}
+                function organizationalMetadataForNamespace(namespace, keys) {
 
                   parents = namespace.namespace.split("/");
                   parents.shift()
@@ -108,7 +108,7 @@ data:
                       }
                     }
 
-                    namespace.organizationalMetadata = organizationalMetadataForNamespace(namespace);
+                    namespace.organizationalMetadata = organizationalMetadataForNamespace(namespace, params.keys);
 
                     // populates the output field of the remote processor model with our modifications
                     triggerPayload.output = namespace;
@@ -119,9 +119,9 @@ data:
                     }
 
                 }
-          - name: auto-deploy-design-mode
-            description: "Automatic deployment of design mode in app namespaces"
-            signature: "MEQCIHcYf2z2V/ChPTy9fWVrmHHQbdxtv4HvnYAQg5OboitlAiA1tfDPfgzWqS/Q9JBW+Abi6reKx97ViSLynG+Cw5tbYA=="
+          - name: auto-deploy-discovery-mode
+            description: "Automatic deployment of discovery mode in app namespaces"
+            signature: "MEUCIHS4SDy7tszF6cF5cxq1db3Se7p4v7/BGiLr+3uDvpviAiEAk7N9O37JliL8QKe0SY4+6tNok+sPkExmITSXgC0RDo4="
             trigger: Event
             events:
               namespace:
@@ -141,18 +141,20 @@ data:
                 - retrieve-many
             propagate: true
             protected: true
+            parameters:
+              keys:
+                {{- range $index, $key := .Values.keys }}
+                - {{ $key | quote }}
+                {{- end }}
+              app_level: {{ .Values.app_level | quote }}
             condition: |-
               /* When creating a namespace that contains app */
               function when(api, params, payload) {
                 var namespace = params.eventPayload.entity.namespace;
 
-                {{- if .Values.keys }}
-                keys = [{{range $index, $key := .Values.keys }}{{ if ne $index 0}}, {{end}}"{{ $key }}"{{ end }}];
-                {{- else }}
-                keys = [];
-                {{- end}}
+                appIndex = _.indexOf(params.keys, params.app_level)
 
-                appIndex = _.indexOf(keys, {{ .Values.app_level | quote }})
+                console.error(appIndex, params.app_level);
 
                 if (appIndex < 1) {
                   return { continue: false };

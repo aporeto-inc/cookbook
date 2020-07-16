@@ -236,10 +236,12 @@ data:
         name: I have copied my namespace
         description: I have copied my namespace.
         type: Checkbox
-        required: true
+        defaultValue: false
         validationFunction: |-
           function validate(value) {
-            return value === true;
+            if (value !== true) {
+              throw "Please confirm you have copied your namespace";
+            };
           }
         visibilityCondition:
         - - key: mode

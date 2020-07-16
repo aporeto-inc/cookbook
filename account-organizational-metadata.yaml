@@ -4,7 +4,7 @@ data:
   automations:
     - name: add-namespace-organizational-metadata
       description: "Triggered after a namespace is created to install a recipe"
-      signature: "MEUCIQC4HZAbN7M3HA3AzQO8sQipJgPynxUpGtA/kFykci8HKQIgeTwEUkHWXK4V/IqVL1GtfDN9tIwCLlJimiW6SPmBcfk="
+      signature: "MEQCIEWaNyQNyGHRx8WQ30KHDSNJsqFV7LMHnVoE5JxoGN+sAiBV395sqMLHU936u11o4E9i7IL1izv+KwGsLj/MNBdSRQ=="
       trigger: Event
       protected: true
       mode: Post
@@ -114,9 +114,7 @@ data:
                       "name": "Provide your account namespace or provide an existing namespace",
                       "description": "Leave the default (i.e. /{account} ) to create a new hierarchy or provide an existing namespace (e.g. /{account}/{workspace} ) to continue building on an existing hierarchy",
                       "type": "Namespace",
-                      "defaultValue": {
-                        "[object Object]": null
-                      }
+                      "defaultValue": namespace
                     },
                     {
                       "key": "starting_ns_warning",
@@ -347,8 +345,8 @@ data:
                       "name": "I have copied my namespace",
                       "description": "I have copied my namespace.",
                       "type": "Checkbox",
-                      "required": true,
-                      "validationFunction": "function validate(value) {\n  return value === true;\n}",
+                      "default": false,
+                      "validationFunction": "function validate(value) {\n  if (value !== true) {\n    throw \"Please confirm you have copied your namespace\";\n  };\n}",
                       "visibilityCondition": [
                         [
                           {

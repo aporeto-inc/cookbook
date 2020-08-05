@@ -18,7 +18,7 @@ data:
       - hostservicemappingpolicy
       - externalnetwork
       - networkaccesspolicy
-      description: Secure a host with Segment Defender.
+      description: Secure a host with Microsegmentation Defender.
       longDescription: |-
 
         ### Start onboarding your Linux VM
@@ -30,7 +30,7 @@ data:
         Before diving into the steps, make sure you have:
 
         - A compatible distribution
-        - Segment Repository added to your package manager
+        - Microsegmentation Repository added to your package manager
 
         Check out our complete documentation page about [Defender installation on Linux](.Aporeto.junonUrl/docs/main/installation/install-on-linux/)
 
@@ -266,7 +266,7 @@ data:
             - [Namespaces](.Aporeto.junonUrl/saas/concepts/#namespaces)
             - [Authentications and authorizations](.Aporeto.junonUrl/saas/concepts/#authentication)
 
-            Clicking **Next** once you have defined your Segment namespace.
+            Clicking **Next** once you have defined your Microsegmentation namespace.
 
           parameters:
             - key: create_new_namespace

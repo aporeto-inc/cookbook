@@ -23,13 +23,13 @@ data:
 
       ### Context
 
-      Segment allows you to manage, control, and monitor secure shell (SSH) access to remote hosts that are protected with an Defender.
+      Microsegmentation allows you to manage, control, and monitor secure shell (SSH) access to remote hosts that are protected with a Defender.
 
       ### Steps
 
       Follow these steps to complete this guide:
 
-      1. Define the **Authentication Source** that will allow your users to authenticate to Segment.
+      1. Define the **Authentication Source** that will allow your users to authenticate to Microsegmentation.
       2. Allow an authenticated user to request an SSH certificate via an **Authorization**.
       3. Allow an authenticated user to obtain an SSH Certificate via an **SSH Authorization**.
 
@@ -165,11 +165,11 @@ data:
     steps:
     - name: Authentication Source
       description: |-
-        Segment provides multiple authentication sources.
+        Microsegmentation provides multiple authentication sources.
 
         In this step, you will define how your users should authenticate to your namespace.
 
-        _Note: Read more about [configuring OIDC for Segment](.Aporeto.junonUrl/saas/setup/idp/)_
+        _Note: Read more about [configuring OIDC for Microsegmentation](.Aporeto.junonUrl/saas/setup/idp/)_
 
       parameters:
       - key: realm
@@ -308,19 +308,19 @@ data:
         - "@auth:organization="
       - key: sshauthorizationpolicy_principals
         name: Principals
-        description: Principals to add to the SSH Certificate. In any case, the certificate will always contain the Segment Token subject as principal.
+        description: Principals to add to the SSH Certificate. In any case, the certificate will always contain the Microsegmentation Token subject as principal.
         optional: true
         type: StringSlice
 
     successfullMessage: |-
-        ### Configure your hosts to require an Segment SSH Certificate
+        ### Configure your hosts to require an Microsegmentation SSH Certificate
 
         You've succesfully created all the rules!
 
         Before your users can access your resources, you will need to:
 
         * Install the defender on your hosts.
-        * Configure them to require an Segment SSH Certificate.
+        * Configure them to require an Microsegmentation SSH Certificate.
 
         [Follow the steps described in our detailed documentation](.Aporeto.junonUrl/docs/main/guides/ssh/ssh-restrict/).
 
@@ -342,6 +342,6 @@ data:
         apoctl ssh cert --namespace .Aporeto.Namespace
         ```
 
-        The above command will generate an Segment SSH Certificate that can be used to access the protected hosts.
+        The above command will generate an Microsegmentation SSH Certificate that can be used to access the protected hosts.
 
         [Share these instructions with your users](.Aporeto.junonUrl/docs/main/guides/ssh/ssh-access/).

@@ -26,7 +26,7 @@ data:
 
       To create an administrator account, we will:
 
-      1. Define an **Authentication Source** that will allow you to authenticate to Segment.
+      1. Define an **Authentication Source** that will allow you to authenticate to the Microsegmentation Console.
       2. Define an **Authorization** to grant you the **Namespace Administrator** role on your namespace.
 
       Follow this guide to achieve the above steps.
@@ -91,11 +91,11 @@ data:
     steps:
     - name: Authentication Source
       description: |-
-        Segment provides multiple authentication sources.
+        Microsegmentation provides multiple authentication sources.
 
         In this step, you will define which one you want to use to access your namespace.
 
-        _Note: Read more about [configuring OIDC for Segment](.Aporeto.junonUrl/saas/setup/idp/)_
+        _Note: Read more about [configuring OIDC for Microsegmentation](.Aporeto.junonUrl/saas/setup/idp/)_
 
       parameters:
       - key: realm

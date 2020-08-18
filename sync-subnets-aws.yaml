@@ -9,7 +9,7 @@ data:
     - "@aporeto:author=aporeto"
     targetIdentities:
     - automation
-    description: Regularly synchronizes AWS public subnets as Segment External Networks.
+    description: Regularly synchronizes AWS public subnets as Microsegmentation External Networks.
     longDescription: |-
       ### Synchronize AWS public subnets
 

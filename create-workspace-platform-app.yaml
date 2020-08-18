@@ -18,9 +18,9 @@ data:
       ---
 
       ### This wizard allows you to establish a repeatable structure to organize your workloads into apps
-      * It creates a highly recommended fixed 3-tier Segment namespace hierarchy tree in your account namespace.
+      * It creates a highly recommended fixed 3-tier Microsegmentation namespace hierarchy tree in your account namespace.
       > > /{account}/**{workspace}**/**{platform}**/**{app}**
-      * All processing units (PU) will receive 3 tags corresponding to the 3 levels in the hierarchy you are about to create to aid in policy creation to simplify the consumption of segment solution.
+      * All processing units (PU) will receive 3 tags corresponding to the 3 levels in the hierarchy you are about to create to aid in policy creation to simplify the consumption of the Microsegmentation solution.
 
        > > 1. @org:**workspace** =
        > > 1. @org:**platform** =
@@ -36,7 +36,7 @@ data:
       _**After running the wizard:**_
 
       > > - [ ] Note the namespace and provide it to the Defender registration
-      > > - [ ] Navigate to the Segment app tier namespace to visualize your application connectivity
+      > > - [ ] Navigate to the Microsegmentation app tier namespace to visualize your application connectivity
       > > - [ ] Start the policy creation process
 
       ---

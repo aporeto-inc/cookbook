@@ -158,10 +158,8 @@ data:
             description: "This external network has been created from the linux workflow"
             entries:
             - "0.0.0.0/0"
-            ports:
-            - "53"
-            protocols:
-            - "udp"
+            servicePorts:
+            - "udp/53"
             associatedTags:
             - "extnet:name=dns"
           {{- end}}
@@ -173,10 +171,8 @@ data:
             description: "This external network has been created from the linux workflow"
             entries:
             - "0.0.0.0/0"
-            ports:
-            - "1:65535"
-            protocols:
-            - "tcp"
+            servicePorts:
+            - "tcp/1:65535"
             associatedTags:
             - "extnet:name=internet"
           {{- end}}

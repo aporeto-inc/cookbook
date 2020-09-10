@@ -120,17 +120,26 @@ data:
             - "{{ $shortname }}:ext:net=internet"
             entries:
             - "0.0.0.0/0"
-            protocols:
-            {{- if or (eq .Values.publicIncomingAccessMode "TCP") (eq .Values.publicIncomingAccessMode "any") }}
-            - "tcp"
+            servicePorts:
+            {{- if eq .Values.publicIncomingAccessMode "any" }}
+            - "any"
             {{- end }}
-            {{- if or (eq .Values.publicIncomingAccessMode "UDP") (eq .Values.publicIncomingAccessMode "any") }}
-            - "udp"
-            {{- end }}
+            {{- if or (eq .Values.publicIncomingAccessMode "TCP") }}
             {{- if .Values.publicIncomingAccessPorts }}
-            ports:
             {{- range $idx, $port := .Values.publicIncomingAccessPorts }}
-            - "{{ $port }}"
+            - "tcp/{{ $port }}"
+            {{- end }}
+            {{- else }}
+            - "tcp/1:65535"
+            {{- end }}
+            {{- end }}
+            {{- if or (eq .Values.publicIncomingAccessMode "UDP") }}
+            {{- if .Values.publicIncomingAccessPorts }}
+            {{- range $idx, $port := .Values.publicIncomingAccessPorts }}
+            - "udp/{{ $port }}"
+            {{- end }}
+            {{- else }}
+            - "udp/1:65535"
             {{- end }}
             {{- end }}
           {{- end }}
@@ -141,8 +150,8 @@ data:
             - "{{ $shortname }}:ext:net=public:tcp"
             entries:
             - "0.0.0.0/0"
-            protocols:
-            - "tcp"
+            servicePorts:
+            - "tcp/1:65535"
           {{- end }}
           {{- if or (eq .Values.publicOutgoingAccessMode "UDP") (eq .Values.publicOutgoingAccessMode "any") }}
           - name: "[{{ $shortname }}] public-network-udp"
@@ -151,8 +160,8 @@ data:
             - "{{ $shortname }}:ext:net=public:udp"
             entries:
             - "0.0.0.0/0"
-            protocols:
-            - "udp"
+            servicePorts:
+            - "udp/1:65535"
           {{- end }}
           {{- if or (eq .Values.privateOutgoingAccessMode "TCP") (eq .Values.privateOutgoingAccessMode "any") (eq .Values.privateIncomingAccessMode "TCP") (eq .Values.privateIncomingAccessMode "any") }}
           - name: "[{{ $shortname }}] private-network-tcp"
@@ -163,8 +172,8 @@ data:
             - "10.0.0.0/8"
             - "172.16.0.0/12"
             - "192.168.0.0/16"
-            protocols:
-            - "tcp"
+            servicePorts:
+            - "tcp/1:65535"
           {{- end }}
           {{- if or (eq .Values.privateOutgoingAccessMode "UDP") (eq .Values.privateOutgoingAccessMode "any") (eq .Values.privateIncomingAccessMode "UDP") (eq .Values.privateIncomingAccessMode "any") }}
           - name: "[{{ $shortname }}] private-network-udp"
@@ -175,8 +184,8 @@ data:
             - "10.0.0.0/8"
             - "172.16.0.0/12"
             - "192.168.0.0/16"
-            protocols:
-            - "udp"
+            servicePorts:
+            - "udp/1:65535"
           {{- end }}
           `}}
 

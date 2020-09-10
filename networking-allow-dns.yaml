@@ -38,10 +38,8 @@ data:
           - "ext:net=all-dns"
           entries:
           - "0.0.0.0/0"
-          protocols:
-          - udp
-          ports:
-          - "53"
+          servicePorts:
+          - "udp/53"
       `}}
     steps:
     - name: Propagation

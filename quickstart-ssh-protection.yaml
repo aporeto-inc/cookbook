@@ -132,7 +132,7 @@ data:
           servicePorts:
           - "udp/1:65535"
           - "tcp/1:65535"
-          - "icmp/1:65535"
+          - "icmp"
 
         networkaccesspolicies:
         - name: "Allow all UDP/TCP/ICMP traffic from/to an SSH Session"

@@ -129,12 +129,10 @@ data:
           - "ext:net=internet"
           entries:
           - "0.0.0.0/0"
-          protocols:
-          - udp
-          - tcp
-          - icmp
-          ports:
-          - "1:65535"
+          servicePorts:
+          - "udp/1:65535"
+          - "tcp/1:65535"
+          - "icmp/1:65535"
 
         networkaccesspolicies:
         - name: "Allow all UDP/TCP/ICMP traffic from/to an SSH Session"

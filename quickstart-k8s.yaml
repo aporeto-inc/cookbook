@@ -127,8 +127,7 @@ data:
                         description: 'Created by an automation on namespace creation. It is safe to be deleted, if not required.',
                         metadata: ['@ext:name=tcpall'],
                         entries: ['0.0.0.0/0'],
-                        ports: ['1:65535'],
-                        protocols: ['tcp'],
+                        servicePorts: ['tcp/1:65535'],
                         propagate: true,
                     }, payload.namespace.name);
                     api.Create('externalnetwork', {
@@ -136,8 +135,7 @@ data:
                         description: 'Created by an automation on namespace creation. It is safe to be deleted, if not required.',
                         metadata: ['@ext:name=udpall'],
                         entries: ['0.0.0.0/0'],
-                        ports: ['1:65535'],
-                        protocols: ['udp'],
+                        servicePorts: ['udp/1:65535'],
                         propagate: true,
                     }, payload.namespace.name);
                     api.Create('networkaccesspolicy', {

@@ -27,13 +27,11 @@ data:
         - name: aws-{{ .Values.region | lower }}-{{ .Values.serviceType | lower }}-networks
           entries:
           - "0.0.0.1/32"
-          ports:
-          {{- range $idx, $port := .Values.ports }}
-          - "{{ $port }}"
-          {{- end }}
-          protocols:
+          servicePorts:
           {{- range $idx, $protocol := .Values.protocols }}
-          - "{{ $protocol }}"
+          {{- range $idx, $port := .Values.ports }}
+          - "{{ $protocol }}/{{ $port }}"
+          {{- end }}
           {{- end }}
           associatedTags:
           - 'recipe:renderid={{ .RenderID }}'

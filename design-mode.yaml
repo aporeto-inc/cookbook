@@ -73,6 +73,7 @@ data:
           - "::/0"
           servicePorts:
           - "icmp"
+          - "icmp6"
         - name: "any-other-protocol"
           description: "Represents any other traffic"
           {{- if .Values.propagate }}

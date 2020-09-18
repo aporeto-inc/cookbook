@@ -18,12 +18,12 @@ data:
     - enforcerprofile
     - enforcerprofilemappingpolicy
     - automation
-    description: Secure a Kubernetes cluster with Microsegmentation Defender and Operator.
+    description: Secure a Kubernetes cluster with Microsegmentation enforcer and operator.
     longDescription: |-
 
       ### Secure your Kubernetes cluster with Microsegmentation
 
-      Follow these steps to install the Microsegmentation operator and defender into your Kubernetes cluster.
+      Follow these steps to install the Microsegmentation operator and enforcer into your Kubernetes cluster.
 
       #### Prerequisites
 
@@ -43,10 +43,10 @@ data:
 
       2. In the dialog here: choose your default trust model for Kubernetes namespaces - Kubernetes vs Zero Trust
 
-      3. An defender profile with working defaults for a Kubernetes cluster will be created for you automatically.
+      3. An enforcer profile with working defaults for a Kubernetes cluster will be created for you automatically.
 
       4. Two app credentials will be created for you automatically.
-          - One will be given to the **defender** to register and communicate with the Microsegmentation Console.
+          - One will be given to the **enforcer** to register and communicate with the Microsegmentation Console.
           - One will be given to the **Microsegmentation operator** which provides a bridge between Microsegmentation and Kubernetes.
 
         _(See all "App Credentials" from the left menu under "Authentication Sources")_
@@ -55,7 +55,7 @@ data:
 
         _(See all "Automations" from the left menu under "Integrations")_
 
-      6. Install the Microsegmentation operator, CRDs and defender using helm (commands will be displayed in the summary at the end).
+      6. Install the Microsegmentation operator, CRDs and enforcer using helm (commands will be displayed in the summary at the end).
 
     template: |-
       {{`
@@ -91,9 +91,9 @@ data:
           subject:
           - - $identity=enforcer
         appcredentials:
-        - name: "defender"
+        - name: "enforcer"
           namespace: {{ required ".Values.namespace_name is required" .Values.namespace_name }}
-          description: "Credentials used by the defender running in Kubernetes"
+          description: "Credentials used by the enforcer running in Kubernetes"
           roles:
           - "@auth:role=enforcer"
         - name: "aporeto-operator"

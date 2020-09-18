@@ -23,7 +23,7 @@ data:
 
       ### Context
 
-      Microsegmentation allows you to manage, control, and monitor secure shell (SSH) access to remote hosts that are protected with a Defender.
+      Microsegmentation allows you to manage, control, and monitor secure shell (SSH) access to remote hosts that are protected with a enforcer.
 
       ### Steps
 
@@ -150,8 +150,8 @@ data:
           - - "ext:net=internet"
 
         auditprofilemappingpolicies:
-        - name: "Defenders collect execve commands"
-          description: "All defender are implementing the audit profile execve"
+        - name: "Enforcers collect execve commands"
+          description: "All enforcer are implementing the audit profile execve"
           propagate: true
           subject:
           - - "$identity=enforcer"
@@ -317,14 +317,14 @@ data:
 
         Before your users can access your resources, you will need to:
 
-        * Install the defender on your hosts.
+        * Install the enforcer on your hosts.
         * Configure them to require an Microsegmentation SSH Certificate.
 
         [Follow the steps described in our detailed documentation](.Aporeto.junonUrl/docs/main/guides/ssh/ssh-restrict/).
 
         ### Tell your users they can now request for an SSH Certificate
 
-        Once the defender is installed, here are the steps to get an SSH Certificate:
+        Once the enforcer is installed, here are the steps to get an SSH Certificate:
 
         1. Authenticate and store the token in the APOCTL_TOKEN environment variable:
 

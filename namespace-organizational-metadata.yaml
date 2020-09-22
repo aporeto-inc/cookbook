@@ -29,7 +29,7 @@ data:
       2. platform
       3. app
 
-      These metadata will be propagated to your processing units, defenders, external networks and can then be used
+      These metadata will be propagated to your processing units, enforcers, external networks and can then be used
       in your policies rules.
 
     template: |-

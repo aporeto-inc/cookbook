@@ -4,7 +4,7 @@ data:
   automations:
     - name: add-namespace-organizational-metadata
       description: "Triggered after a namespace is created to install a recipe"
-      signature: "MEYCIQDgvN76jFQhl+KyWQYuuixklnSCcvzRDiXRlWCsrHIHXwIhAO8VhSpaapJCl980/B84BTkmf0WVkHShEmBeU4y1Hiip"
+      signature: "MEQCICc2CsBT4xfpXt0Gu2XLksWJdWIHOxY16LIBqgfuXy7oAiAWA5WbmI+2QshAPshELMmt18ZZfzUbXjWRsQ+IpwvqSQ=="
       trigger: Event
       protected: true
       mode: Post
@@ -59,7 +59,7 @@ data:
                   "automation",
                   "hookpolicy"
               ],
-              "longDescription": "\nA metadata is a \"key=value\" pair, where value is the name of your namespace.\n\nThis workflow allows to define the keys of your organizational metadata that are used to represent\nyour namespace hiearchy.\n\nBy default, we suggest to consider the following keys:\n\n1. workspace\n2. platform\n3. app\n\nThese metadata will be propagated to your processing units, defenders, external networks and can then be used\nin your policies rules.",
+              "longDescription": "\nA metadata is a \"key=value\" pair, where value is the name of your namespace.\n\nThis workflow allows to define the keys of your organizational metadata that are used to represent\nyour namespace hiearchy.\n\nBy default, we suggest to consider the following keys:\n\n1. workspace\n2. platform\n3. app\n\nThese metadata will be propagated to your processing units, enforcers, external networks and can then be used\nin your policies rules.",
               "template": "{{`\nAPIVersion: 1\nlabel: \"recipe:namespace-organizational-metadata\"\ndata:\n  hookpolicies:\n    - name: \"namespace-organizational-metadata-hook\"\n      description: \"Triggers automation called namespace-organizational-metadata\"\n      endpointType: Automation\n      protected: true\n      propagate: true\n      subject:\n        - - \"$identity=namespace\"\n      selectors:\n        - - \"$identity=automation\"\n          - \"$name=namespace-organizational-metadata\"\n  automations:\n    - name: namespace-organizational-metadata\n      description: \"Triggered by the hook called namespace-organizational-metadata-hook\"\n      signature: \"MEUCIQCC+VY2MlOopMOACN0oErTH7/3bsZ/WBStPaxbu2ANSpgIgQWDqVsh17dsMssc87o1tP2WBAlLLVqfdhD53CqLh2/g=\"\n      trigger: Webhook\n      propagate: true\n      protected: true\n      parameters:\n        keys:\n          {{- range $index, $key := .Values.keys }}\n          - {{ $key | quote }}\n          {{- end }}\n        app_level: {{ .Values.app_level | quote }}\n      actions:\n        - |\n          function organizationalMetadataForNamespace(namespace, keys) {\n\n            parents = namespace.namespace.split(\"/\");\n            parents.shift()\n\n            if (!parents || parents.length == 0) {\n              return [];\n            }\n\n            // Root namespace case not handled in this workflow.\n            if (parents[0] === \"\") {\n              return [];\n            }\n\n            idx = parents.length - 1;\n            if (idx >= keys.length) {\n              return [];\n            }\n\n            k = keys[idx];\n            if (k === \"\") {\n              return [];\n            }\n\n            return [\"@org:\" + k + \"=\" + namespace.name];\n          }\n          /**\n          * This function will be executed when the automation condition is met:\n          * @param {object} api - api manipulator that allows CRUD operations.\n          * @param {object} params - the parameters configured in the automation.\n          * @param {object} payload - Payload returned by the condition.\n          */\n          function then(api, params) {\n\n              var triggerPayload = JSON.parse(params.triggerPayload);\n              var namespace = triggerPayload.input;\n\n              if (triggerPayload.operation !== \"create\" || !namespace.name) {\n                triggerPayload.output = triggerPayload.input;\n                return {\n                  \"statusCode\": 200,\n                  \"body\": JSON.stringify(triggerPayload),\n                }\n              }\n\n              namespace.organizationalMetadata = organizationalMetadataForNamespace(namespace, params.keys);\n\n              // populates the output field of the remote processor model with our modifications\n              triggerPayload.output = namespace;\n\n              return {\n                  \"statusCode\": 200,\n                  \"body\": JSON.stringify(triggerPayload),\n              }\n\n          }\n    - name: auto-deploy-discovery-mode\n      description: \"Automatic deployment of discovery mode in app namespaces\"\n      signature: \"MEUCIHS4SDy7tszF6cF5cxq1db3Se7p4v7/BGiLr+3uDvpviAiEAk7N9O37JliL8QKe0SY4+6tNok+sPkExmITSXgC0RDo4=\"\n      trigger: Event\n      events:\n        namespace:\n          - create\n      entitlements:\n        recipe:\n          - retrieve-many\n        rendertemplate:\n          - create\n        importreference:\n          - create\n        networkaccesspolicy:\n          - create\n          - retrieve-many\n        externalnetwork:\n          - create\n          - retrieve-many\n      propagate: true\n      protected: true\n      parameters:\n        keys:\n          {{- range $index, $key := .Values.keys }}\n          - {{ $key | quote }}\n          {{- end }}\n        app_level: {{ .Values.app_level | quote }}\n      condition: |-\n        /* When creating a namespace that contains app */\n        function when(api, params, payload) {\n          var namespace = params.eventPayload.entity.namespace;\n\n          appIndex = _.indexOf(params.keys, params.app_level)\n\n          console.error(appIndex, params.app_level);\n\n          if (appIndex < 1) {\n            return { continue: false };\n          }\n\n          parents = namespace.split(\"/\");\n          // remove root and account namespaces.\n          parents.shift();\n          parents.shift();\n\n          return { continue: parents.length === appIndex, payload: { targetNamespace: params.eventPayload.entity.name } };\n        }\n      actions:\n        - |\n          /* Deploy the discovery mode recipe */\n          function then(api, params, payload) {\n            return aporeto.deployRecipeWithLabelFilter(api, payload.targetNamespace, 'label == \"recipe:design-mode\"', {\"propagate\": true});\n          }\nidentities:\n  - hookpolicy\n  - automation\n`}}",
               "steps": [
                   {
@@ -90,8 +90,8 @@ data:
             }
 
             var recipeCreateNewWorkspace = {
-              "name": "1) Prepare a defender deployment",
-              "description": "Define a namespace hierarchy where the defender will be deployed.",
+              "name": "1) Prepare an enforcer deployment",
+              "description": "Define a namespace hierarchy where the enforcer will be deployed.",
               "label": "recipe:create-workspace-platform-app",
               "deploymentMode": "Unrestricted",
               "metadata": [
@@ -103,7 +103,7 @@ data:
               "targetIdentities": [
                 "namespaces"
               ],
-              "longDescription": "## Create a namespace hierarchy before registering your Defenders\n\n---\n\n### This wizard allows you to establish a repeatable structure to organize your workloads into apps\n* It creates a highly recommended fixed 3-tier Microsegmentation namespace hierarchy tree in your account namespace.\n> > /{account}/**{workspace}**/**{platform}**/**{app}**\n* All processing units (PU) will receive 3 tags corresponding to the 3 levels in the hierarchy you are about to create to aid in policy creation to simplify the consumption of the Microsegmentation solution.\n\n > > 1. @org:**workspace** =\n > > 1. @org:**platform** =\n > > 1. @org:**app** =\n\n* Hosts, Docker Hosts, and Container Clusters should each be in their own Platform groups.\n* Processing Units will appear in the user defined **\"app\"** tier after Defenders are registered.\n* **The default behavior for the app tiers will be to automatically enable Discovery Mode to allow all communication**\n* For K8s/OpenShift the app tier automatically corresponds the cluster namespace and requires no user input in this wizard\n\n---\n\n_**After running the wizard:**_\n\n> > - [ ] Note the namespace and provide it to the Defender registration\n> > - [ ] Navigate to the Microsegmentation app tier namespace to visualize your application connectivity\n> > - [ ] Start the policy creation process\n\n---\n\n_**Re-run this wizard to:**_\n> > - [ ] Add to an existing namespace hierarchy\n> > >  or\n> > - [ ] Create an entirely new namespace hierarchy\n\n\n#### For more information please refer to the documentation.",
+              "longDescription": "## Create a namespace hierarchy before registering your enforcers\n\n---\n\n### This wizard allows you to establish a repeatable structure to organize your workloads into apps\n* It creates a highly recommended fixed 3-tier Microsegmentation namespace hierarchy tree in your account namespace.\n> > /{account}/**{workspace}**/**{platform}**/**{app}**\n* All processing units (PU) will receive 3 tags corresponding to the 3 levels in the hierarchy you are about to create to aid in policy creation to simplify the consumption of the Microsegmentation solution.\n\n > > 1. @org:**workspace** =\n > > 1. @org:**platform** =\n > > 1. @org:**app** =\n\n* Hosts, Docker Hosts, and Container Clusters should each be in their own Platform groups.\n* Processing Units will appear in the user defined **\"app\"** tier after enforcers are registered.\n* **The default behavior for the app tiers will be to automatically enable Discovery Mode to allow all communication**\n* For K8s/OpenShift the app tier automatically corresponds the cluster namespace and requires no user input in this wizard\n\n---\n\n_**After running the wizard:**_\n\n> > - [ ] Note the namespace and provide it to the enforcer registration\n> > - [ ] Navigate to the Microsegmentation app tier namespace to visualize your application connectivity\n> > - [ ] Start the policy creation process\n\n---\n\n_**Re-run this wizard to:**_\n> > - [ ] Add to an existing namespace hierarchy\n> > >  or\n> > - [ ] Create an entirely new namespace hierarchy\n\n\n#### For more information please refer to the documentation.",
               "template": "{{`\nAPIVersion: 1\nlabel: recipe:create-workspace-platform-app\ndata:\n  {{- $pattern := cat \"^\" .Aporeto.Namespace \"(/[a-zA-Z0-9-_]+){0,2}$\" | nospace }}\n  {{- if (regexMatch $pattern .Values.existing_namespace) }}\n  {{- $existing_ns := .Values.existing_namespace | trimPrefix .Aporeto.Namespace }}\n  {{- $workspace := \"\" }}\n  {{- $platform := \"\" }}\n  {{- $app := \"\" }}\n  namespaces:\n  {{- if (regexMatch \"^(/[a-zA-Z0-9-_]+){0,1}(/)?$\" .Values.existing_namespace) }}\n  {{- $workspace = required \"Workspace name is required\" .Values.workspace }}\n  {{- if not (regexMatch \"^[a-zA-Z0-9-_]+$\" $workspace) }}\n  {{- fail \"workspace name must only contain alpha numerical characters, '-' or '_'\"}}\n  {{- end }}\n  - name: {{ $workspace }}\n  {{- end }}\n  {{- if (regexMatch \"^(/[a-zA-Z0-9-_]+){0,2}(/)?$\" .Values.existing_namespace) }}\n  {{- $platform = required \"Platform name is required\" .Values.platform }}\n  {{- if not (regexMatch \"^[a-zA-Z0-9-_]+$\" $platform) }}\n  {{- fail \"platform name must only contain alpha numerical characters, '-' or '_'\"}}\n  {{- end }}\n  - name: {{ $platform }}\n    namespace: {{ regexReplaceAll \"\\\\s+\" (cat $existing_ns $workspace) \"/\" | trimSuffix \"/\"}}\n  {{- end }}\n  {{- if and (regexMatch \"^^(/[a-zA-Z0-9-_]+){0,3}(/)?$\" .Values.existing_namespace) (ne .Values.mode \"kubernetes\") }}\n  {{- $app = required \"Application name is required\" .Values.app}}\n  {{- if not (regexMatch \"^[a-zA-Z0-9-_]+$\" $app) }}\n  {{- fail \"application name must only contain alpha numerical characters, '-' or '_'\"}}\n  {{- end }}\n  - name: {{ $app }}\n    namespace: {{ regexReplaceAll \"\\\\s+\" (cat $existing_ns $workspace $platform) \"/\" | trimSuffix \"/\"}}\n  {{- end }}\n  {{- else }}\n  {{- fail \"Invalid starting namespace pattern\" }}\n  {{- end }}\n`}}",
               "steps": [
                 {
@@ -224,7 +224,7 @@ data:
                       "key": "sucess_message_nok8s1",
                       "name": "Details",
                       "type": "InfoMessage",
-                      "defaultValue": "Copy the following namespace for your defender deployment: **.Values.existing_namespace/.Values.workspace/.Values.platform/.Values.app**",
+                      "defaultValue": "Copy the following namespace for your enforcer deployment: **.Values.existing_namespace/.Values.workspace/.Values.platform/.Values.app**",
                       "visibilityCondition": [
                         [
                           {
@@ -248,7 +248,7 @@ data:
                       "key": "sucess_message_nok8s2",
                       "name": "Details",
                       "type": "InfoMessage",
-                      "defaultValue": "Copy the following namespace for your defender deployment: **.Values.existing_namespace/.Values.platform/.Values.app**",
+                      "defaultValue": "Copy the following namespace for your enforcer deployment: **.Values.existing_namespace/.Values.platform/.Values.app**",
                       "visibilityCondition": [
                         [
                           {
@@ -272,7 +272,7 @@ data:
                       "key": "sucess_message_nok8s3",
                       "name": "Details",
                       "type": "InfoMessage",
-                      "defaultValue": "Copy the following namespace for your defender deployment: **.Values.existing_namespace/.Values.app**",
+                      "defaultValue": "Copy the following namespace for your enforcer deployment: **.Values.existing_namespace/.Values.app**",
                       "visibilityCondition": [
                         [
                           {
@@ -296,7 +296,7 @@ data:
                       "key": "sucess_message_k8s1",
                       "name": "Details",
                       "type": "InfoMessage",
-                      "defaultValue": "Copy the following namespace for your defender deployment: **.Values.existing_namespace/.Values.workspace/.Values.platform**",
+                      "defaultValue": "Copy the following namespace for your enforcer deployment: **.Values.existing_namespace/.Values.workspace/.Values.platform**",
                       "visibilityCondition": [
                         [
                           {
@@ -320,7 +320,7 @@ data:
                       "key": "sucess_message_k8s2",
                       "name": "Details",
                       "type": "InfoMessage",
-                      "defaultValue": "Copy the following namespace for your defender deployment: **.Values.existing_namespace/.Values.platform**",
+                      "defaultValue": "Copy the following namespace for your enforcer deployment: **.Values.existing_namespace/.Values.platform**",
                       "visibilityCondition": [
                         [
                           {

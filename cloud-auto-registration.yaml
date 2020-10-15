@@ -32,7 +32,6 @@ data:
           {{- else }}
           - - "@auth:realm=awssecuritytoken"
           {{- end }}
-            - "@auth:organization={{ .Aporeto.Namespace }}"
           {{- range $i, $claim := .Values.claims }}
             {{- if hasPrefix "@auth:" $claim }}
             - "{{ $claim }}"

@@ -15,7 +15,7 @@ data:
     targetIdentities:
     - apiauthorizationpolicy
     longDescription: |-
-      Define an API authorization policy to allow the auto-registration of the enforcer using an AWS cloud identity.
+      Define an API authorization policy to allow the auto-registration of the enforcer using an cloud identity.
     template: |-
       {{`
       APIVersion: 1

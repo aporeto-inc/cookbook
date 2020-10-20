@@ -1,0 +1,65 @@
+APIVersion: 1
+label: recipe:cloud-auto-registration
+data:
+  recipes:
+  - name: Create a cloud auto-registration policy
+    label: recipe:cloud-auto-registration
+    icon: fal fa-cloud
+    propagate: true
+    metadata:
+    - "@aporeto:author=aporeto"
+    associatedTags:
+    - "aporeto:recipe:placement=create-button"
+    - "aporeto:recipe:identity=apiauthorizationpolicy"
+    deploymentMode: Unrestricted
+    targetIdentities:
+    - apiauthorizationpolicy
+    longDescription: |-
+      Define an API authorization policy to allow the auto-registration of the enforcer using an AWS cloud identity.
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        apiauthorizationpolicies:
+        - name: "[{{ .Values.cloud_provider }}] authorize enforcer auto-registeration with claims {{ required "claims are required" .Values.claims | join " and " }}"
+          description: "authorization to auto-register an enforcer in AWS"
+          propagate: true
+          subject:
+          {{- if eq .Values.cloud_provider "gcp" }}
+          - - "@auth:realm=gcpidentitytoken"
+          {{- else if eq .Values.cloud_provider "azure" }}
+          - - "@auth:realm=azureidentitytoken"
+          {{- else }}
+          - - "@auth:realm=awssecuritytoken"
+          {{- end }}
+          {{- range $i, $claim := .Values.claims }}
+            {{- if hasPrefix "@auth:" $claim }}
+            - "{{ $claim }}"
+            {{- else }}
+            {{- $kv := splitn "=" 2 $claim }}
+            - "@auth:{{ $kv._0 | lower }}={{ $kv._1 }}"
+            {{- end }}
+          {{- end }}
+          authorizedNamespace: "{{ required ".Aporeto.Namespace is required" .Aporeto.Namespace }}"
+          authorizedIdentities:
+          - "@auth:role=enforcer"
+      `}}
+    steps:
+    - name: Auto-registration
+      parameters:
+      - key: cloud_provider
+        name: Cloud Provider
+        description: Which cloud provider would you like to auto register your enforcers ?
+        type: Enum
+        defaultValue: aws
+        allowedChoices:
+          aws: AWS
+          azure: Azure
+          gcp: GCP
+
+      - key: claims
+        name: Claims
+        description: list all key=value that your workload should match to auto register an enforcer.
+        type: StringSlice
+        defaultValue:
+        - account=1234

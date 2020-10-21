@@ -15,14 +15,14 @@ data:
     targetIdentities:
     - apiauthorizationpolicy
     longDescription: |-
-      Define an API authorization policy to allow the auto-registration of the enforcer using an AWS cloud identity.
+      Define an API authorization policy to allow the auto-registration of the enforcer using an cloud identity.
     template: |-
       {{`
       APIVersion: 1
       data:
         apiauthorizationpolicies:
         - name: "[{{ .Values.cloud_provider }}] authorize enforcer auto-registeration with claims {{ required "claims are required" .Values.claims | join " and " }}"
-          description: "authorization to auto-register an enforcer in AWS"
+          description: "authorization to auto-register an enforcer in {{ .Values.cloud_provider }}"
           propagate: true
           subject:
           {{- if eq .Values.cloud_provider "gcp" }}

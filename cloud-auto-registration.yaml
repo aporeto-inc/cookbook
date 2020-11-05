@@ -15,13 +15,13 @@ data:
     targetIdentities:
     - apiauthorizationpolicy
     longDescription: |-
-      Define an API authorization policy to allow the auto-registration of the enforcer using an cloud identity.
+      Define an API authorization policy to allow the auto-registration of the enforcer using a cloud identity.
     template: |-
       {{`
       APIVersion: 1
       data:
         apiauthorizationpolicies:
-        - name: "[{{ .Values.cloud_provider }}] authorize enforcer auto-registeration with claims {{ required "claims are required" .Values.claims | join " and " }}"
+        - name: "[{{ .Values.cloud_provider }}] authorize enforcer auto-registration with claims {{ required "claims are required" .Values.claims | join " and " }}"
           description: "authorization to auto-register an enforcer in {{ .Values.cloud_provider }}"
           propagate: true
           subject:
@@ -49,7 +49,7 @@ data:
       parameters:
       - key: cloud_provider
         name: Cloud Provider
-        description: Which cloud provider would you like to auto register your enforcers ?
+        description: Which cloud provider would you like to auto-register your enforcers?
         type: Enum
         defaultValue: aws
         allowedChoices:
@@ -59,7 +59,5 @@ data:
 
       - key: claims
         name: Claims
-        description: list all key=value that your workload should match to auto register an enforcer.
+        description: List all key=value pairs that your workload should match to auto-register an enforcer.
         type: StringSlice
-        defaultValue:
-        - account=1234

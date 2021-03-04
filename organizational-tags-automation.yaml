@@ -1,0 +1,56 @@
+APIVersion: 1
+label: "recipe:organizational-metadata-automation"
+data:
+  hookpolicies:
+  - name: "organizational-metadata-automation-hook"
+    description: "Triggers automation called organizational-metadata-automation"
+    endpointType: Automation
+    propagate: true
+    subject:
+    - - "$identity=namespace"
+    selectors:
+    - - "$identity=automation"
+      - "$name=organizational-metadata-automation"
+  automations:
+  - name: organizational-metadata-automation
+    description: "Triggered by the hook called organizational-metadata-automation-hook"
+    signature: ""
+    trigger: Webhook
+    propagate: true
+    parameters:
+      level0: company
+      level1: zone
+    actions:
+    - |
+      function then(api, params) {
+        var triggerPayload = JSON.parse(params.triggerPayload);
+        var namespace = triggerPayload.input;
+
+        if (triggerPayload.operation !== "create" || !namespace.name) {
+            triggerPayload.output = triggerPayload.input;
+
+            return {
+              "statusCode": 200,
+              "body": JSON.stringify(triggerPayload),
+            }
+        }
+
+        parents = namespace.namespace.split("/");
+        parents.shift()
+
+        var tag = _.get(params, "level"+parents.length, "");
+        if (tag != "") {
+          namespace.organizationalMetadata = ["@org:"+params["level"+parents.length]+"="+namespace.name];
+        }
+
+        // populates the output field of the remote processor model with our modifications
+        triggerPayload.output = namespace;
+
+        return {
+            "statusCode": 200,
+            "body": JSON.stringify(triggerPayload),
+        }
+      }
+identities:
+- hookpolicy
+- automation

@@ -6,7 +6,7 @@ data:
     description: "Triggers automation called organizational-metadata-automation"
     endpointType: Automation
     propagate: true
-    protected: true
+    # protected: true
     subject:
     - - "$identity=namespace"
     selectors:
@@ -18,17 +18,30 @@ data:
     signature: ""
     trigger: Webhook
     propagate: true
-    protected: true
+    # protected: true
     parameters:
       level0: company
       level1: zone
+      level2: rail
+      level3: group
     actions:
     - |
       // Return the level of the created namespace.
       function getCurrentLevel(namespaceName) {
-        var parents = namespaceName.split("/");
-        parents.shift()
-        return parents.length;
+        var arr = namespaceName.split("/");
+        arr.shift()
+        return arr.length;
+      }
+
+      // Return the name of the namespace.
+      function getNamespaceName(namespaceName) {
+          var arr = namespaceName.split("/");
+
+          if (arr.length === 0) {
+            return namespaceName;
+          }
+
+          return arr[arr.length - 1];
       }
 
       // Action triggered when a namespace is created.
@@ -36,7 +49,7 @@ data:
         var triggerPayload = JSON.parse(params.triggerPayload);
         var namespace = triggerPayload.input;
 
-        if (triggerPayload.operation !== "create" || !namespace.name) {
+        if (!namespace.name || triggerPayload.operation === "delete") {
             triggerPayload.output = triggerPayload.input;
 
             return {
@@ -49,7 +62,7 @@ data:
         var tag = _.get(params, "level"+namespaceLevel, "");
 
         if (tag != "") {
-          var organizationalMetadata = ["@org:"+params["level"+namespaceLevel]+"="+namespace.name];
+          var organizationalMetadata = ["@org:"+params["level"+namespaceLevel]+"="+getNamespaceName(namespace.name)];
           _.each(namespace.organizationalMetadata, function (m) {
             organizationalMetadata.push(m);
           });

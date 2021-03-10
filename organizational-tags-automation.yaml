@@ -6,6 +6,7 @@ data:
     description: "Triggers automation called organizational-metadata-automation"
     endpointType: Automation
     propagate: true
+    protected: true
     subject:
     - - "$identity=namespace"
     selectors:
@@ -17,11 +18,20 @@ data:
     signature: ""
     trigger: Webhook
     propagate: true
+    protected: true
     parameters:
       level0: company
       level1: zone
     actions:
     - |
+      // Return the level of the created namespace.
+      function getCurrentLevel(namespaceName) {
+        var parents = namespaceName.split("/");
+        parents.shift()
+        return parents.length;
+      }
+
+      // Action triggered when a namespace is created.
       function then(api, params) {
         var triggerPayload = JSON.parse(params.triggerPayload);
         var namespace = triggerPayload.input;
@@ -35,12 +45,15 @@ data:
             }
         }
 
-        parents = namespace.namespace.split("/");
-        parents.shift()
+        var namespaceLevel = getCurrentLevel(namespace.namespace);
+        var tag = _.get(params, "level"+namespaceLevel, "");
 
-        var tag = _.get(params, "level"+parents.length, "");
         if (tag != "") {
-          namespace.organizationalMetadata = ["@org:"+params["level"+parents.length]+"="+namespace.name];
+          var organizationalMetadata = ["@org:"+params["level"+namespaceLevel]+"="+namespace.name];
+          _.each(namespace.organizationalMetadata, function (m) {
+            organizationalMetadata.push(m);
+          });
+          namespace.organizationalMetadata = organizationalMetadata;
         }
 
         // populates the output field of the remote processor model with our modifications

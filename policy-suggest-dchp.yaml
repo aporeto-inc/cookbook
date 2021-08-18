@@ -1,10 +1,10 @@
 APIVersion: 1
-label: recipe:policy-suggest:dns
+label: recipe:policy-suggest:dhcp
 data:
   recipes:
-    - name: Create DNS rule
-      description: Creates a basic DNS rule for the current namespace.
-      label: recipe:policy-suggest:dns
+    - name: Create DHCP rule
+      description: Creates a basic DHCP rule for the current namespace.
+      label: recipe:policy-suggest:dhcp
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
@@ -16,31 +16,38 @@ data:
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Create a DNS rule
+        ### Create a DHCP rule
 
         This recipe will create an External Network and Network Ruleset Policy to
-        enable outgoing access to DNS port UDP/53 on the current namespace.
+        enable access to DHCP outgoing port UDP/67 and incoming port UDP/68 on the
+        current namespace.
 
       template: |-
         {{`
         APIVersion: 1
         data:
           externalnetworks:
-          - name: dns
+          - name: dhcp
             protected: true
             entries:
             - {{ .Values.network | quote }}
             associatedTags:
-            - 'externalnetwork:name=dns'
+            - 'externalnetwork:name=dhcp'
           networkrulesetpolicies:
-          - name: dns
+          - name: dhcp
             protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=dhcp'
+              protocolPorts:
+              - udp/68
             outgoingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=dns'
+              - - 'externalnetwork:name=dhcp'
               protocolPorts:
-              - udp/53
+              - udp/67
             subject:
             - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}

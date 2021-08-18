@@ -1,10 +1,10 @@
 APIVersion: 1
-label: recipe:policy-suggest:dns
+label: recipe:policy-suggest:ntp
 data:
   recipes:
-    - name: Create DNS rule
-      description: Creates a basic DNS rule for the current namespace.
-      label: recipe:policy-suggest:dns
+    - name: Create NTP rule
+      description: Creates a basic NTP rule for the current namespace.
+      label: recipe:policy-suggest:ntp
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
@@ -16,31 +16,31 @@ data:
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Create a DNS rule
+        ### Create a NTP rule
 
         This recipe will create an External Network and Network Ruleset Policy to
-        enable outgoing access to DNS port UDP/53 on the current namespace.
+        enable outgoing access to NTP port UDP/123 on the current namespace.
 
       template: |-
         {{`
         APIVersion: 1
         data:
           externalnetworks:
-          - name: dns
+          - name: ntp
             protected: true
             entries:
             - {{ .Values.network | quote }}
             associatedTags:
-            - 'externalnetwork:name=dns'
+            - 'externalnetwork:name=ntp'
           networkrulesetpolicies:
-          - name: dns
+          - name: ntp
             protected: true
             outgoingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=dns'
+              - - 'externalnetwork:name=ntp'
               protocolPorts:
-              - udp/53
+              - udp/123
             subject:
             - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}

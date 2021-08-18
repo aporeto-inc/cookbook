@@ -9,7 +9,7 @@ data:
         - "@aporeto:author=aporeto"
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
-        - "aporeto:recipe:identity=network-service-rules"
+        - "aporeto:recipe:placement=infrastructure"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - externalnetwork
@@ -43,9 +43,7 @@ data:
               - udp/53
             subject:
             - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
-              {{- if hasPrefix "@org:" $orgmeta }}
               - {{ $orgmeta | quote }}
-              {{- end }}
               {{- end }}
           `}}
 

@@ -1,0 +1,87 @@
+APIVersion: 1
+label: recipe:policy-suggest:oracle_linux_update
+data:
+  recipes:
+    - name: Create Oracle Linux Update rule
+      description: Creates a basic Oracle Linux Update rule for the current namespace.
+      label: recipe:policy-suggest:oracle_linux_update
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=system-update"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - externalnetwork
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create a Oracle Linux Update rule
+
+        This recipe will create an External Network and Network Ruleset Policy to
+        enable outgoing access to Oracle Linux Update FQDNs on the current namespace.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          externalnetworks:
+          - name: oracle_linux_update
+            protected: true
+            entries:
+            {{- range $index, $network := .Values.networks }}
+            - {{ $network | quote }}
+            {{- end }}
+            associatedTags:
+            - 'externalnetwork:name=oracle_linux_update'
+          networkrulesetpolicies:
+          - name: oracle_linux_update
+            protected: true
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=oracle_linux_update'
+              protocolPorts:
+              - tcp/80
+              - tcp/443
+            subject:
+            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+              {{- end }}
+          `}}
+
+      steps:
+        - name: General
+          description: General configuration
+          parameters:
+            - key: networks
+              name: Networks
+              description: Describe the external network.
+              longDescription: |-
+                Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
+              type: StringSlice
+              defaultValue:
+              - "public-yum.oracle.com"
+              - "yum-ap-sidney-1.oracle.com"
+              - "yum-ap-melbourne-1.oracle.com"
+              - "yum-sa-saopaulo-1.oracle.com"
+              - "yum-sa-vinhedo-1.oracle.com"
+              - "yum-ca-montreal-1.oracle.com"
+              - "yum-ca-toronto-1.oracle.com"
+              - "yum-sa-santiago-1.oracle.com"
+              - "yum-eu-frankfurt-1.oracle.com"
+              - "yum-ap-hyderabad-1.oracle.com"
+              - "yum-ap-mumbai-1.oracle.com"
+              - "yum-ap-osaka-1.oracle.com"
+              - "yum-ap-toyo-1.oracle.com"
+              - "yum-eu-amsterdam-1.oracle.com"
+              - "yum-me-jeddah-1.oracle.com"
+              - "yum-ap-seoul-1.oracle.com"
+              - "yum-ap-chuncheon-1.oracle.com"
+              - "yum-eu-zurich-1.oracle.com"
+              - "yum-me-duba-1.oracle.com"
+              - "yum-uk-london-1.oracle.com"
+              - "yum-uk-cardiff-1.oracle.com"
+              - "yum-us-phoenix-1.oracle.com"
+              - "yum-us-ashburn-1.oracle.com"
+              - "yum-us-sanjose-1.oracle.com"

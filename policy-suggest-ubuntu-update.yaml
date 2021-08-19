@@ -1,0 +1,67 @@
+APIVersion: 1
+label: recipe:policy-suggest:ubuntu_update
+data:
+  recipes:
+    - name: Create Debian/Ubuntu Update rule
+      description: Creates a basic Debian/Ubuntu Update rule for the current namespace.
+      label: recipe:policy-suggest:ubuntu_update
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=system-update"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - externalnetwork
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create a Debian/Ubuntu Update rule
+
+        This recipe will create an External Network and Network Ruleset Policy to
+        enable outgoing access to Debian/Ubuntu Update FQDNs on the current namespace.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          externalnetworks:
+          - name: ubuntu_update
+            protected: true
+            entries:
+            {{- range $index, $network := .Values.networks }}
+            - {{ $network | quote }}
+            {{- end }}
+            associatedTags:
+            - 'externalnetwork:name=ubuntu_update'
+          networkrulesetpolicies:
+          - name: ubuntu_update
+            protected: true
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=ubuntu_update'
+              protocolPorts:
+              - tcp/80
+              - tcp/443
+            subject:
+            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+              {{- end }}
+          `}}
+
+      steps:
+        - name: General
+          description: General configuration
+          parameters:
+            - key: networks
+              name: Networks
+              description: Describe the external network.
+              longDescription: |-
+                Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
+              type: StringSlice
+              defaultValue:
+              - "*.archive.ubuntu.com"
+              - "*.archive.canonical.com"
+              - "security.ubuntu.com"
+              - "packages.debian.org"

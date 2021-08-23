@@ -1,0 +1,131 @@
+APIVersion: 1
+label: recipe:policy-suggest:k8s_nodes
+data:
+  recipes:
+    - name: Create Kubernetes Node(s) rule
+      description: Creates a Kubernetes Node(s) rule to allow node traffic.
+      label: recipe:policy-suggest:k8s_nodes
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=intra-namespace"
+      deploymentMode: Unrestricted
+      targetIdentities:
+        - externalnetwork
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create a Kubernetes Node(s) rule
+
+        This recipe will create an External Network and Network Ruleset Policy to
+        allow bidirectional traffic to the defined kubernetes node IP(s).
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          externalnetworks:
+          - name: k8s_nodes
+            protected: true
+            entries:
+            {{- range $index, $ip := .Values.ipAddresses }}
+            - {{ $ip | quote }}
+            {{- end }}
+            associatedTags:
+            - 'externalnetwork:name=k8s_nodes'
+          networkrulesetpolicies:
+          - name: k8s_nodes
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              {{- if eq .Values.trafficType "probe" }}
+              - "any"
+              {{- else if eq .Values.trafficType "kublet" }}
+              - "tcp/10250"
+              {{- else if eq .Values.trafficType "controllerManager" }}
+              - "tcp/10252"
+              {{- else if eq .Values.trafficType "cloudControllerManager" }}
+              - "tcp/10258"
+              {{- else if eq .Values.trafficType "etcd" }}
+              - "tcp/2379:2380"
+              {{- else if eq .Values.trafficType "scheduler" }}
+              - "tcp/10251"
+              {{- else if eq .Values.trafficType "nodePortServices" }}
+              - "tcp/30000:32767"
+              {{- else }}
+              {{- range $index, $port := .Values.ports }}
+              - {{ $port | quote }}
+              {{- end }}
+              {{- end }}
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              {{- if eq .Values.trafficType "probe" }}
+              - "any"
+              {{- else if eq .Values.trafficType "kublet" }}
+              - "tcp/10250"
+              {{- else if eq .Values.trafficType "controllerManager" }}
+              - "tcp/10252"
+              {{- else if eq .Values.trafficType "cloudControllerManager" }}
+              - "tcp/10258"
+              {{- else if eq .Values.trafficType "etcd" }}
+              - "tcp/2379:2380"
+              {{- else if eq .Values.trafficType "scheduler" }}
+              - "tcp/10251"
+              {{- else if eq .Values.trafficType "nodePortServices" }}
+              - "tcp/30000:32767"
+              {{- else }}
+              {{- range $index, $port := .Values.ports }}
+              - {{ $port | quote }}
+              {{- end }}
+              {{- end }}
+            subject:
+            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+              {{- end }}
+          `}}
+
+      steps:
+        - name: General
+          description: General configuration
+          parameters:
+            - key: ipAddresses
+              name: Node IP Address(es)
+              description: Define the kubernetes node IP(s).
+              longDescription: |-
+                Provide at least one node IP address to allow traffic. Example 52.17.12.0
+              type: StringSlice
+
+            - key: trafficType
+              name: Type of traffic
+              description: The type of traffic to allow
+              longDescription: |-
+                Select which type of traffic you want to allow through.
+              type: Enum
+              defaultValue: probe
+              allowedChoices:
+                probe: Readiness/Liveness Probes
+                kublet: Kubelet
+                controllerManager: Controller Manager
+                cloudControllerManager: Cloud Controller Manager
+                etcd: etcd
+                scheduler: Scheduler
+                nodePortServices: NodePort Services
+                other: Other (define below)
+
+            - key: ports
+              name: Ports to allow node traffic
+              description: Self-defined ports to allow traffic through
+              longDescription: |-
+                The ports that the kubernetes node IP(s) will be able to communicate across. Example tcp/10250, tcp/2379:2380
+              type: StringSlice
+              visibilityCondition:
+                - - key: trafficType
+                    operator: Equal
+                    value: "other"

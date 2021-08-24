@@ -35,56 +35,128 @@ data:
             associatedTags:
             - 'externalnetwork:name=k8s_nodes'
           networkrulesetpolicies:
-          - name: k8s_nodes
+          - name: k8s_nodes_kublet
             protected: true
             incomingRules:
             - action: Allow
               object:
               - - 'externalnetwork:name=k8s_nodes'
               protocolPorts:
-              {{- if eq .Values.trafficType "probe" }}
-              - "any"
-              {{- else if eq .Values.trafficType "kublet" }}
-              - "tcp/10250"
-              {{- else if eq .Values.trafficType "controllerManager" }}
-              - "tcp/10252"
-              {{- else if eq .Values.trafficType "cloudControllerManager" }}
-              - "tcp/10258"
-              {{- else if eq .Values.trafficType "etcd" }}
-              - "tcp/2379:2380"
-              {{- else if eq .Values.trafficType "scheduler" }}
-              - "tcp/10251"
-              {{- else if eq .Values.trafficType "nodePortServices" }}
-              - "tcp/30000:32767"
-              {{- else }}
-              {{- range $index, $port := .Values.ports }}
-              - {{ $port | quote }}
-              {{- end }}
-              {{- end }}
+              - tcp/10250
             outgoingRules:
             - action: Allow
               object:
               - - 'externalnetwork:name=k8s_nodes'
               protocolPorts:
-              {{- if eq .Values.trafficType "probe" }}
-              - "any"
-              {{- else if eq .Values.trafficType "kublet" }}
-              - "tcp/10250"
-              {{- else if eq .Values.trafficType "controllerManager" }}
-              - "tcp/10252"
-              {{- else if eq .Values.trafficType "cloudControllerManager" }}
-              - "tcp/10258"
-              {{- else if eq .Values.trafficType "etcd" }}
-              - "tcp/2379:2380"
-              {{- else if eq .Values.trafficType "scheduler" }}
-              - "tcp/10251"
-              {{- else if eq .Values.trafficType "nodePortServices" }}
-              - "tcp/30000:32767"
-              {{- else }}
-              {{- range $index, $port := .Values.ports }}
-              - {{ $port | quote }}
+              - tcp/10250
+            subject:
+            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
               {{- end }}
+          - name: k8s_nodes_controller_manager
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10252
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10252
+            subject:
+            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
               {{- end }}
+          - name: k8s_nodes_cloud_controller_manager
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10258
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10258
+            subject:
+            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+              {{- end }}
+          - name: k8s_nodes_etcd
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/2379:2380
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/2379:2380
+            subject:
+            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+              {{- end }}
+          - name: k8s_nodes_scheduler
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10251
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10251
+            subject:
+            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+              {{- end }}
+          - name: k8s_nodes_node_port_services
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/30000:32767
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/30000:32767
+            subject:
+            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+              {{- end }}
+          - name: k8s_nodes_liveness
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - any
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - any
             subject:
             - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
@@ -101,31 +173,3 @@ data:
               longDescription: |-
                 Provide at least one node IP address to allow traffic. Example 52.17.12.0
               type: StringSlice
-
-            - key: trafficType
-              name: Type of traffic
-              description: The type of traffic to allow
-              longDescription: |-
-                Select which type of traffic you want to allow through.
-              type: Enum
-              defaultValue: probe
-              allowedChoices:
-                probe: Readiness/Liveness Probes
-                kublet: Kubelet
-                controllerManager: Controller Manager
-                cloudControllerManager: Cloud Controller Manager
-                etcd: etcd
-                scheduler: Scheduler
-                nodePortServices: NodePort Services
-                other: Other (define below)
-
-            - key: ports
-              name: Ports to allow node traffic
-              description: Self-defined ports to allow traffic through
-              longDescription: |-
-                The ports that the kubernetes node IP(s) will be able to communicate across. Example tcp/10250, tcp/2379:2380
-              type: StringSlice
-              visibilityCondition:
-                - - key: trafficType
-                    operator: Equal
-                    value: "other"

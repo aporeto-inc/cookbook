@@ -1,33 +1,33 @@
 APIVersion: 1
-label: recipe:policy-suggest:secure_intra-k8s_namespaces
+label: recipe:policy-suggest:auto-secure_intra-k8s_namespaces
 data:
   recipes:
-    - name: Secure Intra-Kubernetes Namespaces
+    - name: Auto-Secure Intra-Kubernetes Namespaces
       description: Creates a Network Ruleset Policy to allow Kubernetes namespace traffic.
-      label: recipe:policy-suggest:secure_intra-k8s_namespaces
+      label: recipe:policy-suggest:auto-secure_intra-k8s_namespaces
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
         - "aporeto:recipe:placement=intra-namespace"
+        - "aporeto:recipe:placement=kubernetes-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Secure intra-kubernetes namespaces
+        ### Auto-secure intra-kubernetes namespaces
 
-        This recipe will create a Network Ruleset Policy to secure new
-        and existing Kubernetes namespaces (third-level namespaces).
+        This recipe will create a Network Ruleset Policy to auto-secure
+        a Kubernetes namespace (fourth-level namespaces).
 
       template: |-
         {{`
         APIVersion: 1
         data:
           networkrulesetpolicies:
-          - name: secure_intra-k8s_namespaces
+          - name: auto-secure_intra-k8s_namespaces
             protected: true
-            propagate: true
             incomingRules:
             - action: Allow
               object:
@@ -41,6 +41,7 @@ data:
               protocolPorts:
               - any
             subject:
-            - - $identity=namespace
-              - $type=Kubernetes
+            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+              {{- end }}
         `}}

@@ -56,12 +56,12 @@ data:
               name: First namespace
               description: Tags denoting the first namespace.
               longDescription: |-
-                Provide the tag(s) that will point to the first namespace. Example $identity=namespace, $name=/tenant/cloudaccount/group1
+                Provide the tag(s) that will point to the first namespace. Example @org:cloudaccount=demo-cloud-account, @org:kubernetes=bookinfo
               type: StringSlice
 
             - key: namespace2Tags
               name: Second namespace
               description: Tags denoting the second namespace.
               longDescription: |-
-                Provide the tag(s) that will point to the second namespace. Example $identity=namespace, $name=/tenant/cloudaccount/group2
+                Provide the tag(s) that will point to the second namespace. Example @org:cloudaccount=demo-cloud-account, @org:kubernetes=boutique
               type: StringSlice

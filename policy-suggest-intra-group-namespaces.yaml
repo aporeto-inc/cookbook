@@ -1,0 +1,46 @@
+APIVersion: 1
+label: recipe:policy-suggest:secure_intra-vm_groups
+data:
+  recipes:
+    - name: Secure Intra-VM Groups
+      description: Creates a Network Ruleset Policy to allow Group namespace traffic.
+      label: recipe:policy-suggest:secure_intra-vm_groups
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=intra-namespace"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Secure intra-VM groups
+
+        This recipe will create a Network Ruleset Policy to secure new
+        and existing Group namespaces (third-level namespaces).
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          networkrulesetpolicies:
+          - name: secure_intra-vm_groups
+            protected: true
+            propagate: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - $identity=processingunit
+              protocolPorts:
+              - any
+            outgoingRules:
+            - action: Allow
+              object:
+              - - $identity=processingunit
+              protocolPorts:
+              - any
+            subject:
+            - - $identity=namespace
+              - $type=Group
+        `}}

@@ -42,10 +42,14 @@ data:
               protocolPorts:
               - udp/53
             subject:
-            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
               - {{ $orgmeta | quote }}
-              {{- end }}
-          `}}
+            {{- end }}
+            {{- end }}
+        `}}
 
       steps:
         - name: General

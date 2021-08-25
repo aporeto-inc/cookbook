@@ -40,12 +40,20 @@ data:
               protocolPorts:
               - any
             subject:
-            - {{- range $index, $tag := .Values.namespace1Tags }}
+            {{- range $index, $tag := .Values.namespace1Tags }}
+            {{- if eq $index 0 }}
+            - - {{ $tag | quote }}
+            {{- else }}
               - {{ $tag | quote }}
-              {{- end }}
-            - {{- range $index, $tag := .Values.namespace2Tags }}
+            {{- end }}
+            {{- end }}
+            {{- range $index, $tag := .Values.namespace2Tags }}
+            {{- if eq $index 0 }}
+            - - {{ $tag | quote }}
+            {{- else }}
               - {{ $tag | quote }}
-              {{- end }}
+            {{- end }}
+            {{- end }}
           `}}
 
       steps:

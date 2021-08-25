@@ -50,9 +50,13 @@ data:
               protocolPorts:
               - tcp/10250
             subject:
-            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
               - {{ $orgmeta | quote }}
-              {{- end }}
+            {{- end }}
+            {{- end }}
           - name: k8s_nodes_controller_manager
             protected: true
             incomingRules:
@@ -68,9 +72,13 @@ data:
               protocolPorts:
               - tcp/10252
             subject:
-            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
               - {{ $orgmeta | quote }}
-              {{- end }}
+            {{- end }}
+            {{- end }}
           - name: k8s_nodes_cloud_controller_manager
             protected: true
             incomingRules:
@@ -86,9 +94,13 @@ data:
               protocolPorts:
               - tcp/10258
             subject:
-            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
               - {{ $orgmeta | quote }}
-              {{- end }}
+            {{- end }}
+            {{- end }}
           - name: k8s_nodes_etcd
             protected: true
             incomingRules:
@@ -104,9 +116,13 @@ data:
               protocolPorts:
               - tcp/2379:2380
             subject:
-            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
               - {{ $orgmeta | quote }}
-              {{- end }}
+            {{- end }}
+            {{- end }}
           - name: k8s_nodes_scheduler
             protected: true
             incomingRules:
@@ -122,9 +138,13 @@ data:
               protocolPorts:
               - tcp/10251
             subject:
-            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
               - {{ $orgmeta | quote }}
-              {{- end }}
+            {{- end }}
+            {{- end }}
           - name: k8s_nodes_node_port_services
             protected: true
             incomingRules:
@@ -140,9 +160,13 @@ data:
               protocolPorts:
               - tcp/30000:32767
             subject:
-            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
               - {{ $orgmeta | quote }}
-              {{- end }}
+            {{- end }}
+            {{- end }}
           - name: k8s_nodes_liveness
             protected: true
             incomingRules:
@@ -158,9 +182,13 @@ data:
               protocolPorts:
               - any
             subject:
-            - {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
               - {{ $orgmeta | quote }}
-              {{- end }}
+            {{- end }}
+            {{- end }}
           `}}
 
       steps:

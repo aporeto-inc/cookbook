@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:amazon_linux_update
 data:
   recipes:
-    - name: Create Amazon Linux Update rule
+    - name: Create Amazon Linux Update Rule
       description: Creates a basic Amazon Linux Update rule for the current namespace.
       label: recipe:policy-suggest:amazon_linux_update
       metadata:

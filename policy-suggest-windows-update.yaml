@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:windows_update
 data:
   recipes:
-    - name: Create Windows Update rule
+    - name: Create Windows Update Rule
       description: Creates a basic Windows Update rule for the current namespace.
       label: recipe:policy-suggest:windows_update
       metadata:

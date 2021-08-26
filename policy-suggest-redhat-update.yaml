@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:redhat_update
 data:
   recipes:
-    - name: Create Red Hat Update rule
+    - name: Create Red Hat Update Rule
       description: Creates a basic Red Hat Update rule for the current namespace.
       label: recipe:policy-suggest:redhat_update
       metadata:

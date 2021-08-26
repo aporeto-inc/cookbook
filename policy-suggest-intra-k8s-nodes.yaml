@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:k8s_nodes
 data:
   recipes:
-    - name: Create Kubernetes Node(s) rule
+    - name: Create Kubernetes Node Rule
       description: Creates a Kubernetes Node(s) rule to allow node traffic.
       label: recipe:policy-suggest:k8s_nodes
       metadata:
@@ -16,7 +16,7 @@ data:
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Create a Kubernetes Node(s) rule
+        ### Create a Kubernetes Node rule
 
         This recipe will create an External Network and Network Ruleset Policy to
         allow bidirectional traffic to the defined kubernetes node IP(s).

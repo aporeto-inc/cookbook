@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:ubuntu_update
 data:
   recipes:
-    - name: Create Debian/Ubuntu Update rule
+    - name: Create Debian/Ubuntu Update Rule
       description: Creates a basic Debian/Ubuntu Update rule for the current namespace.
       label: recipe:policy-suggest:ubuntu_update
       metadata:

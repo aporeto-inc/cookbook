@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:suse_update
 data:
   recipes:
-    - name: Create SUSE Update rule
+    - name: Create SUSE Update Rule
       description: Creates a basic SUSE Update rule for the current namespace.
       label: recipe:policy-suggest:suse_update
       metadata:

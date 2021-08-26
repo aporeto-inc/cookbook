@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:ntp
 data:
   recipes:
-    - name: Create NTP rule
+    - name: Create NTP Rule
       description: Creates a basic NTP rule for the current namespace.
       label: recipe:policy-suggest:ntp
       metadata:

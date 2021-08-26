@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:dhcp
 data:
   recipes:
-    - name: Create DHCP rule
+    - name: Create DHCP Rule
       description: Creates a basic DHCP rule for the current namespace.
       label: recipe:policy-suggest:dhcp
       metadata:

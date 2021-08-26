@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:dns
 data:
   recipes:
-    - name: Create DNS rule
+    - name: Create DNS Rule
       description: Creates a basic DNS rule for the current namespace.
       label: recipe:policy-suggest:dns
       metadata:

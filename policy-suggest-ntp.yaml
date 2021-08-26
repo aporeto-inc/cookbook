@@ -1,0 +1,64 @@
+APIVersion: 1
+label: recipe:policy-suggest:ntp
+data:
+  recipes:
+    - name: Create NTP Rule
+      description: Creates a basic NTP rule for the current namespace.
+      label: recipe:policy-suggest:ntp
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=infrastructure"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - externalnetwork
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create a NTP rule
+
+        This recipe will create an External Network and Network Ruleset Policy to
+        enable outgoing access to NTP port UDP/123 on the current namespace.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          externalnetworks:
+          - name: ntp
+            protected: true
+            entries:
+            - {{ .Values.network | quote }}
+            associatedTags:
+            - 'externalnetwork:name=ntp'
+          networkrulesetpolicies:
+          - name: ntp
+            protected: true
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=ntp'
+              protocolPorts:
+              - udp/123
+            subject:
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            {{- end }}
+          `}}
+
+      steps:
+        - name: General
+          description: General configuration
+          parameters:
+            - key: network
+              name: Network
+              description: Describe the external network.
+              longDescription: |-
+                Provide a CIDR or FQDN. Example 52.17.12.0/16
+              type: String
+              defaultValue: 0.0.0.0/0

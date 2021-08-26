@@ -1,0 +1,203 @@
+APIVersion: 1
+label: recipe:policy-suggest:k8s_nodes
+data:
+  recipes:
+    - name: Create Kubernetes Node Rule
+      description: Creates a Kubernetes Node(s) rule to allow node traffic.
+      label: recipe:policy-suggest:k8s_nodes
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=intra-namespace"
+      deploymentMode: Unrestricted
+      targetIdentities:
+        - externalnetwork
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create a Kubernetes Node rule
+
+        This recipe will create an External Network and Network Ruleset Policy to
+        allow bidirectional traffic to the defined kubernetes node IP(s).
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          externalnetworks:
+          - name: k8s_nodes
+            protected: true
+            entries:
+            {{- range $index, $ip := .Values.ipAddresses }}
+            - {{ $ip | quote }}
+            {{- end }}
+            associatedTags:
+            - 'externalnetwork:name=k8s_nodes'
+          networkrulesetpolicies:
+          - name: k8s_nodes_kublet
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10250
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10250
+            subject:
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            {{- end }}
+          - name: k8s_nodes_controller_manager
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10252
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10252
+            subject:
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            {{- end }}
+          - name: k8s_nodes_cloud_controller_manager
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10258
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10258
+            subject:
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            {{- end }}
+          - name: k8s_nodes_etcd
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/2379:2380
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/2379:2380
+            subject:
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            {{- end }}
+          - name: k8s_nodes_scheduler
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10251
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/10251
+            subject:
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            {{- end }}
+          - name: k8s_nodes_node_port_services
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/30000:32767
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - tcp/30000:32767
+            subject:
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            {{- end }}
+          - name: k8s_nodes_liveness
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - any
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=k8s_nodes'
+              protocolPorts:
+              - any
+            subject:
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            {{- end }}
+          `}}
+
+      steps:
+        - name: General
+          description: General configuration
+          parameters:
+            - key: ipAddresses
+              name: Node IP Address(es)
+              description: Define the kubernetes node IP(s).
+              longDescription: |-
+                Provide at least one node IP address to allow traffic. Example 52.17.12.0
+              type: StringSlice

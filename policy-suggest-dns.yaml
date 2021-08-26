@@ -1,0 +1,64 @@
+APIVersion: 1
+label: recipe:policy-suggest:dns
+data:
+  recipes:
+    - name: Create DNS Rule
+      description: Creates a basic DNS rule for the current namespace.
+      label: recipe:policy-suggest:dns
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=infrastructure"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - externalnetwork
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create a DNS rule
+
+        This recipe will create an External Network and Network Ruleset Policy to
+        enable outgoing access to DNS port UDP/53 on the current namespace.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          externalnetworks:
+          - name: dns
+            protected: true
+            entries:
+            - {{ .Values.network | quote }}
+            associatedTags:
+            - 'externalnetwork:name=dns'
+          networkrulesetpolicies:
+          - name: dns
+            protected: true
+            outgoingRules:
+            - action: Allow
+              object:
+              - - 'externalnetwork:name=dns'
+              protocolPorts:
+              - udp/53
+            subject:
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            {{- end }}
+        `}}
+
+      steps:
+        - name: General
+          description: General configuration
+          parameters:
+            - key: network
+              name: Network
+              description: Describe the external network.
+              longDescription: |-
+                Provide a CIDR or FQDN. Example 52.17.12.0/16
+              type: String
+              defaultValue: 0.0.0.0/0

@@ -1,0 +1,75 @@
+APIVersion: 1
+label: recipe:policy-suggest:inter-namespace
+data:
+  recipes:
+    - name: Create Inter-Namespace Policy
+      description: Creates an inter-namespace ruleset policy for inter-traffic.
+      label: recipe:policy-suggest:inter-namespace
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=inter-namespace"
+      deploymentMode: Unrestricted
+      targetIdentities:
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create Inter-namespace policy
+
+        This recipe will create a Network Ruleset Policy to
+        allow traffic between two defined namespaces.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          networkrulesetpolicies:
+          - name: inter-namespace
+            protected: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - '$identity=processingunit'
+              protocolPorts:
+              - any
+            outgoingRules:
+            - action: Allow
+              object:
+              - - '$identity=processingunit'
+              protocolPorts:
+              - any
+            subject:
+            {{- range $index, $tag := .Values.namespace1Tags }}
+            {{- if eq $index 0 }}
+            - - {{ $tag | quote }}
+            {{- else }}
+              - {{ $tag | quote }}
+            {{- end }}
+            {{- end }}
+            {{- range $index, $tag := .Values.namespace2Tags }}
+            {{- if eq $index 0 }}
+            - - {{ $tag | quote }}
+            {{- else }}
+              - {{ $tag | quote }}
+            {{- end }}
+            {{- end }}
+          `}}
+
+      steps:
+        - name: General
+          description: General configuration
+          parameters:
+            - key: namespace1Tags
+              name: First namespace
+              description: Tags denoting the first namespace.
+              longDescription: |-
+                Provide the tag(s) that will point to the first namespace. Example @org:cloudaccount=demo-cloud-account, @org:kubernetes=bookinfo
+              type: StringSlice
+
+            - key: namespace2Tags
+              name: Second namespace
+              description: Tags denoting the second namespace.
+              longDescription: |-
+                Provide the tag(s) that will point to the second namespace. Example @org:cloudaccount=demo-cloud-account, @org:kubernetes=boutique
+              type: StringSlice

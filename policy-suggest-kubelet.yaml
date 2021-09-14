@@ -1,32 +1,33 @@
 APIVersion: 1
-label: recipe:policy-suggest:redhat_update
+label: recipe:policy-suggest:kubelet
 data:
   recipes:
-    - name: Create Red Hat Update Rule
-      description: Creates a basic Red Hat Update rule for the current namespace.
-      label: recipe:policy-suggest:redhat_update
+    - name: Create Kubelet Rule
+      description: Creates a kubelet rule to allow traffic to kubelet nodes.
+      label: recipe:policy-suggest:kubelet
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
-        - "aporeto:recipe:placement=system-update"
+        - "aporeto:recipe:placement=k8s-rules"
+        - "aporeto:recipe:placement=group-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - externalnetwork
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Create a Red Hat Update rule
+        ### Create a kubelet rule
 
         This recipe will create an External Network and Network Ruleset Policy to
-        enable outgoing access to Red Hat Update FQDNs on the current namespace.
+        allow incoming traffic to kubelet nodes.
 
       template: |-
         {{`
         APIVersion: 1
         data:
           externalnetworks:
-          - name: redhat_update
+          - name: k8s_nodes
             description: "External network automatically created by an Out of Box template."
             protected: true
             propagate: true
@@ -35,19 +36,18 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=redhat_update'
+            - 'externalnetwork:name=k8s_nodes'
           networkrulesetpolicies:
-          - name: redhat_update
+          - name: "Allow Kubelet"
             description: "Ruleset automatically created by an Out of Box template."
             protected: true
             propagate: true
-            outgoingRules:
+            incomingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=redhat_update'
+              - - 'externalnetwork:name=k8s_nodes'
               protocolPorts:
-              - tcp/80
-              - tcp/443
+              - any
             subject:
             {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
             {{- if eq $index 0 }}
@@ -69,12 +69,4 @@ data:
                 Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
               type: StringSlice
               defaultValue:
-              - "download.fedoraproject.org"
-              - "mirrors.fedoraproject.org"
-              - "packages.cloud.google.com"
-              - "*.rhel.updates.googlecloud.com"
-              - "*.cdn.redhat.com"
-              - "*.aws.ce.redhat.com"
-              - "rhui-1.microsoft.com"
-              - "rhui-2.microsoft.com"
-              - "rhui-3.microsoft.com"
+              - 0.0.0.0/0

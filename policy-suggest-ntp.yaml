@@ -27,14 +27,20 @@ data:
         data:
           externalnetworks:
           - name: ntp
+            description: "External network automatically created by an Out of Box template."
             protected: true
+            propagate: true
             entries:
-            - {{ .Values.network | quote }}
+            {{- range _, $network := .Values.networks }}
+            - {{ $network | quote }}
+            {{- end }}
             associatedTags:
             - 'externalnetwork:name=ntp'
           networkrulesetpolicies:
           - name: ntp
+            description: "Ruleset automatically created by an Out of Box template."
             protected: true
+            propagate: true
             outgoingRules:
             - action: Allow
               object:
@@ -55,10 +61,11 @@ data:
         - name: General
           description: General configuration
           parameters:
-            - key: network
-              name: Network
+            - key: networks
+              name: Networks
               description: Describe the external network.
               longDescription: |-
-                Provide a CIDR or FQDN. Example 52.17.12.0/16
-              type: String
-              defaultValue: 0.0.0.0/0
+                Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
+              type: StringSlice
+              defaultValue:
+              - 0.0.0.0/0

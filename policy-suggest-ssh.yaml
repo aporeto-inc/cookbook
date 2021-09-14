@@ -1,32 +1,32 @@
 APIVersion: 1
-label: recipe:policy-suggest:redhat_update
+label: recipe:policy-suggest:mgmt_ssh_network
 data:
   recipes:
-    - name: Create Red Hat Update Rule
-      description: Creates a basic Red Hat Update rule for the current namespace.
-      label: recipe:policy-suggest:redhat_update
+    - name: Create SSH Management Rule
+      description: Creates a basic SSH rule for the current namespace.
+      label: recipe:policy-suggest:mgmt_ssh_network
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
-        - "aporeto:recipe:placement=system-update"
+        - "aporeto:recipe:placement=infrastructure"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - externalnetwork
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Create a Red Hat Update rule
+        ### Create an SSH management rule
 
         This recipe will create an External Network and Network Ruleset Policy to
-        enable outgoing access to Red Hat Update FQDNs on the current namespace.
+        enable incoming access to SSH port TCP/22 on the current namespace.
 
       template: |-
         {{`
         APIVersion: 1
         data:
           externalnetworks:
-          - name: redhat_update
+          - name: mgmt_ssh_network
             description: "External network automatically created by an Out of Box template."
             protected: true
             propagate: true
@@ -35,19 +35,18 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=redhat_update'
+            - 'externalnetwork:name=mgmt_ssh_network'
           networkrulesetpolicies:
-          - name: redhat_update
+          - name: mgmt_ssh_network
             description: "Ruleset automatically created by an Out of Box template."
             protected: true
             propagate: true
-            outgoingRules:
+            incomingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=redhat_update'
+              - - 'externalnetwork:name=mgmt_ssh_network'
               protocolPorts:
-              - tcp/80
-              - tcp/443
+              - tcp/22
             subject:
             {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
             {{- if eq $index 0 }}
@@ -56,7 +55,7 @@ data:
               - {{ $orgmeta | quote }}
             {{- end }}
             {{- end }}
-          `}}
+        `}}
 
       steps:
         - name: General
@@ -69,12 +68,6 @@ data:
                 Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
               type: StringSlice
               defaultValue:
-              - "download.fedoraproject.org"
-              - "mirrors.fedoraproject.org"
-              - "packages.cloud.google.com"
-              - "*.rhel.updates.googlecloud.com"
-              - "*.cdn.redhat.com"
-              - "*.aws.ce.redhat.com"
-              - "rhui-1.microsoft.com"
-              - "rhui-2.microsoft.com"
-              - "rhui-3.microsoft.com"
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16

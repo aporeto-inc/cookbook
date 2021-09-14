@@ -27,16 +27,20 @@ data:
         data:
           externalnetworks:
           - name: amazon_linux_update
+            description: "External network automatically created by an Out of Box template."
             protected: true
+            propagate: true
             entries:
-            {{- range $index, $network := .Values.networks }}
+            {{- range _, $network := .Values.networks }}
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
             - 'externalnetwork:name=amazon_linux_update'
           networkrulesetpolicies:
           - name: amazon_linux_update
+            description: "Ruleset automatically created by an Out of Box template."
             protected: true
+            propagate: true
             outgoingRules:
             - action: Allow
               object:

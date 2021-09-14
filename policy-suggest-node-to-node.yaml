@@ -1,32 +1,32 @@
 APIVersion: 1
-label: recipe:policy-suggest:auto-secure_intra-k8s_namespaces
+label: recipe:policy-suggest:node_to_node
 data:
   recipes:
-    - name: Auto-Secure Intra-Kubernetes Namespaces
-      description: Creates a Network Ruleset Policy to allow Kubernetes namespace traffic.
-      label: recipe:policy-suggest:auto-secure_intra-k8s_namespaces
+    - name: Create Node to Node Rule
+      description: Creates a node to node rule to allow traffic between kubernetes nodes.
+      label: recipe:policy-suggest:node_to_node
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
-        - "aporeto:recipe:placement=intra-namespace"
-        - "aporeto:recipe:placement=kubernetes-level"
+        - "aporeto:recipe:placement=k8s-rules"
+        - "aporeto:recipe:placement=group-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Auto-secure intra-kubernetes namespaces
+        ### Create a node to node rule
 
-        This recipe will create a Network Ruleset Policy to auto-secure
-        a Kubernetes namespace (fourth-level namespaces).
+        This recipe will create a Network Ruleset Policy to
+        allow traffic between kubernetes nodes.
 
       template: |-
         {{`
         APIVersion: 1
         data:
           networkrulesetpolicies:
-          - name: auto-secure_intra-k8s_namespaces
+          - name: "Allow Node to Node"
             description: "Ruleset automatically created by an Out of Box template."
             protected: true
             propagate: true
@@ -34,6 +34,7 @@ data:
             - action: Allow
               object:
               - - $identity=processingunit
+                - app:host:type=kubernetes
               {{- range _, $orgmeta := .Aporeto.OrganizationalMetadata }}
                 - {{ $orgmeta | quote }}
               {{- end }}
@@ -43,17 +44,16 @@ data:
             - action: Allow
               object:
               - - $identity=processingunit
+                - app:host:type=kubernetes
               {{- range _, $orgmeta := .Aporeto.OrganizationalMetadata }}
                 - {{ $orgmeta | quote }}
               {{- end }}
               protocolPorts:
               - any
             subject:
-            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
-            {{- if eq $index 0 }}
-            - - {{ $orgmeta | quote }}
-            {{- else }}
+            - - $identity=processingunit
+              - app:host:type=kubernetes
+            {{- range _, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
-            {{- end }}
-        `}}
+          `}}

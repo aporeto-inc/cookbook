@@ -31,7 +31,7 @@ data:
             protected: true
             propagate: true
             entries:
-            {{- range _, $network := .Values.networks }}
+            {{- range $_, $network := .Values.networks }}
             - {{ $network | quote }}
             {{- end }}
             associatedTags:

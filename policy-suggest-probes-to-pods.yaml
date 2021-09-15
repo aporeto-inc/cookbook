@@ -34,7 +34,7 @@ data:
             - action: Allow
               object:
               - - app:host:type=kubernetes
-              {{- range _, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
                 - {{ $orgmeta | quote }}
               {{- end }}
               protocolPorts:
@@ -42,7 +42,7 @@ data:
             subject:
             - - $identity=processingunit
               - $type=Docker
-            {{- range _, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
           `}}

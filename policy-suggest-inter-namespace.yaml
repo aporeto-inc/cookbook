@@ -34,7 +34,7 @@ data:
             - action: Allow
               object:
               - - '$identity=processingunit'
-              {{- range _, $tag := .Values.namespace2Tags }}
+              {{- range $_, $tag := .Values.namespace2Tags }}
                 - {{ $tag | quote }}
               {{- end }}
               protocolPorts:
@@ -43,7 +43,7 @@ data:
             - action: Allow
               object:
               - - '$identity=processingunit'
-              {{- range _, $tag := .Values.namespace2Tags }}
+              {{- range $_, $tag := .Values.namespace2Tags }}
                 - {{ $tag | quote }}
               {{- end }}
               protocolPorts:
@@ -65,7 +65,7 @@ data:
             - action: Allow
               object:
               - - '$identity=processingunit'
-              {{- range _, $tag := .Values.namespace1Tags }}
+              {{- range $_, $tag := .Values.namespace1Tags }}
                 - {{ $tag | quote }}
               {{- end }}
               protocolPorts:
@@ -74,7 +74,7 @@ data:
             - action: Allow
               object:
               - - '$identity=processingunit'
-              {{- range _, $tag := .Values.namespace1Tags }}
+              {{- range $_, $tag := .Values.namespace1Tags }}
                 - {{ $tag | quote }}
               {{- end }}
               protocolPorts:

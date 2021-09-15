@@ -34,7 +34,7 @@ data:
             - action: Allow
               object:
               - - $identity=processingunit
-              {{- range _, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
                 - {{ $orgmeta | quote }}
               {{- end }}
               protocolPorts:
@@ -43,14 +43,14 @@ data:
             - action: Allow
               object:
               - - $identity=processingunit
-              {{- range _, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
                 - {{ $orgmeta | quote }}
               {{- end }}
               protocolPorts:
               - any
             subject:
             - - $type=host
-            {{- range _, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
         `}}

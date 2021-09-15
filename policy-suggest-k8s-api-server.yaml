@@ -32,7 +32,7 @@ data:
             protected: true
             propagate: true
             entries:
-            {{- range _, $network := .Values.networks }}
+            {{- range $_, $network := .Values.networks }}
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
@@ -56,7 +56,7 @@ data:
               - any
             subject:
             - - $identity=processingunit
-            {{- range _, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
           `}}

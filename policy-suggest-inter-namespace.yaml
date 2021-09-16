@@ -94,29 +94,33 @@ data:
           description: General configuration
           parameters:
             - key: namespace1Path
-              name: First namespace full path
-              description: The full path to the first namespace.
+              name: First namespace relative path
+              description: The relative path to the first namespace.
               longDescription: |-
-                Provide the fully qualified path to the first namespace. Example /tenant/cloudaccount/group/kube1
+                Provide the relative path to the first namespace. Example: enter "kube1" if residing in
+                /tenantA/cloudaccountB/groupC and want to point to /tenantA/cloudaccountB/groupC/kube1
               type: String
 
             - key: namespace1Tags
               name: First namespace organizational metadata
               description: Organizational metadata denoting the first namespace.
               longDescription: |-
-                Provide the organizational metdata tag(s) that will point to the first namespace. Example @org:cloudaccount=demo-cloud-account, @org:kubernetes=bookinfo
+                Provide the organizational metdata tag(s) that will point to the first namespace.
+                Example @org:tenant=tenantA, @org:cloudaccount=cloudaccountB, @org:group=groupC, @org:kubernetes=kube1
               type: StringSlice
 
             - key: namespace2Path
-              name: Second namespace full path
-              description: The full path to the second namespace.
+              name: Second namespace relative path
+              description: The relative path to the second namespace.
               longDescription: |-
-                Provide the fully qualified path to the second namespace. Example /tenant/cloudaccount/group/kube2
+                Provide the relative path to the second namespace. Example: enter "kube2" if residing in
+                /tenantA/cloudaccountB/groupC and want to point to /tenantA/cloudaccountB/groupC/kube2
               type: String
 
             - key: namespace2Tags
               name: Second namespace organizational metadata
               description: Organizational metadata denoting the second namespace.
               longDescription: |-
-                Provide the organizational metdata tag(s) that will point to the second namespace. Example @org:cloudaccount=demo-cloud-account, @org:kubernetes=boutique
+                Provide the organizational metdata tag(s) that will point to the second namespace.
+                Example: @org:tenant=tenantA, @org:cloudaccount=cloudaccountB, @org:group=groupC, @org:kubernetes=kube2
               type: StringSlice

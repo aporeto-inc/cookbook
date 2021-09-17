@@ -27,16 +27,20 @@ data:
         data:
           externalnetworks:
           - name: ubuntu_update
+            description: "External network automatically created by an Out of Box template."
             protected: true
+            propagate: true
             entries:
-            {{- range $index, $network := .Values.networks }}
+            {{- range $_, $network := .Values.networks }}
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
             - 'externalnetwork:name=ubuntu_update'
           networkrulesetpolicies:
           - name: ubuntu_update
+            description: "Ruleset automatically created by an Out of Box template."
             protected: true
+            propagate: true
             outgoingRules:
             - action: Allow
               object:

@@ -1,33 +1,33 @@
 APIVersion: 1
-label: recipe:policy-suggest:dhcp
+label: recipe:policy-suggest:nodeport_addresses
 data:
   recipes:
-    - name: Create DHCP Rule
-      description: Creates a basic DHCP rule for the current namespace.
-      label: recipe:policy-suggest:dhcp
+    - name: Create NodePorts Rule
+      description: Creates a rule to allow traffic to NodePorts.
+      label: recipe:policy-suggest:nodeport_addresses
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
-        - "aporeto:recipe:placement=infrastructure"
+        - "aporeto:recipe:placement=k8s-rules"
+        - "aporeto:recipe:placement=group-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - externalnetwork
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Create a DHCP rule
+        ### Create a role to allow traffic to NodePorts.
 
         This recipe will create an External Network and Network Ruleset Policy to
-        enable access to DHCP outgoing port UDP/67 and incoming port UDP/68 on the
-        current namespace.
+        allow incoming traffic across tcp/30000:32767 to NodePorts.
 
       template: |-
         {{`
         APIVersion: 1
         data:
           externalnetworks:
-          - name: dhcp
+          - name: nodeport_addresses
             description: "External network automatically created by an Out of Box template."
             protected: true
             propagate: true
@@ -36,31 +36,23 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=dhcp'
+            - 'externalnetwork:name=nodeport_addresses'
           networkrulesetpolicies:
-          - name: dhcp
+          - name: nodeport_addresses
             description: "Ruleset automatically created by an Out of Box template."
             protected: true
             propagate: true
             incomingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=dhcp'
+              - - 'externalnetwork:name=nodeport_addresses'
               protocolPorts:
-              - udp/68
-            outgoingRules:
-            - action: Allow
-              object:
-              - - 'externalnetwork:name=dhcp'
-              protocolPorts:
-              - udp/67
+              - tcp/30000:32767
             subject:
-            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
-            {{- if eq $index 0 }}
-            - - {{ $orgmeta | quote }}
-            {{- else }}
+            - - $identity=processingunit
+              - app:host:type=kubernetes
+            {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
-            {{- end }}
             {{- end }}
           `}}
 

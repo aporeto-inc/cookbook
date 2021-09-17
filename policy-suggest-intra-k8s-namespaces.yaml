@@ -27,17 +27,25 @@ data:
         data:
           networkrulesetpolicies:
           - name: auto-secure_intra-k8s_namespaces
+            description: "Ruleset automatically created by an Out of Box template."
             protected: true
+            propagate: true
             incomingRules:
             - action: Allow
               object:
               - - $identity=processingunit
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+                - {{ $orgmeta | quote }}
+              {{- end }}
               protocolPorts:
               - any
             outgoingRules:
             - action: Allow
               object:
               - - $identity=processingunit
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+                - {{ $orgmeta | quote }}
+              {{- end }}
               protocolPorts:
               - any
             subject:

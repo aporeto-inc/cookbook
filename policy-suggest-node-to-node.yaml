@@ -1,32 +1,32 @@
 APIVersion: 1
-label: recipe:policy-suggest:auto-secure_intra-vm_groups
+label: recipe:policy-suggest:node_to_node
 data:
   recipes:
-    - name: Auto-Secure Intra-VM Groups
-      description: Creates a Network Ruleset Policy to allow Group namespace traffic.
-      label: recipe:policy-suggest:auto-secure_intra-vm_groups
+    - name: Create Node to Node Rule
+      description: Creates a node to node rule to allow traffic between kubernetes nodes.
+      label: recipe:policy-suggest:node_to_node
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
-        - "aporeto:recipe:placement=intra-namespace"
+        - "aporeto:recipe:placement=k8s-rules"
         - "aporeto:recipe:placement=group-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Auto-secure intra-VM groups
+        ### Create a node to node rule
 
-        This recipe will create a Network Ruleset Policy to auto-secure
-        a Group namespaces (third-level namespaces).
+        This recipe will create a Network Ruleset Policy to
+        allow traffic between kubernetes nodes.
 
       template: |-
         {{`
         APIVersion: 1
         data:
           networkrulesetpolicies:
-          - name: auto-secure_intra-vm_groups
+          - name: "Allow Node to Node"
             description: "Ruleset automatically created by an Out of Box template."
             protected: true
             propagate: true
@@ -34,6 +34,7 @@ data:
             - action: Allow
               object:
               - - $identity=processingunit
+                - app:host:type=kubernetes
               {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
                 - {{ $orgmeta | quote }}
               {{- end }}
@@ -43,14 +44,16 @@ data:
             - action: Allow
               object:
               - - $identity=processingunit
+                - app:host:type=kubernetes
               {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
                 - {{ $orgmeta | quote }}
               {{- end }}
               protocolPorts:
               - any
             subject:
-            - - $type=host
+            - - $identity=processingunit
+              - app:host:type=kubernetes
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
-        `}}
+          `}}

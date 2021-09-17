@@ -1,10 +1,10 @@
 APIVersion: 1
-label: recipe:policy-suggest:dhcp
+label: recipe:policy-suggest:metadata_service
 data:
   recipes:
-    - name: Create DHCP Rule
-      description: Creates a basic DHCP rule for the current namespace.
-      label: recipe:policy-suggest:dhcp
+    - name: Create Metadata Service Rule
+      description: Creates a basic metadata service rule for the current namespace.
+      label: recipe:policy-suggest:metadata_service
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
@@ -16,18 +16,18 @@ data:
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Create a DHCP rule
+        ### Create a metadata service rule
 
         This recipe will create an External Network and Network Ruleset Policy to
-        enable access to DHCP outgoing port UDP/67 and incoming port UDP/68 on the
-        current namespace.
+        enable access to the metadata service outgoing port TCP/80 and TCP/443 on
+        the current namespace.
 
       template: |-
         {{`
         APIVersion: 1
         data:
           externalnetworks:
-          - name: dhcp
+          - name: metadata_service
             description: "External network automatically created by an Out of Box template."
             protected: true
             propagate: true
@@ -36,24 +36,19 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=dhcp'
+            - 'externalnetwork:name=metadata_service'
           networkrulesetpolicies:
-          - name: dhcp
+          - name: metadata_service
             description: "Ruleset automatically created by an Out of Box template."
             protected: true
             propagate: true
-            incomingRules:
-            - action: Allow
-              object:
-              - - 'externalnetwork:name=dhcp'
-              protocolPorts:
-              - udp/68
             outgoingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=dhcp'
+              - - 'externalnetwork:name=metadata_service'
               protocolPorts:
-              - udp/67
+              - tcp/80
+              - tcp/443
             subject:
             {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
             {{- if eq $index 0 }}
@@ -75,4 +70,4 @@ data:
                 Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
               type: StringSlice
               defaultValue:
-              - 0.0.0.0/0
+              - 169.254.169.254/32

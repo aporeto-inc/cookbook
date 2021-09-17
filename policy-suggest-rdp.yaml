@@ -1,10 +1,10 @@
 APIVersion: 1
-label: recipe:policy-suggest:dhcp
+label: recipe:policy-suggest:mgmt_rdp_network
 data:
   recipes:
-    - name: Create DHCP Rule
-      description: Creates a basic DHCP rule for the current namespace.
-      label: recipe:policy-suggest:dhcp
+    - name: Create RDP Management Rule
+      description: Creates a basic RDP rule for the current namespace.
+      label: recipe:policy-suggest:mgmt_rdp_network
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
@@ -16,18 +16,17 @@ data:
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Create a DHCP rule
+        ### Create an RDP management rule
 
         This recipe will create an External Network and Network Ruleset Policy to
-        enable access to DHCP outgoing port UDP/67 and incoming port UDP/68 on the
-        current namespace.
+        enable incoming access to RDP port TCP/3389 on the current namespace.
 
       template: |-
         {{`
         APIVersion: 1
         data:
           externalnetworks:
-          - name: dhcp
+          - name: mgmt_rdp_network
             description: "External network automatically created by an Out of Box template."
             protected: true
             propagate: true
@@ -36,24 +35,18 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=dhcp'
+            - 'externalnetwork:name=mgmt_rdp_network'
           networkrulesetpolicies:
-          - name: dhcp
+          - name: mgmt_rdp_network
             description: "Ruleset automatically created by an Out of Box template."
             protected: true
             propagate: true
             incomingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=dhcp'
+              - - 'externalnetwork:name=mgmt_rdp_network'
               protocolPorts:
-              - udp/68
-            outgoingRules:
-            - action: Allow
-              object:
-              - - 'externalnetwork:name=dhcp'
-              protocolPorts:
-              - udp/67
+              - tcp/3389
             subject:
             {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
             {{- if eq $index 0 }}
@@ -62,7 +55,7 @@ data:
               - {{ $orgmeta | quote }}
             {{- end }}
             {{- end }}
-          `}}
+        `}}
 
       steps:
         - name: General
@@ -75,4 +68,6 @@ data:
                 Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
               type: StringSlice
               defaultValue:
-              - 0.0.0.0/0
+              - 10.0.0.0/8
+              - 172.16.0.0/12
+              - 192.168.0.0/16

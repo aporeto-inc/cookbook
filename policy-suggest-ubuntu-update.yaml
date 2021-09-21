@@ -28,7 +28,6 @@ data:
           externalnetworks:
           - name: ubuntu_update
             description: "External network automatically created by an Out of Box template."
-            protected: true
             propagate: true
             entries:
             {{- range $_, $network := .Values.networks }}
@@ -39,7 +38,6 @@ data:
           networkrulesetpolicies:
           - name: ubuntu_update
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             outgoingRules:
             - action: Allow

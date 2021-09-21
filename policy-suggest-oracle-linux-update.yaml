@@ -28,7 +28,6 @@ data:
           externalnetworks:
           - name: oracle_linux_update
             description: "External network automatically created by an Out of Box template."
-            protected: true
             propagate: true
             entries:
             {{- range $_, $network := .Values.networks }}
@@ -39,7 +38,6 @@ data:
           networkrulesetpolicies:
           - name: oracle_linux_update
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             outgoingRules:
             - action: Allow

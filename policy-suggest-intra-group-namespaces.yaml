@@ -28,7 +28,6 @@ data:
           networkrulesetpolicies:
           - name: auto-secure_intra-vm_groups
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             incomingRules:
             - action: Allow

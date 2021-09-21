@@ -28,7 +28,6 @@ data:
           networkrulesetpolicies:
           - name: "Allow Liveness/Readiness Probes from Nodes"
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             outgoingRules:
             - action: Allow

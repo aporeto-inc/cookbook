@@ -27,7 +27,6 @@ data:
           networkrulesetpolicies:
           - name: inter-namespace-first
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             namespace: {{ .Values.namespace1Path }}
             incomingRules:
@@ -58,7 +57,6 @@ data:
             {{- end }}
           - name: inter-namespace-second
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             namespace: {{ .Values.namespace2Path }}
             incomingRules:

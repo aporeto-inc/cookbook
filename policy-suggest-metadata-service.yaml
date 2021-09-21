@@ -10,6 +10,9 @@ data:
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
         - "aporeto:recipe:placement=infrastructure"
+        - "aporeto:recipe:placement=tenant-level"
+        - "aporeto:recipe:placement=cloudaccount-level"
+        - "aporeto:recipe:placement=group-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - externalnetwork

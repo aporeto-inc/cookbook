@@ -10,6 +10,9 @@ data:
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
         - "aporeto:recipe:placement=inter-namespace"
+        - "aporeto:recipe:placement=tenant-level"
+        - "aporeto:recipe:placement=cloudaccount-level"
+        - "aporeto:recipe:placement=group-level"
       deploymentMode: Unrestricted
       targetIdentities:
         - networkrulesetpolicy

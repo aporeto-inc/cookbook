@@ -10,6 +10,8 @@ data:
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
         - "aporeto:recipe:placement=system-update"
+        - "aporeto:recipe:placement=group-level"
+        - "aporeto:recipe:placement=kubernetes-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - externalnetwork

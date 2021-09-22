@@ -10,6 +10,9 @@ data:
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
         - "aporeto:recipe:placement=inter-namespace"
+        - "aporeto:recipe:placement=tenant-level"
+        - "aporeto:recipe:placement=cloudaccount-level"
+        - "aporeto:recipe:placement=group-level"
       deploymentMode: Unrestricted
       targetIdentities:
         - networkrulesetpolicy
@@ -27,7 +30,6 @@ data:
           networkrulesetpolicies:
           - name: inter-namespace-first
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             namespace: {{ .Values.namespace1Path }}
             incomingRules:
@@ -58,7 +60,6 @@ data:
             {{- end }}
           - name: inter-namespace-second
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             namespace: {{ .Values.namespace2Path }}
             incomingRules:

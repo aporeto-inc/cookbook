@@ -10,6 +10,8 @@ data:
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
         - "aporeto:recipe:placement=system-update"
+        - "aporeto:recipe:placement=group-level"
+        - "aporeto:recipe:placement=kubernetes-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - externalnetwork
@@ -28,7 +30,6 @@ data:
           externalnetworks:
           - name: windows_update
             description: "External network automatically created by an Out of Box template."
-            protected: true
             propagate: true
             entries:
             {{- range $_, $network := .Values.networks }}
@@ -39,7 +40,6 @@ data:
           networkrulesetpolicies:
           - name: windows_update
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             outgoingRules:
             - action: Allow

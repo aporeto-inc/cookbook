@@ -29,7 +29,6 @@ data:
           externalnetworks:
           - name: management_addresses
             description: "External network automatically created by an Out of Box template."
-            protected: true
             propagate: true
             entries:
             {{- range $_, $network := .Values.networks }}
@@ -40,7 +39,6 @@ data:
           networkrulesetpolicies:
           - name: management_addresses
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             incomingRules:
             - action: Allow

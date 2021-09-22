@@ -10,6 +10,9 @@ data:
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
         - "aporeto:recipe:placement=infrastructure"
+        - "aporeto:recipe:placement=tenant-level"
+        - "aporeto:recipe:placement=cloudaccount-level"
+        - "aporeto:recipe:placement=group-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - externalnetwork
@@ -28,7 +31,6 @@ data:
           externalnetworks:
           - name: mgmt_ssh_network
             description: "External network automatically created by an Out of Box template."
-            protected: true
             propagate: true
             entries:
             {{- range $_, $network := .Values.networks }}
@@ -39,7 +41,6 @@ data:
           networkrulesetpolicies:
           - name: mgmt_ssh_network
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             incomingRules:
             - action: Allow

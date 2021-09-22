@@ -28,7 +28,6 @@ data:
           networkrulesetpolicies:
           - name: "Allow Node to Node"
             description: "Ruleset automatically created by an Out of Box template."
-            protected: true
             propagate: true
             incomingRules:
             - action: Allow

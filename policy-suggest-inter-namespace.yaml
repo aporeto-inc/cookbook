@@ -13,7 +13,7 @@ data:
         - "aporeto:recipe:placement=tenant-level"
         - "aporeto:recipe:placement=cloudaccount-level"
         - "aporeto:recipe:placement=group-level"
-      deploymentMode: Unique
+      deploymentMode: NamespaceUnique
       targetIdentities:
         - networkrulesetpolicy
       propagate: true

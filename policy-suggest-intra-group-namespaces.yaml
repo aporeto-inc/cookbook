@@ -48,7 +48,7 @@ data:
               protocolPorts:
               - any
             subject:
-            - - $type=host
+            - - $type=Host
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}

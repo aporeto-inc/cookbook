@@ -73,3 +73,6 @@ data:
               - "*.archive.canonical.com"
               - "security.ubuntu.com"
               - "packages.debian.org"
+              - "cdn-aws.deb.debian.org"
+              - "debian.map.fastlydns.net"
+              - "esm.ubuntu.com"

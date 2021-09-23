@@ -11,7 +11,7 @@ data:
         - "aporeto:recipe:placement=policy-suggest"
         - "aporeto:recipe:placement=k8s-rules"
         - "aporeto:recipe:placement=group-level"
-      deploymentMode: NamespaceUnique
+      deploymentMode: Unique
       targetIdentities:
         - externalnetwork
         - networkrulesetpolicy

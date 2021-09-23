@@ -11,7 +11,7 @@ data:
         - "aporeto:recipe:placement=policy-suggest"
         - "aporeto:recipe:placement=intra-namespace"
         - "aporeto:recipe:placement=kubernetes-level"
-      deploymentMode: NamespaceUnique
+      deploymentMode: Unique
       targetIdentities:
         - networkrulesetpolicy
       propagate: true

@@ -12,7 +12,7 @@ data:
         - "aporeto:recipe:placement=system-update"
         - "aporeto:recipe:placement=group-level"
         - "aporeto:recipe:placement=kubernetes-level"
-      deploymentMode: NamespaceUnique
+      deploymentMode: Unique
       targetIdentities:
         - externalnetwork
         - networkrulesetpolicy

@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:node_to_node
 data:
   recipes:
-    - name: Create Node to Node Rule
+    - name: K8s Host Mode - Create Node to Node Rule
       description: Creates a node to node rule to allow traffic between kubernetes nodes.
       label: recipe:policy-suggest:node_to_node
       metadata:

@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:probes_from_nodes
 data:
   recipes:
-    - name: Create Allow Liveness/Readiness Probes from Nodes Rule
+    - name: K8s Host Mode - Create Allow Liveness/Readiness Probes from Nodes Rule
       description: Creates a liveness/readiness probes from nodes rule to allow traffic.
       label: recipe:policy-suggest:probes_from_nodes
       metadata:

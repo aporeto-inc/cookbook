@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:authorized_registries
 data:
   recipes:
-    - name: Create Allow Nodes to Pull Images from Authorized Registries Rule
+    - name: K8s Host Mode - Create Allow Nodes to Pull Images from Authorized Registries Rule
       description: Creates a rule to allow traffic from authorized registries to pull images.
       label: recipe:policy-suggest:authorized_registries
       metadata:

@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:kubelet
 data:
   recipes:
-    - name: Create Kubelet Rule
+    - name: K8s Container Mode - Create Kubelet Rule
       description: Creates a kubelet rule to allow traffic to kubelet nodes.
       label: recipe:policy-suggest:kubelet
       metadata:

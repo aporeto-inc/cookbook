@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:nodeport_addresses
 data:
   recipes:
-    - name: Create NodePorts Rule
+    - name: K8s Host Mode - Create NodePorts Rule
       description: Creates a rule to allow traffic to NodePorts.
       label: recipe:policy-suggest:nodeport_addresses
       metadata:

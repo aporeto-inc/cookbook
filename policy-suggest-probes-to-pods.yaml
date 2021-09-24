@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:probes_to_pods
 data:
   recipes:
-    - name: Create Allow Liveness/Readiness Probes to Pods Rule
+    - name: K8s Host Mode - Create Allow Liveness/Readiness Probes to Pods Rule
       description: Creates a liveness/readiness probes to pods rule to allow traffic.
       label: recipe:policy-suggest:probes_to_pods
       metadata:

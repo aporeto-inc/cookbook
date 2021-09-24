@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:management_addresses
 data:
   recipes:
-    - name: Create SSH Access to Nodes Rule
+    - name: K8s Host Mode - Create SSH Access to Nodes Rule
       description: Creates a rule to allow SSH traffic to nodes.
       label: recipe:policy-suggest:management_addresses
       metadata:

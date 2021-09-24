@@ -2,7 +2,7 @@ APIVersion: 1
 label: recipe:policy-suggest:k8s-api-server
 data:
   recipes:
-    - name: Create API Server Rule
+    - name: K8s Host Mode - Create API Server Rule
       description: Creates a rule to allow API server traffic.
       label: recipe:policy-suggest:k8s-api-server
       metadata:

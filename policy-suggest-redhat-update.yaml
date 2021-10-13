@@ -36,7 +36,7 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=redhat_update'
+            - "externalnetwork:name=redhat_update"
           networkrulesetpolicies:
           - name: redhat_update
             description: "Ruleset automatically created by an Out of Box template."
@@ -44,7 +44,7 @@ data:
             outgoingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=redhat_update'
+              - - "externalnetwork:name=redhat_update"
               protocolPorts:
               - tcp/80
               - tcp/443
@@ -69,6 +69,7 @@ data:
                 Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
               type: StringSlice
               defaultValue:
+              - "repo.aporeto.us"
               - "download.fedoraproject.org"
               - "mirrors.fedoraproject.org"
               - "packages.cloud.google.com"

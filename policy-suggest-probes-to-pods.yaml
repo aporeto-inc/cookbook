@@ -32,14 +32,14 @@ data:
             incomingRules:
             - action: Allow
               object:
-              - - app:host:type=kubernetes
+              - - "app:host:type=kubernetes"
               {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
                 - {{ $orgmeta | quote }}
               {{- end }}
               protocolPorts:
               - any
             subject:
-            - - $identity=processingunit
+            - - "$identity=processingunit"
               - $type=Docker
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}

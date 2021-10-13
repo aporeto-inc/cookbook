@@ -37,7 +37,7 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=ntp'
+            - "externalnetwork:name=ntp"
           networkrulesetpolicies:
           - name: ntp
             description: "Ruleset automatically created by an Out of Box template."
@@ -45,7 +45,7 @@ data:
             outgoingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=ntp'
+              - - "externalnetwork:name=ntp"
               protocolPorts:
               - udp/123
             subject:

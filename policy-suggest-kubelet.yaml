@@ -35,7 +35,7 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=k8s_nodes'
+            - "externalnetwork:name=k8s_nodes"
           networkrulesetpolicies:
           - name: "Allow Kubelet"
             description: "Ruleset automatically created by an Out of Box template."
@@ -43,7 +43,7 @@ data:
             incomingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=k8s_nodes'
+              - - "externalnetwork:name=k8s_nodes"
               protocolPorts:
               - any
             subject:

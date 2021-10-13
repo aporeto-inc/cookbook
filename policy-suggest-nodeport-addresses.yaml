@@ -35,7 +35,7 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=nodeport_addresses'
+            - "externalnetwork:name=nodeport_addresses"
           networkrulesetpolicies:
           - name: nodeport_addresses
             description: "Ruleset automatically created by an Out of Box template."
@@ -43,12 +43,12 @@ data:
             incomingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=nodeport_addresses'
+              - - "externalnetwork:name=nodeport_addresses"
               protocolPorts:
               - tcp/30000:32767
             subject:
-            - - $identity=processingunit
-              - app:host:type=kubernetes
+            - - "$identity=processingunit"
+              - "app:host:type=kubernetes"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}

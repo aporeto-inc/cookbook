@@ -35,7 +35,7 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=authorized_registries'
+            - "externalnetwork:name=authorized_registries"
           networkrulesetpolicies:
           - name: authorized_registries
             description: "Ruleset automatically created by an Out of Box template."
@@ -43,12 +43,12 @@ data:
             outgoingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=authorized_registries'
+              - - "externalnetwork:name=authorized_registries"
               protocolPorts:
               - any
             subject:
-            - - $identity=processingunit
-              - app:host:type=kubernetes
+            - - "$identity=processingunit"
+              - "app:host:type=kubernetes"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}

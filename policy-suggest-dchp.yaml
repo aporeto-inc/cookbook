@@ -38,7 +38,7 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=dhcp'
+            - "externalnetwork:name=dhcp"
           networkrulesetpolicies:
           - name: dhcp
             description: "Ruleset automatically created by an Out of Box template."
@@ -46,13 +46,13 @@ data:
             incomingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=dhcp'
+              - - "externalnetwork:name=dhcp"
               protocolPorts:
               - udp/68
             outgoingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=dhcp'
+              - - "externalnetwork:name=dhcp"
               protocolPorts:
               - udp/67
             subject:

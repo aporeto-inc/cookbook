@@ -37,7 +37,7 @@ data:
             - {{ $network | quote }}
             {{- end }}
             associatedTags:
-            - 'externalnetwork:name=mgmt_ssh_network'
+            - "externalnetwork:name=mgmt_ssh_network"
           networkrulesetpolicies:
           - name: mgmt_ssh_network
             description: "Ruleset automatically created by an Out of Box template."
@@ -45,7 +45,7 @@ data:
             incomingRules:
             - action: Allow
               object:
-              - - 'externalnetwork:name=mgmt_ssh_network'
+              - - "externalnetwork:name=mgmt_ssh_network"
               protocolPorts:
               - tcp/22
             subject:

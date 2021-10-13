@@ -35,7 +35,7 @@ data:
             incomingRules:
             - action: Allow
               object:
-              - - '$identity=processingunit'
+              - - "$identity=processingunit"
               {{- range $_, $tag := .Values.namespace2Tags }}
                 - {{ $tag | quote }}
               {{- end }}
@@ -44,7 +44,7 @@ data:
             outgoingRules:
             - action: Allow
               object:
-              - - '$identity=processingunit'
+              - - "$identity=processingunit"
               {{- range $_, $tag := .Values.namespace2Tags }}
                 - {{ $tag | quote }}
               {{- end }}
@@ -65,7 +65,7 @@ data:
             incomingRules:
             - action: Allow
               object:
-              - - '$identity=processingunit'
+              - - "$identity=processingunit"
               {{- range $_, $tag := .Values.namespace1Tags }}
                 - {{ $tag | quote }}
               {{- end }}
@@ -74,7 +74,7 @@ data:
             outgoingRules:
             - action: Allow
               object:
-              - - '$identity=processingunit'
+              - - "$identity=processingunit"
               {{- range $_, $tag := .Values.namespace1Tags }}
                 - {{ $tag | quote }}
               {{- end }}

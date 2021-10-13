@@ -39,8 +39,8 @@ data:
               protocolPorts:
               - any
             subject:
-            - - $identity=processingunit
-              - app:host:type=kubernetes
+            - - "$identity=processingunit"
+              - "app:host:type=kubernetes"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}

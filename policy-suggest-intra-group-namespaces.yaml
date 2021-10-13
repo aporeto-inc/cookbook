@@ -32,7 +32,7 @@ data:
             incomingRules:
             - action: Allow
               object:
-              - - $identity=processingunit
+              - - "$identity=processingunit"
               {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
                 - {{ $orgmeta | quote }}
               {{- end }}
@@ -41,7 +41,7 @@ data:
             outgoingRules:
             - action: Allow
               object:
-              - - $identity=processingunit
+              - - "$identity=processingunit"
               {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
                 - {{ $orgmeta | quote }}
               {{- end }}

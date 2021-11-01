@@ -1,0 +1,67 @@
+APIVersion: 1
+label: recipe:policy-suggest:client_to_eks_node
+data:
+  recipes:
+    - name: K8s Host Mode (EKS Cluster Only) - Create Client to EKS Node Rule
+      description: Create a rule to allow clients to connect to EKS nodes.
+      label: recipe:policy-suggest:client_to_eks_node
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=k8s-rules"
+        - "aporeto:recipe:placement=group-level"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - externalnetwork
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create a client to EKS node rule
+
+        This recipe will create an External Network and Network Ruleset Policy to
+        allow incoming traffic across tcp/10250 to EKS nodes.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          externalnetworks:
+          - name: clients_eks
+            description: "External network automatically created by an Out of Box template."
+            propagate: true
+            entries:
+            {{- range $_, $network := .Values.networks }}
+            - {{ $network | quote }}
+            {{- end }}
+            associatedTags:
+            - "externalnetwork:name=clients_eks"
+          networkrulesetpolicies:
+          - name: "Allow clients to execute into EKS cluster pods"
+            description: "Ruleset automatically created by an Out of Box template."
+            propagate: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - "externalnetwork:name=clients_eks"
+              protocolPorts:
+              - tcp/10250
+            subject:
+            - - "app:host:type=kubernetes"
+            {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+          `}}
+
+      steps:
+        - name: General
+          description: General configuration
+          parameters:
+            - key: networks
+              name: Networks
+              description: Describe the external network.
+              longDescription: |-
+                Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
+              type: StringSlice
+              defaultValue:
+              - 0.0.0.0/0

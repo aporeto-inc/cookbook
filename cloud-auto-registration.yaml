@@ -4,6 +4,7 @@ data:
   recipes:
   - name: Create a cloud auto-registration policy
     label: recipe:cloud-auto-registration
+    successfullMessage: Successfully created auto-registration policy.
     icon: fal fa-cloud
     propagate: true
     metadata:

@@ -1,0 +1,14 @@
+APIVersion: 1
+label: automation:action:debug_payload
+identities:
+- automationaction
+data:
+  automationactions:
+  - description: Simply prints the content of the payload. Useful for debugging.
+    function: |-
+      function then(m, params, payload) {
+                  console.log('payload', JSON.stringify(payload));
+              }
+    key: '@action:debug_payload'
+    name: Then print the payload
+    propagate: true

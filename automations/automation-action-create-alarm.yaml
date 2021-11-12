@@ -1,0 +1,80 @@
+APIVersion: 1
+label: automation:action:create_alarm
+identities:
+- automationaction
+data:
+  automationactions:
+  - description: The content of the alarm will be taken from the condition's payload 'message' key
+    entitlements:
+      alarm:
+      - create
+    function: |-
+      function then(m, params, payload) {
+                  if (!params.create_alarm_name && !payload.create_alarm_name) {
+                      throw 'Parameter "create_alarm_name" must be set';
+                  }
+                  if (!payload.message) {
+                      throw 'Payload key "message" must be set';
+                  }
+                  m.Create('alarm', {
+                      name: params.create_alarm_name || payload.create_alarm_name,
+                      description: params.create_alarm_description || payload.create_alarm_description,
+                      emails: params.create_alarm_emails,
+                      kind: 'automation.create_alarm.'+params.automation_id,
+                      content: payload.message,
+                      data: payload.message_fields,
+                  });
+               }
+    key: '@action:create_alarm'
+    name: Then create an alarm {{create_alarm_name}}
+    propagate: true
+    steps:
+    - advanced: false
+      description: ""
+      name: Parameters
+      parameters:
+      - advanced: false
+        allowedChoices: {}
+        allowedValues: []
+        defaultValue: null
+        description: Name of the alarm
+        key: create_alarm_name
+        longDescription: ""
+        name: Name
+        optional: false
+        subtype: ""
+        type: String
+        validationFunction: ""
+        value: null
+        visibilityCondition: []
+        width: ""
+      - advanced: false
+        allowedChoices: {}
+        allowedValues: []
+        defaultValue: null
+        description: Description of the alarm
+        key: create_alarm_description
+        longDescription: ""
+        name: Description
+        optional: true
+        subtype: ""
+        type: String
+        validationFunction: ""
+        value: null
+        visibilityCondition: []
+        width: ""
+      - advanced: false
+        allowedChoices: {}
+        allowedValues: []
+        defaultValue: null
+        description: The list of emails to be notified when the alarm is created
+        key: create_alarm_emails
+        longDescription: ""
+        name: Emails
+        optional: true
+        subtype: ""
+        type: StringSlice
+        validationFunction: ""
+        value: null
+        visibilityCondition: []
+        width: ""

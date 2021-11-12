@@ -1,0 +1,40 @@
+APIVersion: 1
+label: automation:condition:always_continue
+identities:
+- automationcondition
+data:
+  automationconditions:
+  - description: Always validates the condition
+    function: |-
+      function when(m, params) {
+                  if (!params.always_continue_payload) {
+                      return { continue: true };
+                  }
+                  return {
+                      continue: true,
+                      payload: params.always_continue_payload === "string" ? JSON.parse(params.always_continue_payload) : params.always_continue_payload,
+                  };
+              }
+    key: '@condition:always_continue'
+    name: Always Continue and returns the configured payload
+    propagate: true
+    steps:
+    - advanced: false
+      description: ""
+      name: Parameters
+      parameters:
+      - advanced: false
+        allowedChoices: {}
+        allowedValues: []
+        defaultValue: null
+        description: Define the payload to inject to the actions.
+        key: always_continue_payload
+        longDescription: ""
+        name: Payload
+        optional: true
+        subtype: ""
+        type: JSON
+        validationFunction: ""
+        value: null
+        visibilityCondition: []
+        width: ""

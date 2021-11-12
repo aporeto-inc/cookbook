@@ -1,0 +1,100 @@
+APIVersion: 1
+label: automation:condition:flows_rejected_limit
+identities:
+- automationcondition
+data:
+  automationconditions:
+  - description: Continue if the number of rejected flows exceeds a certain limit.
+    entitlements:
+      statsquery:
+      - create
+    function: |-
+      function when(m, params) {
+
+                  if (!params.flows_rejected_limit_since) {
+                      throw 'Parameter "flows_rejected_limit_since" must be set';
+                  }
+                  if (!params.flows_rejected_limit_limit) {
+                      throw 'Parameter "flows_rejected_limit_limit" must be set';
+                  }
+
+                  out = m.Create(
+                      'statsquery',
+                      {
+                          measurement: 'Flows',
+                          fields: ['sum(value)'],
+                          filter: 'action == reject',
+                      },
+                      null,
+                      {
+                          startRelative: params.flows_rejected_limit_since,
+                      }
+                  );
+
+                  values = _.get(out, 'results[0].rows[0].values[0]');
+
+                  if (!values || values.length === 0 || values[1] < params.flows_rejected_limit_limit) {
+                      return {continue: false};
+                  }
+
+                  return {
+                      continue: true,
+                      payload: {
+                          message: 'Number of rejected flows is '+values[1]+' which exceeds the limit of '+params.flows_rejected_limit_limit+' during the last '+params.flows_rejected_limit_since,
+                          flows_rejected_limit_value: values[1],
+                      },
+                  };
+               }
+    key: '@condition:flows_rejected_limit'
+    name: When the number of rejected flows exceeds a certain limit
+    propagate: true
+    steps:
+    - advanced: false
+      description: ""
+      name: Flows
+      parameters:
+      - advanced: false
+        allowedChoices: {}
+        allowedValues: []
+        defaultValue: null
+        description: Number of rejected flows to trigger an action
+        key: flows_rejected_limit_limit
+        longDescription: ""
+        name: Limit
+        optional: false
+        subtype: ""
+        type: Integer
+        validationFunction: ""
+        value: null
+        visibilityCondition: []
+        width: ""
+      - advanced: false
+        allowedChoices: {}
+        allowedValues: []
+        defaultValue: 10m
+        description: Check the flows that have happened in the last
+        key: flows_rejected_limit_since
+        longDescription: ""
+        name: Since
+        optional: false
+        subtype: ""
+        type: Duration
+        validationFunction: ""
+        value: null
+        visibilityCondition: []
+        width: ""
+      - advanced: false
+        allowedChoices: {}
+        allowedValues: []
+        defaultValue: true
+        description: Check flows in this namespace and below
+        key: flows_rejected_limit_recursive
+        longDescription: ""
+        name: Recursive
+        optional: false
+        subtype: ""
+        type: Boolean
+        validationFunction: ""
+        value: null
+        visibilityCondition: []
+        width: ""

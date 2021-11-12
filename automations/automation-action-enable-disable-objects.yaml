@@ -1,0 +1,106 @@
+APIVersion: 1
+label: automation:action:enable_disable_objects
+identities:
+- automationaction
+data:
+  automationactions:
+  - description: Enable or disable matching objects
+    entitlements:
+      apiauthorizationpolicy:
+      - update
+      enforcerprofilemappingpolicy:
+      - update
+      eventlog:
+      - create
+      fileaccesspolicy:
+      - update
+      hookpolicy:
+      - update
+      infrastructurepolicy:
+      - update
+      namespacemappingpolicy:
+      - update
+      networkaccesspolicy:
+      - update
+      networkrulesetpolicy:
+      - update
+      quotapolicy:
+      - update
+      tokenscopepolicy:
+      - update
+      useraccesspolicy:
+      - update
+    function: |-
+      function then(m, params, payload) {
+                  _.each(payload.objects, function(obj) {
+
+                    disabled = params.action === "disabled"
+
+                    if (obj.disabled === disabled) {
+                      return;
+                    }
+
+                    obj.disabled = disabled;
+                    m.Update(params.identity, obj, obj.namespace);
+
+                    m.Create('eventlog', {
+                      category: "policy",
+                      content: params.identity + " with ID " + obj.ID + " has been " + params.action + " via the automation",
+                      level: "Info",
+                      targetID: obj.ID,
+                      targetIdentity: params.identity,
+                      title: "Policy updated via automation",
+                    })
+                  })
+                }
+    key: '@action:enable_disable_objects'
+    name: Then modify property 'disabled' of the matching policies
+    propagate: true
+    steps:
+    - advanced: false
+      description: ""
+      name: Parameters
+      parameters:
+      - advanced: false
+        allowedChoices:
+          apiauthorizationpolicy: API Authorization Policies
+          enforcerprofilemappingpolicy: Enforcer Profile Mapping Policies
+          fileaccesspolicy: File Access Policies
+          hookpolicy: Hook Policies
+          infrastructurepolicy: Infrastructure Policies
+          namespacemappingpolicy: Namespace Mapping Policies
+          networkaccesspolicy: Network Access Policies
+          networkrulesetpolicy: Network Ruleset Policies
+          quotapolicy: Quota Policies
+          tokenscopepolicy: Token Scope Policies
+          useraccesspolicy: User Access Policies
+        allowedValues: []
+        defaultValue: networkrulesetpolicy
+        description: Type of policy received from the condition
+        key: identity
+        longDescription: ""
+        name: Policy received
+        optional: false
+        subtype: ""
+        type: Enum
+        validationFunction: ""
+        value: null
+        visibilityCondition: []
+        width: ""
+      - advanced: false
+        allowedChoices:
+          disabled: Disable policies
+          enabled: Enable policies
+        allowedValues: []
+        defaultValue: disabled
+        description: Action to do on policies matching the condition
+        key: action
+        longDescription: ""
+        name: Action
+        optional: false
+        subtype: ""
+        type: Enum
+        validationFunction: ""
+        value: null
+        visibilityCondition: []
+        width: ""

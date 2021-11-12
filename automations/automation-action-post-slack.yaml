@@ -1,0 +1,82 @@
+APIVersion: 1
+label: automation:action:post_slack
+identities:
+- automationaction
+data:
+  automationactions:
+  - description: Posts a message into Slack using an existing Incoming Webhook.
+    function: |-
+      function then(m, params, payload) {
+                  if (!params.post_slack_webhook) {
+                      throw 'Parameter "post_slack_webhook" must be set';
+                  }
+
+                  if (!payload.message) {
+                      throw 'Payload key "message" must be set';
+                  }
+
+                  fields = [];
+                  if (payload.message_fields) {
+                      for (i = 0; i < payload.message_fields.length; i++) {
+                          for (key in payload.message_fields[i]) {
+                              value = typeof(payload.message_fields[i][key]) != 'string' ? JSON.stringify(payload.message_fields[i][key]) : payload.message_fields[i][key];
+                              fields.push({
+                                  title: key,
+                                  value: value,
+                                  short: true,
+                              })
+                          }
+                      }
+                  }
+
+                  body = JSON.stringify({
+                      text: params.post_slack_message_prefix ? params.post_slack_message_prefix + '\n' + payload.message : payload.message,
+                      attachments: [{
+                          fields: fields,
+                      }]
+                  });
+
+                  aporeto.http(
+                      'POST',
+                      params.post_slack_webhook,
+                      body
+                   );
+               }
+    key: '@action:post_slack'
+    name: Then post a message to Slack
+    propagate: true
+    steps:
+    - advanced: false
+      description: ""
+      name: Parameters
+      parameters:
+      - advanced: false
+        allowedChoices: {}
+        allowedValues: []
+        defaultValue: null
+        description: If set, this message will be prefixed before the payload's message.
+        key: post_slack_message_prefix
+        longDescription: ""
+        name: Message Prefix
+        optional: true
+        subtype: ""
+        type: String
+        validationFunction: ""
+        value: null
+        visibilityCondition: []
+        width: ""
+      - advanced: false
+        allowedChoices: {}
+        allowedValues: []
+        defaultValue: null
+        description: Incoming WebHook Slack Endpoint
+        key: post_slack_webhook
+        longDescription: ""
+        name: Webhook
+        optional: false
+        subtype: ""
+        type: String
+        validationFunction: ""
+        value: null
+        visibilityCondition: []
+        width: ""

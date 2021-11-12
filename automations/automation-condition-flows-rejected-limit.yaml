@@ -49,52 +49,19 @@ data:
     name: When the number of rejected flows exceeds a certain limit
     propagate: true
     steps:
-    - advanced: false
-      description: ""
-      name: Flows
+    - name: Flows
       parameters:
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: Number of rejected flows to trigger an action
+      - description: Number of rejected flows to trigger an action
         key: flows_rejected_limit_limit
-        longDescription: ""
         name: Limit
-        optional: false
-        subtype: ""
         type: Integer
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: 10m
+      - defaultValue: 10m
         description: Check the flows that have happened in the last
         key: flows_rejected_limit_since
-        longDescription: ""
         name: Since
-        optional: false
-        subtype: ""
         type: Duration
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: true
+      - defaultValue: true
         description: Check flows in this namespace and below
         key: flows_rejected_limit_recursive
-        longDescription: ""
         name: Recursive
-        optional: false
-        subtype: ""
         type: Boolean
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""

@@ -46,37 +46,14 @@ data:
     name: Then post a message to Slack
     propagate: true
     steps:
-    - advanced: false
-      description: ""
-      name: Parameters
+    - name: Parameters
       parameters:
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: If set, this message will be prefixed before the payload's message.
+      - description: If set, this message will be prefixed before the payload's message.
         key: post_slack_message_prefix
-        longDescription: ""
         name: Message Prefix
         optional: true
-        subtype: ""
         type: String
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: Incoming WebHook Slack Endpoint
+      - description: Incoming WebHook Slack Endpoint
         key: post_slack_webhook
-        longDescription: ""
         name: Webhook
-        optional: false
-        subtype: ""
         type: String
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""

@@ -33,12 +33,9 @@ data:
     name: When policies are matching some given tags
     propagate: true
     steps:
-    - advanced: false
-      description: ""
-      name: Parameters
+    - name: Parameters
       parameters:
-      - advanced: false
-        allowedChoices:
+      - allowedChoices:
           apiauthorizationpolicy: API Authorization Policies
           enforcerprofilemappingpolicy: Enforcer Profile Mapping Policies
           fileaccesspolicy: File Access Policies
@@ -50,61 +47,21 @@ data:
           quotapolicy: Quota Policies
           tokenscopepolicy: Token Scope Policies
           useraccesspolicy: User Access Policies
-        allowedValues: []
         defaultValue: networkrulesetpolicy
         description: Select the type of policy to match
         key: identity
-        longDescription: ""
         name: Any policy
-        optional: false
-        subtype: ""
         type: Enum
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: All tags policies should match
+      - description: All tags policies should match
         key: tags
-        longDescription: ""
         name: Tags
-        optional: false
-        subtype: ""
         type: StringSlice
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: Enter the namespace where to find the policies
+      - description: Enter the namespace where to find the policies
         key: namespace
-        longDescription: ""
         name: Namespace
         optional: true
-        subtype: ""
         type: String
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: false
-        description: Look for the policies in this namespace and child namespaces
+      - description: Look for the policies in this namespace and child namespaces
         key: recursive
-        longDescription: ""
         name: Recursive
-        optional: false
-        subtype: ""
         type: Boolean
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""

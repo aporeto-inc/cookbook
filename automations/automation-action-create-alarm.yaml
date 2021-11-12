@@ -29,52 +29,19 @@ data:
     name: Then create an alarm {{create_alarm_name}}
     propagate: true
     steps:
-    - advanced: false
-      description: ""
-      name: Parameters
+    - name: Parameters
       parameters:
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: Name of the alarm
+      - description: Name of the alarm
         key: create_alarm_name
-        longDescription: ""
         name: Name
-        optional: false
-        subtype: ""
         type: String
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: Description of the alarm
+      - description: Description of the alarm
         key: create_alarm_description
-        longDescription: ""
         name: Description
         optional: true
-        subtype: ""
         type: String
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: The list of emails to be notified when the alarm is created
+      - description: The list of emails to be notified when the alarm is created
         key: create_alarm_emails
-        longDescription: ""
         name: Emails
         optional: true
-        subtype: ""
         type: StringSlice
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""

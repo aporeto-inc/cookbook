@@ -15,52 +15,18 @@ data:
     name: When the number of violations for a given audit profile exceeds a certain limit
     propagate: true
     steps:
-    - advanced: false
-      description: ""
-      name: Parameters
+    - name: Parameters
       parameters:
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: Identifier of the audit profile
+      - description: Identifier of the audit profile
         key: audit_violations_limit_profile_id
-        longDescription: ""
         name: Audit Profile
-        optional: false
-        subtype: ""
         type: String
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: Number of violations before reporting
+      - description: Number of violations before reporting
         key: audit_violations_limit_limit
-        longDescription: ""
         name: Limit
-        optional: false
-        subtype: ""
         type: Integer
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: 30m
+      - defaultValue: 30m
         description: Check the number of violations that have happened in the last
         key: audit_violations_limit_since
-        longDescription: ""
         name: Since
-        optional: false
-        subtype: ""
         type: Duration
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""

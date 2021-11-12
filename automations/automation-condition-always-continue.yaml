@@ -19,22 +19,10 @@ data:
     name: Always Continue and returns the configured payload
     propagate: true
     steps:
-    - advanced: false
-      description: ""
-      name: Parameters
+    - name: Parameters
       parameters:
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: Define the payload to inject to the actions.
+      - description: Define the payload to inject to the actions.
         key: always_continue_payload
-        longDescription: ""
         name: Payload
         optional: true
-        subtype: ""
         type: JSON
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""

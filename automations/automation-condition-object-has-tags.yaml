@@ -38,22 +38,9 @@ data:
     name: When an object has the following tags {{object_has_tags_tags}}
     propagate: true
     steps:
-    - advanced: false
-      description: ""
-      name: If an object is matching all the following tags
+    - name: If an object is matching all the following tags
       parameters:
-      - advanced: false
-        allowedChoices: {}
-        allowedValues: []
-        defaultValue: null
-        description: List all the tags the object must match in order to trigger an action
+      - description: List all the tags the object must match in order to trigger an action
         key: object_has_tags_tags
-        longDescription: ""
         name: Tags
-        optional: false
-        subtype: ""
         type: StringSlice
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""

@@ -57,12 +57,9 @@ data:
     name: Then modify property 'disabled' of the matching policies
     propagate: true
     steps:
-    - advanced: false
-      description: ""
-      name: Parameters
+    - name: Parameters
       parameters:
-      - advanced: false
-        allowedChoices:
+      - allowedChoices:
           apiauthorizationpolicy: API Authorization Policies
           enforcerprofilemappingpolicy: Enforcer Profile Mapping Policies
           fileaccesspolicy: File Access Policies
@@ -74,33 +71,16 @@ data:
           quotapolicy: Quota Policies
           tokenscopepolicy: Token Scope Policies
           useraccesspolicy: User Access Policies
-        allowedValues: []
         defaultValue: networkrulesetpolicy
         description: Type of policy received from the condition
         key: identity
-        longDescription: ""
         name: Policy received
-        optional: false
-        subtype: ""
         type: Enum
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""
-      - advanced: false
-        allowedChoices:
+      - allowedChoices:
           disabled: Disable policies
           enabled: Enable policies
-        allowedValues: []
         defaultValue: disabled
         description: Action to do on policies matching the condition
         key: action
-        longDescription: ""
         name: Action
-        optional: false
-        subtype: ""
         type: Enum
-        validationFunction: ""
-        value: null
-        visibilityCondition: []
-        width: ""

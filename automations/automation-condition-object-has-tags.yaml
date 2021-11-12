@@ -35,7 +35,7 @@ data:
                   };
               }
     key: '@condition:object_has_tags'
-    name: When an object has the following tags {{object_has_tags_tags}}
+    name: When an object has the following tags
     propagate: true
     steps:
     - name: If an object is matching all the following tags

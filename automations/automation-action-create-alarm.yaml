@@ -26,7 +26,7 @@ data:
                   });
                }
     key: '@action:create_alarm'
-    name: Then create an alarm {{create_alarm_name}}
+    name: Then create an alarm
     propagate: true
     steps:
     - name: Parameters

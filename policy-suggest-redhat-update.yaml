@@ -69,6 +69,7 @@ data:
                 Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
               type: StringSlice
               defaultValue:
+              - "repo.aporeto.com"
               - "repo.aporeto.us"
               - "download.fedoraproject.org"
               - "mirrors.fedoraproject.org"

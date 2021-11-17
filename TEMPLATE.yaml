@@ -17,6 +17,8 @@ data:
     # Label of the recipe
     # It is used for keep an import reference.
     label: recipe:template
+    # Message shown upon successful recipe creation
+    successfullMessage: Great success
     # Indicate if the recipe should be available in child namespaces.
     propagate: true
     # Specify the deployment of the recipe

@@ -1,0 +1,46 @@
+APIVersion: 1
+label: automation:condition:object_has_tags
+identities:
+- automationcondition
+data:
+  automationconditions:
+  - description: Continue when an object contains some tags. Works only when the trigger is set to Event
+    function: |-
+      function when(m, params) {
+                  if (!params.eventPayload) {
+                      throw 'This condition must be configured with a trigger of type "Event"';
+                  }
+
+                  if (!params.eventPayload.entity.normalizedTags || params.eventPayload.entity.normalizedTags.length === 0) {
+                      return {continue: false};
+                  }
+
+                  matched = _.intersection(params.eventPayload.entity.normalizedTags, params.object_has_tags_tags)
+                  if (matched.length === 0) {
+                      return {continue: false};
+                  }
+
+                  return {
+                      continue: true,
+                      payload: {
+                          message: 'Some entities has been found with the tags '+JSON.stringify(params.object_has_tags_tags),
+                          message_fields: [{
+                              identity: params.eventPayload.identity,
+                              ID: params.eventPayload.entity.ID,
+                              namespace: params.eventPayload.entity.namespace,
+                              name: params.eventPayload.entity.name || 'No name',
+                              matched: matched.join(', '),
+                          }],
+                      }
+                  };
+              }
+    key: '@condition:object_has_tags'
+    name: When an object has the following tags
+    propagate: true
+    steps:
+    - name: If an object is matching all the following tags
+      parameters:
+      - description: List all the tags the object must match in order to trigger an action
+        key: object_has_tags_tags
+        name: Tags
+        type: StringSlice

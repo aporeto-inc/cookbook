@@ -1,0 +1,67 @@
+APIVersion: 1
+label: automation:condition:networkpolicies_matching
+identities:
+- automationcondition
+data:
+  automationconditions:
+  - description: Continue if some policies are matching some given tags
+    entitlements:
+      apiauthorizationpolicy:
+      - retrieve-many
+      enforcerprofilemappingpolicy:
+      - retrieve-many
+      fileaccesspolicy:
+      - retrieve-many
+      hookpolicy:
+      - retrieve-many
+      infrastructurepolicy:
+      - retrieve-many
+      namespacemappingpolicy:
+      - retrieve-many
+      networkaccesspolicy:
+      - retrieve-many
+      networkrulesetpolicy:
+      - retrieve-many
+      quotapolicy:
+      - retrieve-many
+      tokenscopepolicy:
+      - retrieve-many
+      useraccesspolicy:
+      - retrieve-many
+    function: "function when(m, params) {\n            filter = \"normalizedTags contains \" + JSON.stringify(params.tags);\n            objects = m.RetrieveMany(params.identity, params.namespace, filter, params.recursive)\n            return {continue:objects.length > 0, payload:{\n                message: 'Some policies of type ' + params.identity + ' have been found in the namespace ' + params.namespace + ' with the filter: '+ params.filter,\n                objects: objects\n            }};\n          }\n        "
+    key: '@condition:networkpolicies_matching'
+    name: When policies are matching some given tags
+    propagate: true
+    steps:
+    - name: Parameters
+      parameters:
+      - allowedChoices:
+          apiauthorizationpolicy: API Authorization Policies
+          enforcerprofilemappingpolicy: Enforcer Profile Mapping Policies
+          fileaccesspolicy: File Access Policies
+          hookpolicy: Hook Policies
+          infrastructurepolicy: Infrastructure Policies
+          namespacemappingpolicy: Namespace Mapping Policies
+          networkaccesspolicy: Network Access Policies
+          networkrulesetpolicy: Network Ruleset Policies
+          quotapolicy: Quota Policies
+          tokenscopepolicy: Token Scope Policies
+          useraccesspolicy: User Access Policies
+        defaultValue: networkrulesetpolicy
+        description: Select the type of policy to match
+        key: identity
+        name: Any policy
+        type: Enum
+      - description: All tags policies should match
+        key: tags
+        name: Tags
+        type: StringSlice
+      - description: Enter the namespace where to find the policies
+        key: namespace
+        name: Namespace
+        optional: true
+        type: String
+      - description: Look for the policies in this namespace and child namespaces
+        key: recursive
+        name: Recursive
+        type: Boolean

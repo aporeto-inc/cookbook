@@ -1,0 +1,47 @@
+APIVersion: 1
+label: automation:action:create_alarm
+identities:
+- automationaction
+data:
+  automationactions:
+  - description: The content of the alarm will be taken from the condition's payload 'message' key
+    entitlements:
+      alarm:
+      - create
+    function: |-
+      function then(m, params, payload) {
+                  if (!params.create_alarm_name && !payload.create_alarm_name) {
+                      throw 'Parameter "create_alarm_name" must be set';
+                  }
+                  if (!payload.message) {
+                      throw 'Payload key "message" must be set';
+                  }
+                  m.Create('alarm', {
+                      name: params.create_alarm_name || payload.create_alarm_name,
+                      description: params.create_alarm_description || payload.create_alarm_description,
+                      emails: params.create_alarm_emails,
+                      kind: 'automation.create_alarm.'+params.automation_id,
+                      content: payload.message,
+                      data: payload.message_fields,
+                  });
+               }
+    key: '@action:create_alarm'
+    name: Then create an alarm
+    propagate: true
+    steps:
+    - name: Parameters
+      parameters:
+      - description: Name of the alarm
+        key: create_alarm_name
+        name: Name
+        type: String
+      - description: Description of the alarm
+        key: create_alarm_description
+        name: Description
+        optional: true
+        type: String
+      - description: The list of emails to be notified when the alarm is created
+        key: create_alarm_emails
+        name: Emails
+        optional: true
+        type: StringSlice

@@ -1,0 +1,14 @@
+APIVersion: 1
+label: automation:action:debug_params
+identities:
+- automationaction
+data:
+  automationactions:
+  - description: Simply prints the content of the params. Useful for debugging.
+    function: |-
+      function then(m, params, payload) {
+                  console.log('params', JSON.stringify(params));
+              }
+    key: '@action:debug_params'
+    name: Then print the params
+    propagate: true

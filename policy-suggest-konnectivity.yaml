@@ -3,7 +3,7 @@ label: recipe:policy-suggest:konnectivity
 data:
   recipes:
     - name: K8s Host Mode - Create Konnectivity Service Rule
-      description: Creates a node to node rule to allow traffic between kubernetes nodes.
+      description: Creates a rule to allow incoming traffic from Konnectivity apps.
       label: recipe:policy-suggest:konnectivity
       metadata:
         - "@aporeto:author=aporeto"

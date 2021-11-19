@@ -26,13 +26,13 @@ data:
         APIVersion: 1
         data:
           networkrulesetpolicies:
-          - name: "Allow Konnectivity apps to talk to the K8s nodes"
+          - name: "Allow Konnectivity apps to talk to the k8s nodes"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
             incomingRules:
             - action: Allow
               object:
-              - - "k8s-app=konnectivity-agent"
+              - - "$image=gke.gcr.io/proxy-agent:v0.0.24-gke.0"
               protocolPorts:
               - tcp/10250
             subject:

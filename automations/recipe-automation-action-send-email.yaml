@@ -1,0 +1,57 @@
+APIVersion: 1
+label: recipe:automation-action:send-email
+data:
+  recipes:
+    - name: Create a Send Email Automation Action
+      description: Creates an automation action that creates an alerm and sends an email to the specified recipient(s).
+      label: recipe:automation-action:send-email
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=automation-action"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - automationaction
+      propagate: true
+      longDescription: |-
+        ### Create an automation action to create an alarm and send an email
+
+        This recipe will create an automation action that will create an alarm
+        and send an email to the specified recipient(s) with the details.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          automationactions:
+          - key: '@action:send_email'
+            name: Then create an alarm and send email(s)
+            propagate: true
+            description: The content of the alarm will be taken from the condition's payload 'message' key
+            entitlements:
+              alarm:
+              - create
+            function: |-
+              function then(m, params, payload) {
+                if (!payload.message) {
+                    throw 'Payload key "message" must be set';
+                }
+
+                m.Create('alarm', {
+                    name: payload.create_alarm_name,
+                    description: payload.create_alarm_description,
+                    emails: params.emails,
+                    kind: 'automation.create_alarm.'+params.automation_id,
+                    content: payload.message,
+                    data: payload.message_fields,
+                });
+            }
+          `}}
+
+      steps:
+        - name: Parameters
+          parameters:
+            - key: emails
+              name: Emails
+              description: The list of emails to be notified when the alarm is created
+              type: StringSlice

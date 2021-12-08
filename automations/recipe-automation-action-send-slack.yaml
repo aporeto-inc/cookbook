@@ -1,0 +1,72 @@
+APIVersion: 1
+label: recipe:automation-action:send-slack
+data:
+  recipes:
+    - name: Create a Send Slack Automation Action
+      description: Creates an automation action that posts to a specific Slack WebHook.
+      label: recipe:automation-action:send-slack
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=automation-action"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - automationaction
+      propagate: true
+      longDescription: |-
+        ### Create an automation action to post to a Slack WebHook
+
+        This recipe will create an automation action that will send
+        a provided message payload to a specified Slack WebHook.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          automationactions:
+          - key: '@action:send_slack'
+            name: Then send a message to Slack
+            propagate: true
+            description: Sends a message into Slack using an existing Incoming WebHook.
+            function: |-
+              function then(m, params, payload) {
+                if (!payload.message) {
+                    throw 'Payload key "message" must be set';
+                }
+
+                fields = [];
+                if (payload.message_fields) {
+                    for (i = 0; i < payload.message_fields.length; i++) {
+                        for (key in payload.message_fields[i]) {
+                            value = typeof(payload.message_fields[i][key]) != 'string' ? JSON.stringify(payload.message_fields[i][key]) : payload.message_fields[i][key];
+                            fields.push({
+                                title: key,
+                                value: value,
+                                short: true,
+                            })
+                        }
+                    }
+                }
+
+                body = JSON.stringify({
+                    text: payload.message,
+                    attachments: [{
+                        fields: fields,
+                    }]
+                });
+
+                aporeto.http(
+                    'POST',
+                    params.url,
+                    body
+                );
+            }
+          `}}
+
+      steps:
+        - name: Parameters
+          parameters:
+            - key: url
+              name: URL
+              description: Incoming WebHook Slack Endpoint
+              type: String

@@ -1,0 +1,29 @@
+APIVersion: 1
+label: automation:condition:flows_reports_matching_rulesets
+identities:
+- automationcondition
+data:
+  automationconditions:
+  - key: '@condition:flows_reports_matching_rulesets'
+    name: When the number of flow reports exceeds a certain limit when matching to the specified rulesets
+    propagate: true
+    description: Continue if the number of flow reports exceeds a certain limit for the specified ruleset policies.
+    entitlements:
+      reportsquery:
+      - create
+    function: |-
+      function when(m, params) {
+
+      }
+    steps:
+    - name: Parameters
+      parameters:
+      - name: Ruleset Policy IDs
+        key: ruleset_ids
+        description: The identifiers of the ruleset policies to match to.
+        type: StringSlice
+      - name: Limit
+        key: limit
+        description: The triggering limit in which the condition is met.
+        type: Integer
+        defaultValue: 1

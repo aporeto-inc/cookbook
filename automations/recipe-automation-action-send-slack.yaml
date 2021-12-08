@@ -9,7 +9,6 @@ data:
         - "@aporeto:author=aporeto"
       associatedTags:
         - "aporeto:recipe:placement=automation-action"
-      deploymentMode: NamespaceUnique
       targetIdentities:
         - automationaction
       propagate: true
@@ -24,7 +23,7 @@ data:
         APIVersion: 1
         data:
           automationactions:
-          - key: '@action:send_slack'
+          - key: '@action:send_slack_{{ .RenderID }}'
             name: Then send a message to Slack
             propagate: true
             description: Sends a message into Slack using an existing Incoming WebHook.

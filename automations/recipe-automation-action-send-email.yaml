@@ -9,7 +9,6 @@ data:
         - "@aporeto:author=aporeto"
       associatedTags:
         - "aporeto:recipe:placement=automation-action"
-      deploymentMode: NamespaceUnique
       targetIdentities:
         - automationaction
       propagate: true
@@ -24,7 +23,7 @@ data:
         APIVersion: 1
         data:
           automationactions:
-          - key: '@action:send_email'
+          - key: '@action:send_email_{{ .RenderID }}'
             name: Then create an alarm and send email(s)
             propagate: true
             description: The content of the alarm will be taken from the condition's payload 'message' key

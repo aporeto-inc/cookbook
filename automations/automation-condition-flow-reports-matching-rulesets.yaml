@@ -13,7 +13,29 @@ data:
       - create
     function: |-
       function when(m, params) {
-
+        if (!params.ruleset_ids) {
+          throw 'Parameter "ruleset_ids" must be set';
+        }
+        if (!params.limit) {
+          throw 'Parameter "limit" must be set';
+        }
+        const payload = m.Create(
+          'reportsqueries',
+          {
+            report: 'Flows',
+          },
+          null,
+          {
+            q: params.ruleset_ids.map(id => `policyID == "${id}"`).join(' OR '),
+            startRelative: 5m,
+            recursive: true,
+          },
+        );
+        const flowReportsCount = _.countBy(payload.flowReports, 'policyID');
+        const continue = _.some(flowReportsCount, count => count >= params.hits_limit);
+        return {
+          continue,
+        }
       }
     steps:
     - name: Parameters

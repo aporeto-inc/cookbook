@@ -23,44 +23,30 @@ data:
         APIVersion: 1
         data:
           automationactions:
-          - key: '@action:send_slack_{{ .RenderID }}'
+          - key: "@action:send_slack_{{ .RenderID }}"
             name: Then send a message to Slack
             propagate: true
-            description: Sends a message into Slack using an existing Incoming WebHook.
+            description: Sends a message to Slack using an existing Incoming WebHook.
             function: |-
               function then(m, params, payload) {
-                if (!payload.message) {
-                    throw 'Payload key "message" must be set';
+                if (!payload.title) {
+                    throw 'Payload key "title" must be set';
                 }
-
-                fields = [];
-                if (payload.message_fields) {
-                    for (i = 0; i < payload.message_fields.length; i++) {
-                        for (key in payload.message_fields[i]) {
-                            value = typeof(payload.message_fields[i][key]) != 'string' ? JSON.stringify(payload.message_fields[i][key]) : payload.message_fields[i][key];
-                            fields.push({
-                                title: key,
-                                value: value,
-                                short: true,
-                            })
-                        }
-                    }
+                if (!payload.content) {
+                    throw 'Payload key "content" must be set';
                 }
 
                 body = JSON.stringify({
-                    text: payload.message,
-                    attachments: [{
-                        fields: fields,
-                    }]
+                    text: payload.title + "\n\n" + payload.content,
                 });
 
                 aporeto.http(
                     'POST',
-                    params.url,
+                    {{ .Values.url }},
                     body
                 );
-            }
-          `}}
+              }
+        `}}
 
       steps:
         - name: Parameters

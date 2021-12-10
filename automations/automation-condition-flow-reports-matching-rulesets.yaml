@@ -19,7 +19,14 @@ data:
         if (!params.limit) {
           throw 'Parameter "limit" must be set';
         }
-        const payload = m.Create(
+        if (!params.title) {
+          return { continue: false };
+        }
+        if (!params.content) {
+          return { continue: false };
+        }
+
+        const reportQuery = m.Create(
           'reportsqueries',
           {
             report: 'Flows',
@@ -31,10 +38,16 @@ data:
             recursive: true,
           },
         );
-        const flowReportsCount = _.countBy(payload.flowReports, 'policyID');
+
+        const flowReportsCount = _.countBy(reportQuery.flowReports, 'policyID');
         const continue = _.some(flowReportsCount, count => count >= params.hits_limit);
+
         return {
           continue,
+          payload: {
+            title: params.title,
+            content: params.content + "\n\nAffected Ruleset: " + policyID + "\nNamespace: " + policyNamespace + "\n\nFlow Details\n" + flowDetails
+          }
         }
       }
     steps:
@@ -48,4 +61,11 @@ data:
         key: limit
         description: The triggering limit in which the condition is met.
         type: Integer
-        defaultValue: 1
+      - name: Title
+        key: title
+        optional: true
+        type: String
+      - name: Content
+        key: content
+        optional: true
+        type: String

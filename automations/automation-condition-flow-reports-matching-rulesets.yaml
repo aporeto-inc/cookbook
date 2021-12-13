@@ -26,27 +26,35 @@ data:
           return { continue: false };
         }
 
-        const reportQuery = m.Create(
+        var reportQuery = m.Create(
           'reportsqueries',
           {
             report: 'Flows',
           },
           null,
           {
-            q: params.ruleset_ids.map(id => `policyID == "${id}"`).join(' OR '),
-            startRelative: 5m,
-            recursive: true,
-          },
+            q: params.ruleset_ids.map(function(id) { return 'policyID == "' + id + '"'; }).join(' OR '),
+            startRelative: '5m',
+            recursive: 'true',
+          }
         );
 
-        const flowReportsCount = _.countBy(reportQuery.flowReports, 'policyID');
-        const continue = _.some(flowReportsCount, count => count >= params.hits_limit);
+        var policyID;
+        var policyNamespace;
+        var flowCount;
+        var groupedFlowReports = _.groupBy(reportQuery.flowReports, 'policyID');
+        var condition = _.some(groupedFlowReports, function(flows, policy) {
+          policyID = policy;
+          policyNamespace = groupedFlowReports[policy][0].policyNamespace;
+          flowCount = flows.length;
+          return flowCount >= params.hits_limit;
+        });
 
         return {
-          continue,
+          continue: condition,
           payload: {
             title: params.title,
-            content: params.content + "\n\nAffected Ruleset: " + policyID + "\nNamespace: " + policyNamespace + "\n\nFlow Details\n" + flowDetails
+            content: params.content + "\n\nAffected Ruleset: " + policyID + "\nNamespace: " + policyNamespace + "\n\nFlow Details\n" + "total flow count " + flowCount + " exceeded the triggering limit of " + params.limit
           }
         }
       }

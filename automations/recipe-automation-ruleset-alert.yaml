@@ -26,7 +26,7 @@ data:
           - name: Ruleset Alert
             trigger: Time
             schedule: "@every 5m"
-            condition: "@condition:flows_reports_matching_rulesets"
+            condition: "@condition:flow_reports_matching_rulesets"
             actions:
             {{- range $_, $action := .Values.actions }}
             - {{ $action | quote }}

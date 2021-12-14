@@ -3,7 +3,7 @@ label: recipe:automation-action:send-email
 data:
   recipes:
     - name: Create a Send Email Automation Action
-      description: Creates an automation action that creates an alerm and sends an email to the specified recipient(s).
+      description: Creates an automation action that creates an alarm and sends an email to the specified recipient(s).
       label: recipe:automation-action:send-email
       metadata:
         - "@aporeto:author=aporeto"

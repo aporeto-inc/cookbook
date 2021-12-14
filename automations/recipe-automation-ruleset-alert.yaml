@@ -3,7 +3,7 @@ label: recipe:automation:ruleset-alert
 data:
   recipes:
     - name: Create a Ruleset Alert Automation
-      description: Creates an automation that will raise an alert when a ruleset reaches its limit in matcing flow report.
+      description: Creates an automation that will raise an alert when a ruleset reaches its limit in matching flow report.
       label: recipe:automation:ruleset-alert
       metadata:
         - "@aporeto:author=aporeto"

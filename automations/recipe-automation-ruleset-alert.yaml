@@ -1,0 +1,72 @@
+APIVersion: 1
+label: recipe:automation:ruleset-alert
+data:
+  recipes:
+    - name: Create a Ruleset Alert Automation
+      description: Creates an automation that will raise an alert when a ruleset reaches its limit in matching flow report.
+      label: recipe:automation:ruleset-alert
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=automation"
+      targetIdentities:
+        - automation
+      propagate: true
+      longDescription: |-
+        ### Create an automation to alert when a ruleset reaches its flow report matching limit
+
+        This recipe will create an automation that will raise an alarm when the specified
+        ruleset policies reach their specified limit of matching flow reports.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          automations:
+          - name: Ruleset Alert
+            trigger: Time
+            schedule: "@every 5m"
+            condition: "@condition:flow_reports_matching_rulesets"
+            actions:
+            {{- range $_, $action := .Values.actions }}
+            - {{ $action | quote }}
+            {{- end }}
+            parameters:
+              ruleset_ids:
+              {{- range $_, $id := .Values.ruleset_ids }}
+              - {{ $id | quote }}
+              {{- end }}
+              limit: {{ .Values.limit }}
+              title: Ruleset Alert
+              content: |-
+                For full details, please see the logs on the Prisma Cloud Microsegmentation console
+                Alert Severity: {{ .Values.severity }}
+        `}}
+
+      steps:
+        - name: Parameters
+          parameters:
+            - name: Ruleset Policy IDs
+              key: ruleset_ids
+              description: The identifiers of the ruleset policies to track.
+              type: StringSlice
+            - name: Limit
+              key: limit
+              description: The triggering limit in which the condition is met.
+              type: Integer
+              defaultValue: 1
+            - name: Severity
+              key: severity
+              description: The severity of the message.
+              type: Enum
+              allowedChoices:
+                Low: Low
+                Medium: Medium
+                High: High
+                Critical: Critical
+              defaultValue: Low
+            - name: Integrations
+              key: actions
+              description: The list of integrations to use when the alert is triggered.
+              type: List
+              subtype: AutomationAction

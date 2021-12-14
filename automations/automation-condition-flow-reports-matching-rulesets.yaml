@@ -1,0 +1,105 @@
+APIVersion: 1
+label: automation:condition:flow_reports_matching_rulesets
+identities:
+- automationcondition
+data:
+  automationconditions:
+  - key: '@condition:flow_reports_matching_rulesets'
+    name: When the number of flow reports exceeds a certain limit when matching to the specified rulesets
+    propagate: true
+    description: Continue if the number of flow reports exceeds a certain limit for the specified ruleset policies.
+    entitlements:
+      reportsquery:
+      - create
+    function: |-
+      function when(m, params) {
+        if (!params.ruleset_ids) {
+          throw 'Parameter "ruleset_ids" must be set';
+        }
+        if (!params.limit) {
+          throw 'Parameter "limit" must be set';
+        }
+        if (!params.title) {
+          return { continue: false };
+        }
+        if (!params.content) {
+          return { continue: false };
+        }
+
+        var reportQuery = m.Create(
+          'reportsqueries',
+          {
+            report: 'Flows',
+          },
+          null,
+          {
+            q: params.ruleset_ids.map(function(id) { return 'policyID == "' + id + '"'; }).join(' OR '),
+            startRelative: '5m',
+            recursive: 'true',
+          }
+        );
+
+        // Below are used for Flow Details
+        var policyID; // Affected ruleset
+        var timeOfEvent; // timestamp
+        var sourceIP;
+        var sourceName; // sourceID
+        var sourceNamespace; // policyNamespace
+        var destinationIP;
+        var destinationName; // destinationID
+        var destinationNamespace; // namespace
+        var destinationPort;
+        var protocol;
+        var flowCount;
+        var hits;
+
+        var groupedFlowReports = _.groupBy(reportQuery.flowReports, 'policyID');
+        var condition = _.some(groupedFlowReports, function(flows, policy) {
+          policyID = policy;
+          timeOfEvent = groupedFlowReports[policy][0].timestamp;
+          sourceIP = groupedFlowReports[policy][0].sourceIP;
+          sourceName = groupedFlowReports[policy][0].sourceID;
+          sourceNamespace = groupedFlowReports[policy][0].policyNamespace;
+          destinationIP = groupedFlowReports[policy][0].destinationIP;
+          destinationName = groupedFlowReports[policy][0].destinationID;
+          destinationNamespace = groupedFlowReports[policy][0].namespace;
+          destinationPort = groupedFlowReports[policy][0].destinationPort;
+          protocol = groupedFlowReports[policy][0].protocol;
+          hits = groupedFlowReports[policy][0].value;
+          flowCount = flows.length;
+          return flowCount >= params.hits_limit;
+        });
+
+        var flowDetails = [timeOfEvent, sourceIP, sourceName, sourceNamespace, destinationIP, destinationName, destinationNamespace, protocol, destinationPort, hits].join(', ')
+
+        return {
+          continue: condition,
+          payload: {
+            title: params.title,
+            content: params.content +
+              "\n\nAffected Ruleset: " + policyID +
+              "\nNamespace: " + sourceNamespace +
+              "\n\nFlow details" +
+              "\n" + flowDetails
+          }
+        }
+      }
+    steps:
+    - name: Parameters
+      parameters:
+      - name: Ruleset Policy IDs
+        key: ruleset_ids
+        description: The identifiers of the ruleset policies to match to.
+        type: StringSlice
+      - name: Limit
+        key: limit
+        description: The triggering limit in which the condition is met.
+        type: Integer
+      - name: Title
+        key: title
+        optional: true
+        type: String
+      - name: Content
+        key: content
+        optional: true
+        type: String

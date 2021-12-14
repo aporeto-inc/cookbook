@@ -1,0 +1,61 @@
+APIVersion: 1
+label: recipe:automation-action:send-email
+data:
+  recipes:
+    - name: Create a Send Email Automation Action
+      description: Creates an automation action that creates an alarm and sends an email to the specified recipient(s).
+      label: recipe:automation-action:send-email
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=automation-action"
+      targetIdentities:
+        - automationaction
+      propagate: true
+      longDescription: |-
+        ### Create an automation action to create an alarm and send an email
+
+        This recipe will create an automation action that will create an alarm
+        and send an email to the specified recipient(s) with the details.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          automationactions:
+          - key: "@action:send_email_{{ .RenderID }}"
+            name: Then create an alarm and send email(s)
+            propagate: true
+            description: The content of the alarm will be taken from the condition's payload 'title' and 'content' keys
+            entitlements:
+              alarm:
+              - create
+            function: |-
+              function then(m, params, payload) {
+                if (!payload.title) {
+                    throw 'Payload key "title" must be set';
+                }
+                if (!payload.content) {
+                    throw 'Payload key "content" must be set';
+                }
+
+                m.Create('alarm', {
+                    name: payload.title,
+                    emails: [
+                      {{- range $index, $email := .Values.emails }}
+                        {{- if $index}}, {{ end }}{{ $email | quote -}}
+                      {{ end -}}
+                    ],
+                    kind: 'automation.create_alarm.'+params.automation_id,
+                    content: payload.content,
+                });
+              }
+        `}}
+
+      steps:
+        - name: Parameters
+          parameters:
+            - key: emails
+              name: Emails
+              description: The list of emails to be notified when the alarm is created
+              type: StringSlice

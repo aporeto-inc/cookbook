@@ -1,0 +1,57 @@
+APIVersion: 1
+label: recipe:automation-action:send-slack
+data:
+  recipes:
+    - name: Create a Send Slack Automation Action
+      description: Creates an automation action that posts to a specific Slack WebHook.
+      label: recipe:automation-action:send-slack
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=automation-action"
+      targetIdentities:
+        - automationaction
+      propagate: true
+      longDescription: |-
+        ### Create an automation action to post to a Slack WebHook
+
+        This recipe will create an automation action that will send
+        a provided message payload to a specified Slack WebHook.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          automationactions:
+          - key: "@action:send_slack_{{ .RenderID }}"
+            name: Then send a message to Slack
+            propagate: true
+            description: Sends a message to Slack using an existing Incoming WebHook.
+            function: |-
+              function then(m, params, payload) {
+                if (!payload.title) {
+                    throw 'Payload key "title" must be set';
+                }
+                if (!payload.content) {
+                    throw 'Payload key "content" must be set';
+                }
+
+                body = JSON.stringify({
+                    text: payload.title + "\n\n" + payload.content,
+                });
+
+                aporeto.http(
+                    'POST',
+                    {{ .Values.url | quote }},
+                    body
+                );
+              }
+        `}}
+
+      steps:
+        - name: Parameters
+          parameters:
+            - key: url
+              name: URL
+              description: Incoming WebHook Slack Endpoint
+              type: String

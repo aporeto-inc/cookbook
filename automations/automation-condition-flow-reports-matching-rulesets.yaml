@@ -70,23 +70,17 @@ data:
           return flowCount >= params.hits_limit;
         });
 
+        var flowDetails = [timeOfEvent, sourceIP, sourceName, sourceNamespace,destinationIP, destinationName, destinationNamespace, protocol, destinationPort, hits].join(', ')
+
         return {
           continue: condition,
           payload: {
             title: params.title,
             content: params.content +
-              "\nTime of Event: " + timeOfEvent +
               "\n\nAffected Ruleset: " + policyID +
               "\nNamespace: " + sourceNamespace +
-              "\nSourceIP: " + sourceIP +
-              "\nSourceName: " + sourceName +
-              "\nDestinationIP: " + destinationIP +
-              "\nDestinationName: " + destinationName +
-              "\nDestinationNamespace: " + destinationNamespace +
-              "\nDestinationPort: " + destinationPort +
-              "\nProtocol: " + protocol +
-              "\nTotal flow count: " + flowCount +
-              "\nHits: " + hits
+              "\n\nFlow details" +
+              "\n" + flowDetails
           }
         }
       }

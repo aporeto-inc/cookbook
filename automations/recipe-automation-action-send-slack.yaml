@@ -42,7 +42,7 @@ data:
 
                 aporeto.http(
                     'POST',
-                    {{ .Values.url }},
+                    {{ .Values.url | quote }},
                     body
                 );
               }

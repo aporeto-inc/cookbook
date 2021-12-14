@@ -70,7 +70,7 @@ data:
           return flowCount >= params.hits_limit;
         });
 
-        var flowDetails = [timeOfEvent, sourceIP, sourceName, sourceNamespace,destinationIP, destinationName, destinationNamespace, protocol, destinationPort, hits].join(', ')
+        var flowDetails = [timeOfEvent, sourceIP, sourceName, sourceNamespace, destinationIP, destinationName, destinationNamespace, protocol, destinationPort, hits].join(', ')
 
         return {
           continue: condition,

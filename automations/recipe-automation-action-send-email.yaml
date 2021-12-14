@@ -41,7 +41,11 @@ data:
 
                 m.Create('alarm', {
                     name: payload.title,
-                    emails: {{ .Values.emails }},
+                    emails: [
+                      {{- range $index, $email := .Values.emails }}
+                        {{- if $index}}, {{ end }}{{ $email | quote -}}
+                      {{ end -}}
+                    ],
                     kind: 'automation.create_alarm.'+params.automation_id,
                     content: payload.content,
                 });

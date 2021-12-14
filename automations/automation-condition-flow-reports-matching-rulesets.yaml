@@ -39,13 +39,33 @@ data:
           }
         );
 
-        var policyID;
-        var policyNamespace;
+        // Below are used for Flow Details
+        var policyID; // Affected ruleset
+        var timeOfEvent; // timestamp
+        var sourceIP;
+        var sourceName; // sourceID
+        var sourceNamespace; // policyNamespace
+        var destinationIP;
+        var destinationName; // destinationID
+        var destinationNamespace; // namespace
+        var destinationPort;
+        var protocol;
         var flowCount;
+        var hits;
+
         var groupedFlowReports = _.groupBy(reportQuery.flowReports, 'policyID');
         var condition = _.some(groupedFlowReports, function(flows, policy) {
           policyID = policy;
-          policyNamespace = groupedFlowReports[policy][0].policyNamespace;
+          timeOfEvent = groupedFlowReports[policy][0].timestamp;
+          sourceIP = groupedFlowReports[policy][0].sourceIP;
+          sourceName = groupedFlowReports[policy][0].sourceID;
+          sourceNamespace = groupedFlowReports[policy][0].policyNamespace;
+          destinationIP = groupedFlowReports[policy][0].destinationIP;
+          destinationName = groupedFlowReports[policy][0].destinationID;
+          destinationNamespace = groupedFlowReports[policy][0].namespace;
+          destinationPort = groupedFlowReports[policy][0].destinationPort;
+          protocol = groupedFlowReports[policy][0].protocol;
+          hits = groupedFlowReports[policy][0].value;
           flowCount = flows.length;
           return flowCount >= params.hits_limit;
         });
@@ -54,7 +74,19 @@ data:
           continue: condition,
           payload: {
             title: params.title,
-            content: params.content + "\n\nAffected Ruleset: " + policyID + "\nNamespace: " + policyNamespace + "\n\nFlow Details\n" + "total flow count " + flowCount + " exceeded the triggering limit of " + params.limit
+            content: params.content +
+              "\nTime of Event: " + timeOfEvent +
+              "\n\nAffected Ruleset: " + policyID +
+              "\nNamespace: " + sourceNamespace +
+              "\nSourceIP: " + sourceIP +
+              "\nSourceName: " + sourceName +
+              "\nDestinationIP: " + destinationIP +
+              "\nDestinationName: " + destinationName +
+              "\nDestinationNamespace: " + destinationNamespace +
+              "\nDestinationPort: " + destinationPort +
+              "\nProtocol: " + protocol +
+              "\nTotal flow count: " + flowCount +
+              "\nHits: " + hits
           }
         }
       }

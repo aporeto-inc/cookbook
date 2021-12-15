@@ -42,10 +42,18 @@ data:
 
                 aporeto.http(
                     'POST',
-                    {{ .Values.url | quote }},
+                    params.url,
                     body
                 );
               }
+            steps:
+            - name: Parameters
+              parameters:
+              - key: url
+                name: URL
+                description: Incoming WebHook Slack Endpoint
+                type: String
+                defaultValue: {{ .Values.url }}
         `}}
 
       steps:

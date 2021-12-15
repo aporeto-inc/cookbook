@@ -41,15 +41,22 @@ data:
 
                 m.Create('alarm', {
                     name: payload.title,
-                    emails: [
-                      {{- range $index, $email := .Values.emails }}
-                        {{- if $index}}, {{ end }}{{ $email | quote -}}
-                      {{ end -}}
-                    ],
+                    emails: params.emails,
                     kind: 'automation.create_alarm.'+params.automation_id,
                     content: payload.content,
                 });
               }
+            steps:
+            - name: Parameters
+              parameters:
+              - key: emails
+                name: Emails
+                description: The list of emails to be notified when the alarm is created
+                type: StringSlice
+                defaultValue:
+                {{- range $_, $email := .Values.emails }}
+                - {{ $email }}
+                {{- end }}
         `}}
 
       steps:

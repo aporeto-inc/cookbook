@@ -19,12 +19,6 @@ data:
         if (!params.limit) {
           throw 'Parameter "limit" must be set';
         }
-        if (!params.title) {
-          return { continue: false };
-        }
-        if (!params.content) {
-          return { continue: false };
-        }
 
         var reportQuery = m.Create(
           'reportsqueries',
@@ -67,7 +61,7 @@ data:
           protocol = groupedFlowReports[policy][0].protocol;
           hits = groupedFlowReports[policy][0].value;
           flowCount = flows.length;
-          return flowCount >= params.hits_limit;
+          return flowCount >= params.limit;
         });
 
         var flowDetails = [timeOfEvent, sourceIP, sourceName, sourceNamespace, destinationIP, destinationName, destinationNamespace, protocol, destinationPort, hits].join(', ')
@@ -75,9 +69,7 @@ data:
         return {
           continue: condition,
           payload: {
-            title: params.title,
-            content: params.content +
-              "\n\nAffected Ruleset: " + policyID +
+            content: "\n\nAffected Ruleset: " + policyID +
               "\nNamespace: " + sourceNamespace +
               "\n\nFlow details" +
               "\n" + flowDetails
@@ -95,11 +87,3 @@ data:
         key: limit
         description: The triggering limit in which the condition is met.
         type: Integer
-      - name: Title
-        key: title
-        optional: true
-        type: String
-      - name: Content
-        key: content
-        optional: true
-        type: String

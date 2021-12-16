@@ -26,29 +26,39 @@ data:
           - key: "@action:send_email_{{ .RenderID }}"
             name: Then create an alarm and send email(s)
             propagate: true
-            description: The content of the alarm will be taken from the condition's payload 'title' and 'content' keys
+            description: Creates an alarm which also triggers sending an email to the specified recipient(s)
             entitlements:
               alarm:
               - create
             function: |-
               function then(m, params, payload) {
-                if (!payload.title) {
-                    throw 'Payload key "title" must be set';
+                if (!params.title) {
+                    throw 'Parameter key "title" must be set';
                 }
-                if (!payload.content) {
-                    throw 'Payload key "content" must be set';
+                if (!params.content) {
+                    throw 'Parameter key "content" must be set';
                 }
 
+                var message = payload.content ? params.content + payload.content : params.content
+
                 m.Create('alarm', {
-                    name: payload.title,
+                    name: params.title,
                     emails: params.emails,
                     kind: 'automation.create_alarm.'+params.automation_id,
-                    content: payload.content,
+                    content: message,
                 });
               }
             steps:
             - name: Parameters
               parameters:
+              - name: Title
+                key: title
+                description: The title of the email to send
+                type: String
+              - name: Content
+                key: content
+                description: The content of the email to send
+                type: String
               - key: emails
                 name: Emails
                 description: The list of emails to be notified when the alarm is created

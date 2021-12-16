@@ -29,15 +29,17 @@ data:
             description: Sends a message to Slack using an existing Incoming WebHook.
             function: |-
               function then(m, params, payload) {
-                if (!payload.title) {
-                    throw 'Payload key "title" must be set';
+                if (!params.title) {
+                    throw 'Parameter key "title" must be set';
                 }
-                if (!payload.content) {
-                    throw 'Payload key "content" must be set';
+                if (!params.content) {
+                    throw 'Parameter key "content" must be set';
                 }
 
+                var message = payload.content ? params.content + payload.content : params.content
+
                 body = JSON.stringify({
-                    text: payload.title + "\n\n" + payload.content,
+                    text: params.title + "\n\n" + message,
                 });
 
                 aporeto.http(
@@ -49,6 +51,14 @@ data:
             steps:
             - name: Parameters
               parameters:
+              - name: Title
+                key: title
+                description: The title of the message to send
+                type: String
+              - name: Content
+                key: content
+                description: The content of the message to send
+                type: String
               - key: url
                 name: URL
                 description: Incoming WebHook Slack Endpoint

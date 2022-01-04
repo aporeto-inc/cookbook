@@ -1,0 +1,54 @@
+APIVersion: 1
+label: recipe:policy-suggest:pc-api-server-and-konnectivity
+data:
+  recipes:
+    - name: K8s Host Mode - Allow Prisma Cloud API Server and Konnectivity to Kube System
+      description: Creates a rule to allow traffic from Prisma Cloud API server and Konnectivity to kube system.
+      label: recipe:policy-suggest:pc-api-server-and-konnectivity
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=k8s-rules"
+        - "aporeto:recipe:placement=group-level"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create a Prisma Cloud API server and Konnectivity to kube system rule
+
+        This recipe will create a Network Ruleset Policy to allow traffic
+        from Prisma Cloud API server and Konnectivity to kube system on
+        tcp/443 port.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          networkrulesetpolicies:
+          - name: "Allow Prisma Cloud API server and Konnectivity to kube system"
+            description: "Ruleset automatically created by an Out of Box template."
+            propagate: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - "k8s-app=konnectivity-agent"
+              protocolPorts:
+              - "tcp/443"
+            outgoingRules:
+            - action: Allow
+              object:
+              - - "app=aggregated-apiserver"
+              protocolPorts:
+              - "tcp/443"
+            subject:
+            - - "@org:kubernetes=kube-system"
+            {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            - - "app=aggregated-apiserver"
+            {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+        `}}

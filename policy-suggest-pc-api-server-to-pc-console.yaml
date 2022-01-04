@@ -1,10 +1,10 @@
 APIVersion: 1
-label: recipe:policy-suggest:konnectivity
+label: recipe:policy-suggest:pc-api-server-to-pc-console
 data:
   recipes:
-    - name: K8s Host Mode - Create Konnectivity Service Rule
-      description: Creates a rule to allow incoming traffic from Konnectivity apps.
-      label: recipe:policy-suggest:konnectivity
+    - name: K8s Host Mode - Allow Prisma Cloud API Server to Prisma Cloud Console
+      description: Creates a rule to allow outgoing traffic from Prisma Cloud API server to Prisma Cloud console.
+      label: recipe:policy-suggest:pc-api-server-to-pc-console
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
@@ -16,28 +16,29 @@ data:
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Create a Konnectivity service rule
+        ### Create a Prisma Cloud API server to Prisma Cloud console rule
 
-        This recipe will create a Network Ruleset Policy to allow incoming
-        traffic to the host from konnectivity apps on tcp/10250 port.
+        This recipe will create a Network Ruleset Policy to allow outgoing
+        traffic from Prisma Cloud API server to the Prisma Cloud console
+        on tcp/443 port.
 
       template: |-
         {{`
         APIVersion: 1
         data:
           networkrulesetpolicies:
-          - name: "Allow Konnectivity apps to talk to the k8s nodes"
+          - name: "Allow Prisma Cloud API server to Prisma Cloud console"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            incomingRules:
+            outgoingRules:
             - action: Allow
               object:
-              - - "$image=gke.gcr.io/proxy-agent:v0.0.24-gke.0"
+              - - "externalnetwork:name=Prisma Cloud Console"
               protocolPorts:
-              - tcp/10250
+              - "tcp/443"
             subject:
-            - - "$type=Host"
-              - "app:host:type=kubernetes"
+            - - "app=aggregated-apiserver"
+              - "@org:kubernetes=aporeto"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}

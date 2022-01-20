@@ -33,13 +33,13 @@ data:
             incomingRules:
             - action: Allow
               object:
-              - - "k8s-app=konnectivity-agent"
+              - - "@org:kubernetes=kube-system"
               protocolPorts:
               - "tcp/443"
             outgoingRules:
             - action: Allow
               object:
-              - - "app=aggregated-apiserver"
+              - - "@org:kubernetes=aporeto"
               protocolPorts:
               - "tcp/443"
             subject:
@@ -47,7 +47,7 @@ data:
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
-            - - "app=aggregated-apiserver"
+            - - "@org:kubernetes=aporeto"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}

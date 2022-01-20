@@ -37,8 +37,7 @@ data:
               protocolPorts:
               - "tcp/443"
             subject:
-            - - "app=aggregated-apiserver"
-              - "@org:kubernetes=aporeto"
+            - - "@org:kubernetes=aporeto"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}

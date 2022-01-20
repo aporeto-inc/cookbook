@@ -36,12 +36,14 @@ data:
               - - "@org:kubernetes=kube-system"
               protocolPorts:
               - "tcp/443"
+              - "tcp/8443"
             outgoingRules:
             - action: Allow
               object:
               - - "@org:kubernetes=aporeto"
               protocolPorts:
               - "tcp/443"
+              - "tcp/8443"
             subject:
             - - "@org:kubernetes=kube-system"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}

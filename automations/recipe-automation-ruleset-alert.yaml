@@ -44,17 +44,26 @@ data:
         `}}
 
       steps:
-        - name: Parameters
-          parameters:
-            - name: Ruleset Policy IDs
-              key: ruleset_ids
-              description: The identifiers of the ruleset policies to track.
-              type: StringSlice
+        - name: Conditions
+          parameters: 
             - name: Limit
               key: limit
               description: The triggering limit in which the condition is met.
               type: Integer
               defaultValue: 1
+            - name: Ruleset Policy IDs
+              key: ruleset_ids
+              description: The identifiers of the ruleset policies to track.
+              type: StringSlice
+        - name: Actions
+          parameters: 
+            - name: Integrations
+              key: actions
+              description: The list of integrations to use when the alert is triggered.
+              type: List
+              subtype: AutomationAction
+        - name: Alert Severity
+          parameters:
             - name: Severity
               key: severity
               description: The severity of the message.
@@ -65,8 +74,3 @@ data:
                 High: High
                 Critical: Critical
               defaultValue: Low
-            - name: Integrations
-              key: actions
-              description: The list of integrations to use when the alert is triggered.
-              type: List
-              subtype: AutomationAction

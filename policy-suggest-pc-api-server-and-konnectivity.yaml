@@ -20,7 +20,7 @@ data:
 
         This recipe will create a Network Ruleset Policy to allow traffic
         from Prisma Cloud API server and Konnectivity to kube system on
-        tcp/443 port.
+        ports tcp/443 and tcp/8443.
 
       template: |-
         {{`

@@ -1,0 +1,48 @@
+APIVersion: 1
+label: recipe:policy-suggest:kube-system-to-host-pu
+data:
+  recipes:
+    - name: K8s Host Mode - Allow Kube System Namespace to Host PU
+      description: Creates a rule to allow outgoing traffic from kube system namespace to host PU.
+      label: recipe:policy-suggest:kube-system-to-host-pu
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=k8s-rules"
+        - "aporeto:recipe:placement=kubernetes-level"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create a kube system namespace to host PU rule
+
+        This recipe will create a Network Ruleset Policy to allow outgoing
+        traffic from kube system namespace to host PUs.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          networkrulesetpolicies:
+          - name: "Allow kube system namespace to host PUs"
+            description: "Ruleset automatically created by an Out of Box template."
+            propagate: true
+            outgoingRules:
+            - action: Allow
+              object:
+              - - "app:host:type=kubernetes"
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+                - {{ $orgmeta | quote }}
+              {{- end }}
+              protocolPorts:
+              - "any"
+            subject:
+            - - "@org:kubernetes=kube-system"
+            {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if hasPrefix "@org:kubernetes=" $orgmeta }}{{- else }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            {{- end }}
+        `}}

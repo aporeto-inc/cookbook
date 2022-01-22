@@ -1,0 +1,56 @@
+APIVersion: 1
+label: recipe:policy-suggest:pc-api-server-and-konnectivity
+data:
+  recipes:
+    - name: K8s Host Mode - Allow Prisma Cloud API Server and Konnectivity to Kube System
+      description: Creates a rule to allow traffic from Prisma Cloud API server and Konnectivity to kube system.
+      label: recipe:policy-suggest:pc-api-server-and-konnectivity
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=k8s-rules"
+        - "aporeto:recipe:placement=group-level"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create a Prisma Cloud API server and Konnectivity to kube system rule
+
+        This recipe will create a Network Ruleset Policy to allow traffic
+        from Prisma Cloud API server and Konnectivity to kube system on
+        ports tcp/443 and tcp/8443.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          networkrulesetpolicies:
+          - name: "Allow Prisma Cloud API server and Konnectivity to kube system"
+            description: "Ruleset automatically created by an Out of Box template."
+            propagate: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - "@org:kubernetes=kube-system"
+              protocolPorts:
+              - "tcp/443"
+              - "tcp/8443"
+            outgoingRules:
+            - action: Allow
+              object:
+              - - "@org:kubernetes=aporeto"
+              protocolPorts:
+              - "tcp/443"
+              - "tcp/8443"
+            subject:
+            - - "@org:kubernetes=kube-system"
+            {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            - - "@org:kubernetes=aporeto"
+            {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+        `}}

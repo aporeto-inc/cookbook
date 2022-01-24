@@ -48,6 +48,8 @@ data:
                     body
                 );
               }
+            parameters:
+              url: {{ .Values.url }}
             steps:
             - name: Parameters
               parameters:

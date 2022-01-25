@@ -48,6 +48,11 @@ data:
                     content: message,
                 });
               }
+            parameters:
+              emails:
+              {{- range $_, $email := .Values.emails }}
+              - {{ $email }}
+              {{- end }}
             steps:
             - name: Parameters
               parameters:

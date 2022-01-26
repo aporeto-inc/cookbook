@@ -13,19 +13,30 @@ data:
         - "aporeto:recipe:placement=group-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
+        - externalnetwork
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
         ### Create a Prisma Cloud API server to Prisma Cloud console rule
 
-        This recipe will create a Network Ruleset Policy to allow outgoing
-        traffic from Prisma Cloud API server to the Prisma Cloud console
-        on tcp/443 port.
+        This recipe will create an External Network and Network Ruleset Policy
+        to allow outgoing traffic from Prisma Cloud API server to the Prisma
+        Cloud console on tcp/443 port.
 
       template: |-
         {{`
         APIVersion: 1
         data:
+          externalnetworks:
+          - name: "Allow Prisma Cloud Console access"
+            description: "External network automatically created by an Out of Box template."
+            propagate: true
+            entries:
+            {{- range $_, $network := .Values.networks }}
+            - {{ $network | quote }}
+            {{- end }}
+            associatedTags:
+            - "externalnetwork:name=Prisma Cloud Console"
           networkrulesetpolicies:
           - name: "Allow Prisma Cloud API server to Prisma Cloud console"
             description: "Ruleset automatically created by an Out of Box template."
@@ -42,3 +53,14 @@ data:
               - {{ $orgmeta | quote }}
             {{- end }}
         `}}
+
+      steps:
+        - name: General
+          description: General configuration
+          parameters:
+            - key: networks
+              name: Networks
+              description: The FQDN(s) to the Prisma Cloud Console.
+              longDescription: |-
+                Provide at least one FQDN to the Prisma Cloud Console. Example someplace.network.prismacloud.io or api.someplace.network.prismacloud.io
+              type: StringSlice

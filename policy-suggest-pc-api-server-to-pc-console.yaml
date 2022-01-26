@@ -32,9 +32,7 @@ data:
             description: "External network automatically created by an Out of Box template."
             propagate: true
             entries:
-            {{- range $_, $network := .Values.networks }}
-            - {{ $network | quote }}
-            {{- end }}
+            - {{ $url := split ":" .Aporeto.API }}{{ $url._1 | trimPrefix "//" }}
             associatedTags:
             - "externalnetwork:name=Prisma Cloud Console"
           networkrulesetpolicies:
@@ -53,14 +51,3 @@ data:
               - {{ $orgmeta | quote }}
             {{- end }}
         `}}
-
-      steps:
-        - name: General
-          description: General configuration
-          parameters:
-            - key: networks
-              name: Networks
-              description: The FQDN(s) to the Prisma Cloud Console.
-              longDescription: |-
-                Provide at least one FQDN to the Prisma Cloud Console. Example someplace.network.prismacloud.io or api.someplace.network.prismacloud.io
-              type: StringSlice

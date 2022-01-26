@@ -24,9 +24,9 @@ data:
         data:
           automationactions:
           - key: "@action:send_slack_{{ .RenderID }}"
-            name: Then send a message to Slack
+            name: Then send a message to the Slack webhook {{ .Values.url }}
             propagate: true
-            description: Sends a message to Slack using an existing Incoming WebHook.
+            description: Sends a message to Slack using {{ .Values.url }}.
             function: |-
               function then(m, params, payload) {
                 if (!params.title) {

@@ -24,9 +24,9 @@ data:
         data:
           automationactions:
           - key: "@action:send_email_{{ .RenderID }}"
-            name: Then create an alarm and send email(s)
+            name: Then create an alarm and send email(s) to {{ .Values.emails }}
             propagate: true
-            description: Creates an alarm which also triggers sending an email to the specified recipient(s)
+            description: Creates an alarm and sends an email to {{ .Values.emails }}
             entitlements:
               alarm:
               - create

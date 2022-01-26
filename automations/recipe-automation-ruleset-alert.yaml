@@ -23,7 +23,10 @@ data:
         APIVersion: 1
         data:
           automations:
-          - name: Ruleset Alert
+          - name: {{ .Values.name }}
+            {{- if .Values.description }}
+            description: {{ .Values.description }}
+            {{- end }}
             trigger: Time
             schedule: "@every 5m"
             condition: "@condition:flow_reports_matching_rulesets"
@@ -37,15 +40,28 @@ data:
               - {{ $id | quote }}
               {{- end }}
               limit: {{ .Values.limit }}
-              title: Ruleset Alert
+              title: {{ .Values.name }}
+              severity: {{ .Values.severity }}
               content: |-
                 For full details, please see the logs on the Prisma Cloud Microsegmentation console
-                Alert Severity: {{ .Values.severity }}
+                Alert Severity:
         `}}
 
       steps:
+        - name: General
+          parameters:
+            - name: Name
+              key: name
+              description: The name of the automation.
+              type: String
+              defaultValue: Ruleset Alert
+            - name: Description
+              key: description
+              description: Optional information about the automation.
+              type: String
+              optional: true
         - name: Conditions
-          parameters: 
+          parameters:
             - name: Limit
               key: limit
               description: The triggering limit in which the condition is met.
@@ -56,7 +72,7 @@ data:
               description: The identifiers of the ruleset policies to track.
               type: StringSlice
         - name: Actions
-          parameters: 
+          parameters:
             - name: Integrations
               key: actions
               description: The list of integrations to use when the alert is triggered.

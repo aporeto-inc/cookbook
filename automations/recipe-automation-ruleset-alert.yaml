@@ -41,9 +41,10 @@ data:
               {{- end }}
               limit: {{ .Values.limit }}
               title: {{ .Values.name }}
+              severity: {{ .Values.severity }}
               content: |-
                 For full details, please see the logs on the Prisma Cloud Microsegmentation console
-                Alert Severity: {{ .Values.severity }}
+                Alert Severity:
         `}}
 
       steps:

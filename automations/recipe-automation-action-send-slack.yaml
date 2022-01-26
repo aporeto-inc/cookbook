@@ -24,19 +24,22 @@ data:
         data:
           automationactions:
           - key: "@action:send_slack_{{ .RenderID }}"
-            name: Then send a message to Slack
+            name: Then send a message to the Slack webhook {{ .Values.url }}
             propagate: true
-            description: Sends a message to Slack using an existing Incoming WebHook.
+            description: Sends a message to Slack using {{ .Values.url }}.
             function: |-
               function then(m, params, payload) {
                 if (!params.title) {
                     throw 'Parameter key "title" must be set';
                 }
+                if (!params.severity) {
+                    throw 'Parameter key "severity" must be set';
+                }
                 if (!params.content) {
                     throw 'Parameter key "content" must be set';
                 }
 
-                var message = payload.content ? params.content + payload.content : params.content
+                var message = payload.content ? params.content + " " + params.severity + payload.content : params.content + " " + params.severity
 
                 body = JSON.stringify({
                     text: params.title + "\n\n" + message,
@@ -61,6 +64,15 @@ data:
                 key: content
                 description: The content of the message to send
                 type: String
+              - name: Severity
+                key: severity
+                description: The severity of the message.
+                type: Enum
+                allowedChoices:
+                  Low: Low
+                  Medium: Medium
+                  High: High
+                  Critical: Critical
               - key: url
                 name: URL
                 description: Incoming WebHook Slack Endpoint

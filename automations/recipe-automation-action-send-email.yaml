@@ -24,9 +24,9 @@ data:
         data:
           automationactions:
           - key: "@action:send_email_{{ .RenderID }}"
-            name: Then create an alarm and send email(s)
+            name: Then create an alarm and send email(s) to {{ .Values.emails }}
             propagate: true
-            description: Creates an alarm which also triggers sending an email to the specified recipient(s)
+            description: Creates an alarm and sends an email to {{ .Values.emails }}
             entitlements:
               alarm:
               - create
@@ -35,11 +35,14 @@ data:
                 if (!params.title) {
                     throw 'Parameter key "title" must be set';
                 }
+                if (!params.severity) {
+                    throw 'Parameter key "severity" must be set';
+                }
                 if (!params.content) {
                     throw 'Parameter key "content" must be set';
                 }
 
-                var message = payload.content ? params.content + payload.content : params.content
+                var message = payload.content ? params.content + " " + params.severity + payload.content : params.content + " " + params.severity
 
                 m.Create('alarm', {
                     name: params.title,
@@ -64,6 +67,15 @@ data:
                 key: content
                 description: The content of the email to send
                 type: String
+              - name: Severity
+                key: severity
+                description: The severity of the message.
+                type: Enum
+                allowedChoices:
+                  Low: Low
+                  Medium: Medium
+                  High: High
+                  Critical: Critical
               - key: emails
                 name: Emails
                 description: The list of emails to be notified when the alarm is created

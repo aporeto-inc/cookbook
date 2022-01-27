@@ -72,6 +72,7 @@ data:
             content: "\n\nAffected Ruleset: " + policyID +
               "\nNamespace: " + sourceNamespace +
               "\n\nFlow details" +
+              "\nTime Of Event, Source IP, Source Name, Source Namespace, Destination IP, Destination Name, Destination Namespace, Protocol, Destination Port, Hits" +
               "\n" + flowDetails
           }
         }

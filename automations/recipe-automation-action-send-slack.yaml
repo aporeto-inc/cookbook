@@ -52,7 +52,7 @@ data:
                 );
               }
             parameters:
-              url: {{ .Values.url }}
+              url: {{ .Values.url | quote }}
             steps:
             - name: Parameters
               parameters:
@@ -77,7 +77,7 @@ data:
                 name: URL
                 description: Incoming WebHook Slack Endpoint
                 type: String
-                defaultValue: {{ .Values.url }}
+                defaultValue: {{ .Values.url | quote }}
         `}}
 
       steps:

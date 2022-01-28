@@ -54,7 +54,7 @@ data:
             parameters:
               emails:
               {{- range $_, $email := .Values.emails }}
-              - {{ $email }}
+              - {{ $email | quote }}
               {{- end }}
             steps:
             - name: Parameters
@@ -82,7 +82,7 @@ data:
                 type: StringSlice
                 defaultValue:
                 {{- range $_, $email := .Values.emails }}
-                - {{ $email }}
+                - {{ $email | quote }}
                 {{- end }}
         `}}
 

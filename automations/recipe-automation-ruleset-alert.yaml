@@ -23,9 +23,9 @@ data:
         APIVersion: 1
         data:
           automations:
-          - name: {{ .Values.name }}
+          - name: {{ .Values.name | quote }}
             {{- if .Values.description }}
-            description: {{ .Values.description }}
+            description: {{ .Values.description | quote }}
             {{- end }}
             trigger: Time
             schedule: "@every 5m"
@@ -40,8 +40,8 @@ data:
               - {{ $id | quote }}
               {{- end }}
               limit: {{ .Values.limit }}
-              title: {{ .Values.name }}
-              severity: {{ .Values.severity }}
+              title: {{ .Values.name | quote }}
+              severity: {{ .Values.severity | quote }}
               content: |-
                 For full details, please see the logs on the Prisma Cloud Microsegmentation console
                 Alert Severity:

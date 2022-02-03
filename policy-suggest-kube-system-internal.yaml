@@ -1,0 +1,52 @@
+APIVersion: 1
+label: recipe:policy-suggest:kube-system-internal
+data:
+  recipes:
+    - name: K8s Host Mode - Allow Kube System Internal Traffic
+      description: Creates a rule to allow internal traffic within the kube-system namespace.
+      label: recipe:policy-suggest:kube-system-internal
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=k8s-rules"
+        - "aporeto:recipe:placement=group-level"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create a rule to allow internal kube system internal traffic
+
+        This recipe will create a Network Ruleset Policy to allow internal
+        traffic across PUs within the kube-system namespace.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          networkrulesetpolicies:
+          - name: "Allow Kube System internal traffic"
+            description: "Ruleset automatically created by an Out of Box template."
+            propagate: true
+            incomingRules:
+            - action: Allow
+              object:
+              - - "$identity=processingunit"
+                - "@org:kubernetes=kube-system"
+              protocolPorts:
+              - "any"
+            outgoingRules:
+            - action: Allow
+              object:
+              - - "$identity=processingunit"
+                - "@org:kubernetes=kube-system"
+              protocolPorts:
+              - "any"
+            subject:
+            - - "$identity=processingunit"
+              - "@org:kubernetes=kube-system"
+            {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+        `}}

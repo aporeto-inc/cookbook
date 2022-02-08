@@ -93,3 +93,11 @@ data:
               name: Emails
               description: The list of emails to be notified when the alarm is created
               type: StringSlice
+              validationFunction: |-
+                function validate(emails) {
+                  if (!emails.every(function (email) {
+                    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                  })) {
+                    throw "Please enter a valid email address";
+                  }
+                }

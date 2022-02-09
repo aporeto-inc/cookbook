@@ -19,6 +19,9 @@ data:
         if (!params.limit) {
           throw 'Parameter "limit" must be set';
         }
+        if (!params.platform_url) {
+          throw 'Parameter "platform_url" must be set';
+        }
 
         var reportQuery = m.Create(
           'reportsqueries',
@@ -73,7 +76,7 @@ data:
               "\nNamespace: " + sourceNamespace +
               "\n\nFlow details" +
               "\nTime Of Event, Source IP, Source Name, Source Namespace, Destination IP, Destination Name, Destination Namespace, Protocol, Destination Port, Hits" +
-              "\n" + flowDetails
+              "\n<a href=\"" + params.platform_url + "/microsegmentation/flowlogs?namespace=%s&filter=status != Resolved AND ID == \"" + policyID + "\"\">" + flowDetails + "</a>"
           }
         }
       }
@@ -82,9 +85,13 @@ data:
       parameters:
       - name: Ruleset Policy IDs
         key: ruleset_ids
-        description: The identifiers of the ruleset policies to match to.
+        description: The identifiers of the ruleset policies to track.
         type: StringSlice
       - name: Limit
         key: limit
         description: The triggering limit in which the condition is met.
         type: Integer
+      - name: Platform URL
+        key: platform_url
+        description: The base URL to the platform's UI.
+        type: String

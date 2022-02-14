@@ -76,7 +76,7 @@ data:
               "\nNamespace: " + sourceNamespace +
               "\n\nFlow details" +
               "\nTime Of Event, Source IP, Source Name, Source Namespace, Destination IP, Destination Name, Destination Namespace, Protocol, Destination Port, Hits" +
-              "\n<a href=\"" + params.platform_url + "/microsegmentation/flowlogs?namespace=%s&filter=status != Resolved AND ID == \"" + policyID + "\"\">" + flowDetails + "</a>"
+              "\n<a href=\"" + params.platform_url + "/microsegmentation/flowlogs?namespace=%s&filter=policyID+==+" + policyID + "\">" + flowDetails + "</a>"
           }
         }
       }

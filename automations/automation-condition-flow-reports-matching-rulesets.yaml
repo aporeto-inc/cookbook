@@ -77,7 +77,7 @@ data:
               "\n\nFlow details" +
               "\nTime Of Event, Source IP, Source Name, Source Namespace, Destination IP, Destination Name, Destination Namespace, Protocol, Destination Port, Hits" +
               "\n" + flowDetails +
-              "\n\nFor more info: " + params.platform_url + "/microsegmentation/flowlogs?namespace=" + sourceNamespace + "&timeRange=86400000&filter=policyID+==+" + policyID
+              "\n\nFor more info: " + params.platform_url + "/flowlogs?namespace=" + sourceNamespace + "&timeRange=86400000&filter=policyID+==+" + policyID
           }
         }
       }

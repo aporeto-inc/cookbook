@@ -70,7 +70,7 @@ data:
                 Connected: An Enforcer connects
                 Disconnected: An Enforcer disconnects
                 Both: An Enforcer connects or disconnects
-              defaultValue: disconnected
+              defaultValue: Disconnected
         - name: Actions
           parameters:
             - name: Integrations

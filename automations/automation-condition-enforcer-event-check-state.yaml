@@ -1,0 +1,64 @@
+APIVersion: 1
+label: automation:condition:enforcer_event_connection_state
+identities:
+- automationcondition
+data:
+  automationconditions:
+  - key: '@condition:enforcer_event_connection_state'
+    name: When an enforcer event causes its state to connect/disconnect
+    propagate: true
+    description: Continue if the enforcer connects/disconnects based on tracked state(s).
+    function: |-
+      function when(m, params) {
+        if (!params.eventPayload) {
+          throw 'This condition must be configured with a trigger of type "Event"';
+        }
+        if (!params.enforcer_state) {
+          throw 'Parameter "enforcer_state" must be set';
+        }
+        if (!params.platform_url) {
+          throw 'Parameter "platform_url" must be set';
+        }
+
+        var eventType = params.eventPayload.type
+        var id = params.eventPayload.entity.ID
+        var namespace = params.eventPayload.entity.namespace
+        var state = params.eventPayload.entity.operationalStatus
+
+        if (eventType === "create" && state != "Connected") {
+          return { continue: false };
+        }
+
+        if (eventType === "update" && state != "Disconnected") {
+          return { continue: false };
+        }
+
+        if (state !== params.enforcer_state && params.enforcer_state !== "Both") {
+          return { continue: false };
+        }
+
+        return {
+          continue: true,
+          payload: {
+            content: "\n\nAffected Enforcer: " + id +
+              "\nNamespace: " + namespace +
+              "\n\nConnection State:" + state +
+              "\n\nFor more info: " + params.platform_url + "/enforcerlogs?namespace=" + namespace + "&timeRange=86400000&filter=enforcerID+==+" + id
+          }
+        }
+      }
+    steps:
+    - name: Parameters
+      parameters:
+      - name: Enforcer Connection State
+        key: enforcer_state
+        description: The state(s) to track for enforcers.
+        type: Enum
+        allowedChoices:
+          Connected: Enforcer connects
+          Disconnected: Enforcer disconnects
+          Both: Enforcer connects or disconnects
+      - name: Platform URL
+        key: platform_url
+        description: The base URL to the platform's UI.
+        type: String

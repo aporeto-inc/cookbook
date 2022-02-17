@@ -75,7 +75,7 @@ data:
                 }
             - name: Ruleset Policy IDs
               key: ruleset_ids
-              description: The identifiers of the ruleset policies to track.
+              description: Select your Ruleset policies.
               type: StringSlice
         - name: Actions
           parameters:

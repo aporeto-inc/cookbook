@@ -9,6 +9,7 @@ data:
         - "@aporeto:author=aporeto"
       associatedTags:
         - "aporeto:recipe:placement=automation"
+        - "aporeto:recipe:placement=group-level"
       targetIdentities:
         - automation
       propagate: true

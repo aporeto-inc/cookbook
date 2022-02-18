@@ -9,11 +9,12 @@ data:
         - "@aporeto:author=aporeto"
       associatedTags:
         - "aporeto:recipe:placement=automation"
+        - "aporeto:recipe:placement=group-level"
       targetIdentities:
         - automation
       propagate: true
       longDescription: |-
-        ### Creates an automation that will raise an alert when host PUs are connected/disconnected in a given namespace
+        ### Creates an automation that will raise an alert when host PUs are created/archived in a given namespace
 
         This recipe will create an automation that will raise an alarm when an Processing
         Unit event comes that creates or archives a host PU.

@@ -5,7 +5,7 @@ identities:
 data:
   automationconditions:
   - key: '@condition:enforcer_event_connection_state'
-    name: When an enforcer event causes its state to connect/disconnect
+    name: When an enforcer event triggers
     propagate: true
     description: Continue if the enforcer connects/disconnects based on tracked state(s).
     function: |-
@@ -20,10 +20,10 @@ data:
           throw 'Parameter "platform_url" must be set';
         }
 
-        var eventType = params.eventPayload.type
-        var id = params.eventPayload.entity.ID
-        var namespace = params.eventPayload.entity.namespace
-        var state = params.eventPayload.entity.operationalStatus
+        var eventType = params.eventPayload.type;
+        var id = params.eventPayload.entity.ID;
+        var namespace = params.eventPayload.entity.namespace;
+        var state = params.eventPayload.entity.operationalStatus;
 
         if (eventType === "create" && state != "Connected") {
           return { continue: false };
@@ -42,8 +42,7 @@ data:
           payload: {
             content: "\n\nAffected Enforcer: " + id +
               "\nNamespace: " + namespace +
-              "\n\nConnection State:" + state +
-              "\n\nFor more info: " + params.platform_url + "/enforcerlogs?namespace=" + namespace + "&timeRange=86400000&filter=enforcerID+==+" + id
+              "\n\nConnection State:" + state
           }
         }
       }

@@ -25,11 +25,11 @@ data:
         var namespace = params.eventPayload.entity.namespace;
         var state = params.eventPayload.entity.operationalStatus;
 
-        if (eventType === "create" && state != "Connected") {
+        if (eventType === "create" && state !== "Connected") {
           return { continue: false };
         }
 
-        if (eventType === "update" && state != "Disconnected") {
+        if (eventType === "update" && state !== "Disconnected") {
           return { continue: false };
         }
 

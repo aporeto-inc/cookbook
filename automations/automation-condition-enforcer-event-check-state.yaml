@@ -7,7 +7,7 @@ data:
   - key: '@condition:enforcer_event_connection_state'
     name: When an enforcer event triggers
     propagate: true
-    description: Continue if the enforcer connects/disconnects based on tracked state(s).
+    description: Continue if the enforcer is created/disconnected based on tracked state(s).
     function: |-
       function when(m, params) {
         if (!params.eventPayload) {
@@ -25,7 +25,7 @@ data:
         var namespace = params.eventPayload.entity.namespace;
         var state = params.eventPayload.entity.operationalStatus;
 
-        if (eventType === "create" && state !== "Connected") {
+        if (eventType === "create" && params.enforcer_state === "Disconnected") {
           return { continue: false };
         }
 
@@ -54,9 +54,9 @@ data:
         description: The state(s) to track for enforcers.
         type: Enum
         allowedChoices:
-          Connected: Enforcer connects
-          Disconnected: Enforcer disconnects
-          Both: Enforcer connects or disconnects
+          Registered: An Enforcer is created
+          Disconnected: An Enforcer is disconnected
+          Both: An Enforcer is created or disconnected
       - name: Platform URL
         key: platform_url
         description: The base URL to the platform's UI.

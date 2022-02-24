@@ -3,7 +3,7 @@ label: recipe:automation:enforcer-event
 data:
   recipes:
     - name: Create an Enforcer Event Automation
-      description: Creates an automation that will raise an alert when Enforcers are connected/disconnected in a given namespace.
+      description: Creates an automation that will raise an alert when Enforcers are created/disconnected in a given namespace.
       label: recipe:automation:enforcer-event
       metadata:
         - "@aporeto:author=aporeto"
@@ -14,10 +14,10 @@ data:
         - automation
       propagate: true
       longDescription: |-
-        ### Creates an automation that will raise an alert when Enforcers are connected/disconnected in a given namespace
+        ### Creates an automation that will raise an alert when Enforcers are created/disconnected in a given namespace
 
         This recipe will create an automation that will raise an alarm when an Enforcer
-        event comes in that disconnects an Enforcer.
+        event comes in that creates or disconnects an Enforcer.
 
       template: |-
         {{`
@@ -68,9 +68,9 @@ data:
               description: The state(s) to track for enforcers.
               type: Enum
               allowedChoices:
-                Connected: An Enforcer connects
-                Disconnected: An Enforcer disconnects
-                Both: An Enforcer connects or disconnects
+                Registered: An Enforcer is created
+                Disconnected: An Enforcer is disconnected
+                Both: An Enforcer is created or disconnected
               defaultValue: Disconnected
         - name: Actions
           parameters:

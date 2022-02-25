@@ -1,20 +1,20 @@
 APIVersion: 1
-label: automation:condition:enforcer_event_connection_state
+label: automation:condition:pu_event_check_state
 identities:
 - automationcondition
 data:
   automationconditions:
-  - key: '@condition:enforcer_event_connection_state'
-    name: When an enforcer event triggers
+  - key: '@condition:pu_event_check_state'
+    name: When a PU event triggers
     propagate: true
-    description: Continue if the enforcer connects/disconnects based on tracked state(s).
+    description: Continue if the PU is new and running or existing and stopped.
     function: |-
       function when(m, params) {
         if (!params.eventPayload) {
           throw 'This condition must be configured with a trigger of type "Event"';
         }
-        if (!params.enforcer_state) {
-          throw 'Parameter "enforcer_state" must be set';
+        if (!params.pu_state) {
+          throw 'Parameter "pu_state" must be set';
         }
         if (!params.platform_url) {
           throw 'Parameter "platform_url" must be set';
@@ -30,25 +30,25 @@ data:
 
         switch (eventType) {
           case "create":
-            if (currentState !== "Connected" || params.enforcer_state === "Disconnected") {
+            if (params.pu_state === "Stopped" || currentState !== "Running") {
               return { continue: false };
             }
 
             shouldContinue = true
             break;
           case "update":
-            if (currentState !== "Disconnected" && currentState !== "Connected") {
+            if (currentState !== "Running" && currentState !== "Stopped" && currentState !== "Terminated") {
               return { continue: false };
             }
 
-            // If tracked state is Connected or Both, find if this is a new enforcer being connected
-            if (params.enforcer_state !== "Disconnected" && priorState === "Registered" && currentState === "Connected") {
+            // If Running or Both, we want to see if this is a new PU that started running
+            if (params.pu_state !== "Stopped" && priorState === "Initialized" && currentState === "Running") {
               shouldContinue = true
               break;
             }
 
-            // If tracked state is Disconnected or Both, find it this is an existing enforcer being disconnected
-            if (params.enforcer_state !== "Connected" && priorState === "Connected" && currentState === "Disconnected") {
+            // if Stopped or Both, we want to see if the running PU has been stopped/terminated
+            if (params.pu_state !== "Running" && priorState === "Running" && (currentState === "Stopped" || currentState === "Terminated")) {
               shouldContinue = true
             }
             break;
@@ -57,23 +57,23 @@ data:
         return {
           continue: shouldContinue,
           payload: {
-            content: "\n\nAffected Enforcer: " + id +
+            content: "\n\nAffected Processing Unit: " + id +
               "\nNamespace: " + namespace +
-              "\n\nConnection State:" + currentState
+              "\n\nState:" + currentState
           }
         }
       }
     steps:
     - name: Parameters
       parameters:
-      - name: Enforcer Connection State
-        key: enforcer_state
-        description: The state(s) to track for enforcers.
+      - name: Processing Unit State
+        key: pu_state
+        description: The state(s) to track for Processing Units.
         type: Enum
         allowedChoices:
-          Connected: A new Enforcer connects
-          Disconnected: An existing Enforcer disconnects
-          Both: A new Enforcer connects or existing Enforcer disconnects
+          Running: A new PU is running
+          Stopped: An existing PU is stopped
+          Both: A new PU is running or existing PU is stopped
       - name: Platform URL
         key: platform_url
         description: The base URL to the platform's UI.

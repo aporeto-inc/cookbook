@@ -1,10 +1,10 @@
 APIVersion: 1
-label: recipe:automation:host-pu-event
+label: recipe:automation:pu-event
 data:
   recipes:
-    - name: Create a Host Processing Unit Event Automation
-      description: Creates an automation that will raise an alert when host PUs are created/archived in a given namespace.
-      label: recipe:automation:host-pu-event
+    - name: Create a Processing Unit Event Automation
+      description: Creates an automation that will raise an alert when PUs are created/archived in a given namespace.
+      label: recipe:automation:pu-event
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
@@ -14,10 +14,10 @@ data:
         - automation
       propagate: true
       longDescription: |-
-        ### Creates an automation that will raise an alert when host PUs are created/archived in a given namespace
+        ### Creates an automation that will raise an alert when PUs are created/archived in a given namespace
 
         This recipe will create an automation that will raise an alarm when an Processing
-        Unit event comes that creates or archives a host PU.
+        Unit event comes that creates or archives a PU.
 
       template: |-
         {{`
@@ -33,8 +33,7 @@ data:
               processingunit:
               - create
               - update
-              - delete
-            condition: "@condition:host_pu_event_check_state"
+            condition: "@condition:pu_event_check_state"
             actions:
             {{- range $_, $action := .Values.actions }}
             - {{ $action | quote }}
@@ -56,7 +55,7 @@ data:
               key: name
               description: The name of the automation.
               type: String
-              defaultValue: Host Processing Unit Event
+              defaultValue: Processing Unit Event
             - name: Description
               key: description
               description: Optional information about the automation.
@@ -64,14 +63,14 @@ data:
               optional: true
         - name: Conditions
           parameters:
-            - name: Host PU State
+            - name: Processing Unit State
               key: pu_state
-              description: The state(s) to track for host Processing Units.
+              description: The state(s) to track for Processing Units.
               type: Enum
               allowedChoices:
-                Created: A host PU is created
-                Archived: A host PU is archived
-                Both: An host PU is created or archived
+                Running: A new PU is running
+                Stopped: An existing PU is stopped
+                Both: A new PU is running or existing PU is stopped
               defaultValue: Both
         - name: Actions
           parameters:

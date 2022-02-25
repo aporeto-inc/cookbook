@@ -68,9 +68,9 @@ data:
               description: The state(s) to track for enforcers.
               type: Enum
               allowedChoices:
-                Connected: An Enforcer connects
-                Disconnected: An Enforcer disconnects
-                Both: An Enforcer connects or disconnects
+                Connected: A new Enforcer connects
+                Disconnected: An existing Enforcer disconnects
+                Both: A new Enforcer connects or existing Enforcer disconnects
               defaultValue: Disconnected
         - name: Actions
           parameters:

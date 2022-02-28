@@ -59,7 +59,7 @@ data:
           payload: {
             content: "\n\nAffected Processing Unit: " + id +
               "\nNamespace: " + namespace +
-              "\n\nState:" + currentState
+              "\n\nState: " + currentState
           }
         }
       }

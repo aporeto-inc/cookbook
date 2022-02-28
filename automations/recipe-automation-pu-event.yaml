@@ -3,7 +3,7 @@ label: recipe:automation:pu-event
 data:
   recipes:
     - name: Create a Processing Unit Event Automation
-      description: Creates an automation that will raise an alert when PUs are created/archived in a given namespace.
+      description: Creates an automation that will raise an alert when PUs are connected/disconnected in a given namespace.
       label: recipe:automation:pu-event
       metadata:
         - "@aporeto:author=aporeto"
@@ -14,10 +14,10 @@ data:
         - automation
       propagate: true
       longDescription: |-
-        ### Creates an automation that will raise an alert when PUs are created/archived in a given namespace
+        ### Creates an automation that will raise an alert when PUs are connected/disconnected in a given namespace
 
-        This recipe will create an automation that will raise an alarm when an Processing
-        Unit event comes that creates or archives a PU.
+        This recipe will create an automation that will raise an alarm when a Processing
+        Unit event shows a new PU connects or an existing PU disconnects.
 
       template: |-
         {{`

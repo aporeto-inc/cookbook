@@ -17,7 +17,7 @@ data:
         ### Creates an automation that will raise an alert when Enforcers are connected/disconnected in a given namespace
 
         This recipe will create an automation that will raise an alarm when an Enforcer
-        event comes in that disconnects an Enforcer.
+        event shows a new Enforcer connects or an existing Enforcer disconnects.
 
       template: |-
         {{`
@@ -65,7 +65,7 @@ data:
           parameters:
             - name: Enforcer Connection State
               key: enforcer_state
-              description: The state(s) to track for enforcers.
+              description: The state(s) to track for Enforcers.
               type: Enum
               allowedChoices:
                 Connected: A new Enforcer connects

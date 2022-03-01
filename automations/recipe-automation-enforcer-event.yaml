@@ -1,0 +1,93 @@
+APIVersion: 1
+label: recipe:automation:enforcer-event
+data:
+  recipes:
+    - name: Create an Enforcer Event Automation
+      description: Creates an automation that will raise an alert when Enforcers are connected/disconnected in a given namespace.
+      label: recipe:automation:enforcer-event
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=automation"
+        - "aporeto:recipe:placement=group-level"
+      targetIdentities:
+        - automation
+      propagate: true
+      longDescription: |-
+        ### Creates an automation that will raise an alert when Enforcers are connected/disconnected in a given namespace
+
+        This recipe will create an automation that will raise an alarm when an Enforcer
+        event shows a new Enforcer connects or an existing Enforcer disconnects.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          automations:
+          - name: {{ .Values.name | quote }}
+            {{- if .Values.description }}
+            description: {{ .Values.description | quote }}
+            {{- end }}
+            trigger: Event
+            events:
+              enforcer:
+              - create
+              - update
+            condition: "@condition:enforcer_event_connection_state"
+            actions:
+            {{- range $_, $action := .Values.actions }}
+            - {{ $action | quote }}
+            {{- end }}
+            parameters:
+              title: {{ .Values.name | quote }}
+              enforcer_state: {{ .Values.enforcer_state | quote }}
+              severity: {{ .Values.severity | quote }}
+              platform_url: {{ .Aporeto.UI | quote }}
+              content: |-
+                For full details, please see the logs on the Prisma Cloud Microsegmentation console
+                Alert Severity:
+        `}}
+
+      steps:
+        - name: General
+          parameters:
+            - name: Name
+              key: name
+              description: The name of the automation.
+              type: String
+              defaultValue: Enforcer Event
+            - name: Description
+              key: description
+              description: Optional information about the automation.
+              type: String
+              optional: true
+        - name: Conditions
+          parameters:
+            - name: Enforcer Connection State
+              key: enforcer_state
+              description: The state(s) to track for Enforcers.
+              type: Enum
+              allowedChoices:
+                Connected: A new Enforcer connects
+                Disconnected: An existing Enforcer disconnects
+                Both: A new Enforcer connects or existing Enforcer disconnects
+              defaultValue: Disconnected
+        - name: Actions
+          parameters:
+            - name: Integrations
+              key: actions
+              description: The list of integrations to use when the alert is triggered.
+              type: List
+              subtype: AutomationAction
+        - name: Alert Severity
+          parameters:
+            - name: Severity
+              key: severity
+              description: The severity of the message.
+              type: Enum
+              allowedChoices:
+                Low: Low
+                Medium: Medium
+                High: High
+                Critical: Critical
+              defaultValue: Low

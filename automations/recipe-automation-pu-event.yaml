@@ -1,0 +1,93 @@
+APIVersion: 1
+label: recipe:automation:pu-event
+data:
+  recipes:
+    - name: Create a Processing Unit Event Automation
+      description: Creates an automation that will raise an alert when PUs are connected/disconnected in a given namespace.
+      label: recipe:automation:pu-event
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=automation"
+        - "aporeto:recipe:placement=group-level"
+      targetIdentities:
+        - automation
+      propagate: true
+      longDescription: |-
+        ### Creates an automation that will raise an alert when PUs are connected/disconnected in a given namespace
+
+        This recipe will create an automation that will raise an alarm when a Processing
+        Unit event shows a new PU connects or an existing PU disconnects.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          automations:
+          - name: {{ .Values.name | quote }}
+            {{- if .Values.description }}
+            description: {{ .Values.description | quote }}
+            {{- end }}
+            trigger: Event
+            events:
+              processingunit:
+              - create
+              - update
+            condition: "@condition:pu_event_check_state"
+            actions:
+            {{- range $_, $action := .Values.actions }}
+            - {{ $action | quote }}
+            {{- end }}
+            parameters:
+              title: {{ .Values.name | quote }}
+              pu_state: {{ .Values.pu_state | quote }}
+              severity: {{ .Values.severity | quote }}
+              platform_url: {{ .Aporeto.UI | quote }}
+              content: |-
+                For full details, please see the logs on the Prisma Cloud Microsegmentation console
+                Alert Severity:
+        `}}
+
+      steps:
+        - name: General
+          parameters:
+            - name: Name
+              key: name
+              description: The name of the automation.
+              type: String
+              defaultValue: Processing Unit Event
+            - name: Description
+              key: description
+              description: Optional information about the automation.
+              type: String
+              optional: true
+        - name: Conditions
+          parameters:
+            - name: Processing Unit State
+              key: pu_state
+              description: The state(s) to track for Processing Units.
+              type: Enum
+              allowedChoices:
+                Running: A new PU is running
+                Stopped: An existing PU is stopped
+                Both: A new PU is running or existing PU is stopped
+              defaultValue: Both
+        - name: Actions
+          parameters:
+            - name: Integrations
+              key: actions
+              description: The list of integrations to use when the alert is triggered.
+              type: List
+              subtype: AutomationAction
+        - name: Alert Severity
+          parameters:
+            - name: Severity
+              key: severity
+              description: The severity of the message.
+              type: Enum
+              allowedChoices:
+                Low: Low
+                Medium: Medium
+                High: High
+                Critical: Critical
+              defaultValue: Low

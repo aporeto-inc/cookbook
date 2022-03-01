@@ -1,0 +1,80 @@
+APIVersion: 1
+label: automation:condition:enforcer_event_connection_state
+identities:
+- automationcondition
+data:
+  automationconditions:
+  - key: '@condition:enforcer_event_connection_state'
+    name: When an enforcer event triggers
+    propagate: true
+    description: Continue if the Enforcer connects/disconnects based on tracked state(s).
+    function: |-
+      function when(m, params) {
+        if (!params.eventPayload) {
+          throw 'This condition must be configured with a trigger of type "Event"';
+        }
+        if (!params.enforcer_state) {
+          throw 'Parameter "enforcer_state" must be set';
+        }
+        if (!params.platform_url) {
+          throw 'Parameter "platform_url" must be set';
+        }
+
+        var eventType = params.eventPayload.type;
+        var id = params.eventPayload.entity.ID;
+        var namespace = params.eventPayload.entity.namespace;
+        var priorState = params.eventPayload.entity.previousOperationalStatus;
+        var currentState = params.eventPayload.entity.operationalStatus;
+
+        var shouldContinue = false
+
+        switch (eventType) {
+          case "create":
+            if (currentState !== "Connected" || params.enforcer_state === "Disconnected") {
+              return { continue: false };
+            }
+
+            shouldContinue = true
+            break;
+          case "update":
+            if (currentState !== "Disconnected" && currentState !== "Connected") {
+              return { continue: false };
+            }
+
+            // If tracked state is Connected or Both, find if this is a new enforcer being connected
+            if (params.enforcer_state !== "Disconnected" && priorState === "Registered" && currentState === "Connected") {
+              shouldContinue = true
+              break;
+            }
+
+            // If tracked state is Disconnected or Both, find it this is an existing enforcer being disconnected
+            if (params.enforcer_state !== "Connected" && priorState === "Connected" && currentState === "Disconnected") {
+              shouldContinue = true
+            }
+            break;
+        }
+
+        return {
+          continue: shouldContinue,
+          payload: {
+            content: "\n\nAffected Enforcer: " + id +
+              "\nNamespace: " + namespace +
+              "\n\nConnection State: " + currentState
+          }
+        }
+      }
+    steps:
+    - name: Parameters
+      parameters:
+      - name: Enforcer Connection State
+        key: enforcer_state
+        description: The state(s) to track for Enforcers.
+        type: Enum
+        allowedChoices:
+          Connected: A new Enforcer connects
+          Disconnected: An existing Enforcer disconnects
+          Both: A new Enforcer connects or existing Enforcer disconnects
+      - name: Platform URL
+        key: platform_url
+        description: The base URL to the platform's UI.
+        type: String

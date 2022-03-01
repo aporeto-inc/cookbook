@@ -42,12 +42,6 @@ data:
           - name: dns
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            outgoingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=dns"
-              protocolPorts:
-              - udp/53
             subject:
             {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
             {{- if eq $index 0 }}
@@ -56,6 +50,12 @@ data:
               - {{ $orgmeta | quote }}
             {{- end }}
             {{- end }}
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - udp/53
+              object:
+              - - "externalnetwork:name=dns"
         `}}
 
       steps:

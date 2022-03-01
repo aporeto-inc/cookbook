@@ -29,15 +29,6 @@ data:
           - name: "Allow kube system namespace to host PUs"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            outgoingRules:
-            - action: Allow
-              object:
-              - - "app:host:type=kubernetes"
-              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
-                - {{ $orgmeta | quote }}
-              {{- end }}
-              protocolPorts:
-              - "any"
             subject:
             - - "@org:kubernetes=kube-system"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
@@ -45,4 +36,13 @@ data:
               - {{ $orgmeta | quote }}
             {{- end }}
             {{- end }}
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - "any"
+              object:
+              - - "app:host:type=kubernetes"
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+                - {{ $orgmeta | quote }}
+              {{- end }}
         `}}

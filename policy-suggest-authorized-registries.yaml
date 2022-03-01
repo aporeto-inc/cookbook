@@ -40,18 +40,18 @@ data:
           - name: authorized_registries
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            outgoingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=authorized_registries"
-              protocolPorts:
-              - any
             subject:
             - - "$identity=processingunit"
               - "app:host:type=kubernetes"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - any
+              object:
+              - - "externalnetwork:name=authorized_registries"
           `}}
 
       steps:

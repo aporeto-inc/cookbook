@@ -29,24 +29,6 @@ data:
           - name: auto-secure_intra-k8s_namespaces
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            incomingRules:
-            - action: Allow
-              object:
-              - - "$identity=processingunit"
-              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
-                - {{ $orgmeta | quote }}
-              {{- end }}
-              protocolPorts:
-              - any
-            outgoingRules:
-            - action: Allow
-              object:
-              - - "$identity=processingunit"
-              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
-                - {{ $orgmeta | quote }}
-              {{- end }}
-              protocolPorts:
-              - any
             subject:
             {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
             {{- if eq $index 0 }}
@@ -55,4 +37,22 @@ data:
               - {{ $orgmeta | quote }}
             {{- end }}
             {{- end }}
+            incomingRules:
+            - action: Allow
+              protocolPorts:
+              - any
+              object:
+              - - "$identity=processingunit"
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+                - {{ $orgmeta | quote }}
+              {{- end }}
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - any
+              object:
+              - - "$identity=processingunit"
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+                - {{ $orgmeta | quote }}
+              {{- end }}
         `}}

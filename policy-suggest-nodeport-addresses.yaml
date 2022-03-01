@@ -40,18 +40,18 @@ data:
           - name: nodeport_addresses
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            incomingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=nodeport_addresses"
-              protocolPorts:
-              - tcp/30000:32767
             subject:
             - - "$identity=processingunit"
               - "app:host:type=kubernetes"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
+            incomingRules:
+            - action: Allow
+              protocolPorts:
+              - tcp/30000:32767
+              object:
+              - - "externalnetwork:name=nodeport_addresses"
           `}}
 
       steps:

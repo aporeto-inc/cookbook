@@ -40,12 +40,6 @@ data:
           - name: "Allow Kubelet"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            incomingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=k8s_nodes"
-              protocolPorts:
-              - any
             subject:
             {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
             {{- if eq $index 0 }}
@@ -54,6 +48,12 @@ data:
               - {{ $orgmeta | quote }}
             {{- end }}
             {{- end }}
+            incomingRules:
+            - action: Allow
+              protocolPorts:
+              - any
+              object:
+              - - "externalnetwork:name=k8s_nodes"
           `}}
 
       steps:

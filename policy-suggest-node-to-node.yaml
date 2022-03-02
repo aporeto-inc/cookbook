@@ -29,30 +29,30 @@ data:
           - name: "Allow Node to Node"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            incomingRules:
-            - action: Allow
-              object:
-              - - "$identity=processingunit"
-                - "app:host:type=kubernetes"
-              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
-                - {{ $orgmeta | quote }}
-              {{- end }}
-              protocolPorts:
-              - any
-            outgoingRules:
-            - action: Allow
-              object:
-              - - "$identity=processingunit"
-                - "app:host:type=kubernetes"
-              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
-                - {{ $orgmeta | quote }}
-              {{- end }}
-              protocolPorts:
-              - any
             subject:
             - - "$identity=processingunit"
               - "app:host:type=kubernetes"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
+            incomingRules:
+            - action: Allow
+              protocolPorts:
+              - any
+              object:
+              - - "$identity=processingunit"
+                - "app:host:type=kubernetes"
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+                - {{ $orgmeta | quote }}
+              {{- end }}
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - any
+              object:
+              - - "$identity=processingunit"
+                - "app:host:type=kubernetes"
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+                - {{ $orgmeta | quote }}
+              {{- end }}
           `}}

@@ -29,19 +29,19 @@ data:
           - name: "Allow Liveness/Readiness Probes from Nodes"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            outgoingRules:
-            - action: Allow
-              object:
-              - - $type=Docker
-              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
-                - {{ $orgmeta | quote }}
-              {{- end }}
-              protocolPorts:
-              - any
             subject:
             - - "$identity=processingunit"
               - "app:host:type=kubernetes"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - any
+              object:
+              - - $type=Docker
+              {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
+                - {{ $orgmeta | quote }}
+              {{- end }}
           `}}

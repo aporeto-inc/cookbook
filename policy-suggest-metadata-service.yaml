@@ -43,13 +43,6 @@ data:
           - name: metadata_service
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            outgoingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=metadata_service"
-              protocolPorts:
-              - tcp/80
-              - tcp/443
             subject:
             {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
             {{- if eq $index 0 }}
@@ -58,6 +51,13 @@ data:
               - {{ $orgmeta | quote }}
             {{- end }}
             {{- end }}
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - tcp/80
+              - tcp/443
+              object:
+              - - "externalnetwork:name=metadata_service"
           `}}
 
       steps:

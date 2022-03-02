@@ -43,18 +43,6 @@ data:
           - name: dhcp
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            incomingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=dhcp"
-              protocolPorts:
-              - udp/68
-            outgoingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=dhcp"
-              protocolPorts:
-              - udp/67
             subject:
             {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
             {{- if eq $index 0 }}
@@ -63,6 +51,18 @@ data:
               - {{ $orgmeta | quote }}
             {{- end }}
             {{- end }}
+            incomingRules:
+            - action: Allow
+              protocolPorts:
+              - udp/68
+              object:
+              - - "externalnetwork:name=dhcp"
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - udp/67
+              object:
+              - - "externalnetwork:name=dhcp"
           `}}
 
       steps:

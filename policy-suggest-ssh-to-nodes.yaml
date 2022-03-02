@@ -40,18 +40,18 @@ data:
           - name: management_addresses
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            incomingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=management_addresses"
-              protocolPorts:
-              - tcp/22
             subject:
             - - "$identity=processingunit"
               - "app:host:type=kubernetes"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
+            incomingRules:
+            - action: Allow
+              protocolPorts:
+              - tcp/22
+              object:
+              - - "externalnetwork:name=management_addresses"
           `}}
 
       steps:

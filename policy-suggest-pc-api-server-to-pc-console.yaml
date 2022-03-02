@@ -39,15 +39,15 @@ data:
           - name: "Allow Prisma Cloud API server to Prisma Cloud console"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            outgoingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=Prisma Cloud Console"
-              protocolPorts:
-              - "tcp/443"
             subject:
             - - "@org:kubernetes=aporeto"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - "tcp/443"
+              object:
+              - - "externalnetwork:name=Prisma Cloud Console"
         `}}

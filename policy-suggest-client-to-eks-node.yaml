@@ -40,17 +40,17 @@ data:
           - name: "Allow clients to execute into EKS cluster pods"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            incomingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=clients_eks"
-              protocolPorts:
-              - tcp/10250
             subject:
             - - "app:host:type=kubernetes"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
+            incomingRules:
+            - action: Allow
+              protocolPorts:
+              - tcp/10250
+              object:
+              - - "externalnetwork:name=clients_eks"
           `}}
 
       steps:

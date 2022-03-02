@@ -40,23 +40,23 @@ data:
           - name: "Allow incoming and outgoing to kube-api server"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            incomingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=k8s-api-server"
-              protocolPorts:
-              - any
-            outgoingRules:
-            - action: Allow
-              object:
-              - - "externalnetwork:name=k8s-api-server"
-              protocolPorts:
-              - any
             subject:
             - - "$identity=processingunit"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
+            incomingRules:
+            - action: Allow
+              protocolPorts:
+              - any
+              object:
+              - - "externalnetwork:name=k8s-api-server"
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - any
+              object:
+              - - "externalnetwork:name=k8s-api-server"
           `}}
 
       steps:

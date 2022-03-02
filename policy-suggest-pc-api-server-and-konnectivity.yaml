@@ -30,20 +30,6 @@ data:
           - name: "Allow Prisma Cloud API server and Konnectivity to kube system"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            incomingRules:
-            - action: Allow
-              object:
-              - - "@org:kubernetes=kube-system"
-              protocolPorts:
-              - "tcp/443"
-              - "tcp/8443"
-            outgoingRules:
-            - action: Allow
-              object:
-              - - "@org:kubernetes=aporeto"
-              protocolPorts:
-              - "tcp/443"
-              - "tcp/8443"
             subject:
             - - "@org:kubernetes=kube-system"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
@@ -53,4 +39,18 @@ data:
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
+            incomingRules:
+            - action: Allow
+              protocolPorts:
+              - "tcp/443"
+              - "tcp/8443"
+              object:
+              - - "@org:kubernetes=kube-system"
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - "tcp/443"
+              - "tcp/8443"
+              object:
+              - - "@org:kubernetes=aporeto"
         `}}

@@ -29,24 +29,24 @@ data:
           - name: "Allow Kube System internal traffic"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
-            incomingRules:
-            - action: Allow
-              object:
-              - - "$identity=processingunit"
-                - "@org:kubernetes=kube-system"
-              protocolPorts:
-              - "any"
-            outgoingRules:
-            - action: Allow
-              object:
-              - - "$identity=processingunit"
-                - "@org:kubernetes=kube-system"
-              protocolPorts:
-              - "any"
             subject:
             - - "$identity=processingunit"
               - "@org:kubernetes=kube-system"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
               - {{ $orgmeta | quote }}
             {{- end }}
+            incomingRules:
+            - action: Allow
+              protocolPorts:
+              - "any"
+              object:
+              - - "$identity=processingunit"
+                - "@org:kubernetes=kube-system"
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - "any"
+              object:
+              - - "$identity=processingunit"
+                - "@org:kubernetes=kube-system"
         `}}

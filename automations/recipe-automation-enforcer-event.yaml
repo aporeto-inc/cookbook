@@ -33,6 +33,7 @@ data:
               enforcer:
               - create
               - update
+              - delete
             condition: "@condition:enforcer_event_connection_state"
             actions:
             {{- range $_, $action := .Values.actions }}

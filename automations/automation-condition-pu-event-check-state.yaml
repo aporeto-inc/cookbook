@@ -52,6 +52,16 @@ data:
               shouldContinue = true
             }
             break;
+          case "delete":
+            if (priorState !== "Running") {
+              return { continue: false };
+            }
+
+            // if Stopped or Both, this is an event we want to report
+            if (params.pu_state !== "Running") {
+              shouldContinue = true
+            }
+            break;
         }
 
         return {

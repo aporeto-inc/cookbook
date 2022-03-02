@@ -33,6 +33,7 @@ data:
               processingunit:
               - create
               - update
+              - delete
             condition: "@condition:pu_event_check_state"
             actions:
             {{- range $_, $action := .Values.actions }}

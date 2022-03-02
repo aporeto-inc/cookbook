@@ -52,6 +52,17 @@ data:
               shouldContinue = true
             }
             break;
+          case "delete":
+            if (currentState !== "Connected") {
+              return { continue: false };
+            }
+
+            // if Disconnected or Both, this is an event we want to report
+            if (params.enforcer_state !== "Connected") {
+              shouldContinue = true
+              currentState = "Deleted"
+            }
+            break;
         }
 
         return {

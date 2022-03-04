@@ -2,8 +2,8 @@ APIVersion: 1
 label: recipe:automation:pu-event
 data:
   recipes:
-    - name: Create a Processing Unit Event Automation
-      description: Creates an automation that will raise an alert when PUs are connected/disconnected in a given namespace.
+    - name: Create a Host Processing Unit Event Automation
+      description: Creates an automation that will raise an alert when Host PUs are connected/disconnected in a given namespace.
       label: recipe:automation:pu-event
       metadata:
         - "@aporeto:author=aporeto"
@@ -14,10 +14,10 @@ data:
         - automation
       propagate: true
       longDescription: |-
-        ### Creates an automation that will raise an alert when PUs are connected/disconnected in a given namespace
+        ### Creates an automation that will raise an alert when Host PUs are connected/disconnected in a given namespace
 
         This recipe will create an automation that will raise an alarm when a Processing
-        Unit event shows a new PU connects or an existing PU disconnects.
+        Unit event shows a new Host PU connects or an existing Host PU disconnects.
 
       template: |-
         {{`
@@ -56,7 +56,7 @@ data:
               key: name
               description: The name of the automation.
               type: String
-              defaultValue: Processing Unit Event
+              defaultValue: Host Processing Unit Event
             - name: Description
               key: description
               description: Optional information about the automation.
@@ -64,14 +64,14 @@ data:
               optional: true
         - name: Conditions
           parameters:
-            - name: Processing Unit State
+            - name: Host Processing Unit State
               key: pu_state
-              description: The state(s) to track for Processing Units.
+              description: The state(s) to track for Host Processing Units.
               type: Enum
               allowedChoices:
-                Running: A new PU is running
-                Stopped: An existing PU is stopped
-                Both: A new PU is running or existing PU is stopped
+                Running: A new Host PU is running
+                Stopped: An existing Host PU is stopped
+                Both: A new Host PU is running or existing Host PU is stopped
               defaultValue: Both
         - name: Actions
           parameters:

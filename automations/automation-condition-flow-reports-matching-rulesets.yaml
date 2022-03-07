@@ -4,7 +4,7 @@ identities:
 - automationcondition
 data:
   automationconditions:
-  - key: '@condition:flow_reports_matching_rulesetss'
+  - key: '@condition:flow_reports_matching_rulesets'
     name: When a certain number of flows reports are matching some rulesets
     propagate: true
     description: Continue if the number of flow reports equals or exceeds a certain limit for the specified ruleset policies.

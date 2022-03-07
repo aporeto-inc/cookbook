@@ -1,5 +1,5 @@
 APIVersion: 1
-label: recipe:automation:ruleset-alert-test
+label: recipe:automation:ruleset-alert
 data:
   recipes:
     - name: Create a Ruleset Alert Automation
@@ -29,7 +29,7 @@ data:
             {{- end }}
             trigger: Time
             schedule: "@every 5m"
-            condition: "@condition:flow_reports_matching_rulesetss"
+            condition: "@condition:flow_reports_matching_rulesets"
             actions:
             {{- range $_, $action := .Values.actions }}
             - {{ $action | quote }}

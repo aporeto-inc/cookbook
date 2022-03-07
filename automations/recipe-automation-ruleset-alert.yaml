@@ -1,5 +1,5 @@
 APIVersion: 1
-label: recipe:automation:ruleset-alert
+label: recipe:automation:ruleset-alert-test
 data:
   recipes:
     - name: Create a Ruleset Alert Automation
@@ -29,7 +29,7 @@ data:
             {{- end }}
             trigger: Time
             schedule: "@every 5m"
-            condition: "@condition:flow_reports_matching_rulesets"
+            condition: "@condition:flow_reports_matching_rulesetss"
             actions:
             {{- range $_, $action := .Values.actions }}
             - {{ $action | quote }}
@@ -44,8 +44,7 @@ data:
               severity: {{ .Values.severity | quote }}
               platform_url: {{ .Aporeto.UI | quote }}
               content: |-
-                For full details, please see the logs on the Prisma Cloud Microsegmentation console
-                Alert Severity:
+                For full details, please see the logs on the Prisma Cloud Microsegmentation console.
         `}}
 
       steps:

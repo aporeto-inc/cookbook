@@ -73,7 +73,7 @@ data:
         var widths = {};
         headings.forEach(function(heading, index) {
           data.forEach(function(row) {
-            widths[index] = Math.max(heading.length, row[index].length);
+            widths[index] = Math.max(heading.length, (row[index] || '').length);
           });
         });
         

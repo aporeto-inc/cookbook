@@ -5,9 +5,9 @@ identities:
 data:
   automationconditions:
   - key: '@condition:pu_event_check_state'
-    name: When a PU event triggers
+    name: When a Host PU event triggers
     propagate: true
-    description: Continue if the PU is new and running or existing and stopped.
+    description: Continue if the Host PU is new and running or existing and stopped.
     function: |-
       function when(m, params) {
         if (!params.eventPayload) {
@@ -25,6 +25,11 @@ data:
         var namespace = params.eventPayload.entity.namespace;
         var priorState = params.eventPayload.entity.previousOperationalStatus;
         var currentState = params.eventPayload.entity.operationalStatus;
+        var puType = params.eventPayload.entity.type;
+
+        if (puType !== "Host") {
+          return { continue: false };
+        }
 
         var shouldContinue = false
 
@@ -67,7 +72,7 @@ data:
         return {
           continue: shouldContinue,
           payload: {
-            content: "\n\nAffected Processing Unit: " + id +
+            content: "\n\nAffected Host Processing Unit: " + id +
               "\nNamespace: " + namespace +
               "\n\nState: " + currentState
           }
@@ -76,14 +81,14 @@ data:
     steps:
     - name: Parameters
       parameters:
-      - name: Processing Unit State
+      - name: Host Processing Unit State
         key: pu_state
-        description: The state(s) to track for Processing Units.
+        description: The state(s) to track for Host Processing Units.
         type: Enum
         allowedChoices:
-          Running: A new PU is running
-          Stopped: An existing PU is stopped
-          Both: A new PU is running or existing PU is stopped
+          Running: A new Host PU is running
+          Stopped: An existing Host PU is stopped
+          Both: A new Host PU is running or existing Host PU is stopped
       - name: Platform URL
         key: platform_url
         description: The base URL to the platform's UI.

@@ -29,9 +29,10 @@ data:
             {{- end }}
             trigger: Event
             events:
+              {{- $evts := .Values.events }}
               {{- range $_, $entity := .Values.entities }}
               {{ $entity }}:
-              {{- range $_, $event := .Values.events }}
+              {{- range $_, $event := $evts }}
               - {{ $event }}
               {{- end }}
               {{- end }}

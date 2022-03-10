@@ -68,39 +68,15 @@ data:
         });
 
         var headings = ['Time Of Event', 'Source IP', 'Source Name', 'Source Namespace', 'Destination IP', 'Destination Name', 'Destination Namespace', 'Protocol', 'Destination Port', 'Hits'];
-        var data = [[timeOfEvent, sourceIP, sourceName, sourceNamespace, destinationIP, destinationName, destinationNamespace, protocol, destinationPort, hits]];
-        var table = [];
-        var widths = {};
-        headings.forEach(function(heading, index) {
-          data.forEach(function(row) {
-            widths[index] = Math.max(heading.length, (row[index] || '').length);
-          });
-        });
-        
-        var tableHeadings = headings.map(function(heading, index) {
-          return heading + new Array(Math.max(widths[index] - heading.length + 1, 0)).join(' ');
-        }).join(' | ');
-        table.push(tableHeadings);
-
-        var separator = headings.map(function(_, index) {
-          return new Array(widths[index] + 1).join('-');
-        }).join('+');
-        table.push(separator);
-
-        data.forEach(function(row) {
-          var entry = row.map(function(entry, index) {
-            return entry + new Array(Math.max(widths[index] - entry.length + 1, 0)).join(' ');
-          }).join(' | ');
-          table.push(entry);
-        });
+        var row = [timeOfEvent, sourceIP, sourceName, sourceNamespace, destinationIP, destinationName, destinationNamespace, protocol, destinationPort, hits];
+        var result = headings.map(function(entry, index) { return entry + ': ' + row[index] }).join('\n');
 
         return {
           continue: condition,
           payload: {
             content: "\n\nAffected Ruleset: " + policyID +
-              "\nNamespace: " + sourceNamespace +
-              "\n\nFlow details" +
-              "\n" + table.join('\n') +
+              "\n\nFlow details:" +
+              "\n" + result +
               "\n\nFor more info: " + params.platform_url + "/flowlogs?namespace=" + sourceNamespace + "&timeRange=86400000&filter=policyID+==+" + policyID
           }
         }

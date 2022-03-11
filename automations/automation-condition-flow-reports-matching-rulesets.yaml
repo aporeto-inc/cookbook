@@ -67,16 +67,16 @@ data:
           return flowCount >= params.limit;
         });
 
-        var flowDetails = [timeOfEvent, sourceIP, sourceName, sourceNamespace, destinationIP, destinationName, destinationNamespace, protocol, destinationPort, hits].join(', ')
+        var headings = ['Time Of Event', 'Source IP', 'Source Name', 'Source Namespace', 'Destination IP', 'Destination Name', 'Destination Namespace', 'Protocol', 'Destination Port', 'Hits'];
+        var row = [timeOfEvent, sourceIP, sourceName, sourceNamespace, destinationIP, destinationName, destinationNamespace, protocol, destinationPort, hits];
+        var result = headings.map(function(entry, index) { return entry + ': ' + row[index] }).join('\n');
 
         return {
           continue: condition,
           payload: {
             content: "\n\nAffected Ruleset: " + policyID +
-              "\nNamespace: " + sourceNamespace +
-              "\n\nFlow details" +
-              "\nTime Of Event, Source IP, Source Name, Source Namespace, Destination IP, Destination Name, Destination Namespace, Protocol, Destination Port, Hits" +
-              "\n" + flowDetails +
+              "\n\nFlow details:" +
+              "\n" + result +
               "\n\nFor more info: " + params.platform_url + "/flowlogs?namespace=" + sourceNamespace + "&timeRange=86400000&filter=policyID+==+" + policyID
           }
         }

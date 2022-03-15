@@ -1,0 +1,104 @@
+APIVersion: 1
+label: recipe:automation:audit-event
+data:
+  recipes:
+    - name: Create an Audit Event Automation
+      description: Creates an automation that will raise an alert when the specified entity(ies) and event(s) happen in a given namespace.
+      label: recipe:automation:audit-event
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=automation"
+      targetIdentities:
+        - automation
+      propagate: true
+      longDescription: |-
+        ### Creates an automation that will raise an alert when the specified entity(ies) and event(s) happen in a given namespace
+
+        This recipe will create an automation that will raise an alarm when the
+        specified entity(ies) and event(s) happen in a given namespace.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          automations:
+          - name: {{ .Values.name | quote }}
+            {{- if .Values.description }}
+            description: {{ .Values.description | quote }}
+            {{- end }}
+            trigger: Event
+            events:
+              {{- $evts := .Values.events }}
+              {{- range $_, $entity := .Values.entities }}
+              {{ $entity }}:
+              {{- range $_, $event := $evts }}
+              - {{ $event }}
+              {{- end }}
+              {{- end }}
+            condition: "@condition:audit_event_content"
+            actions:
+            {{- range $_, $action := .Values.actions }}
+            - {{ $action | quote }}
+            {{- end }}
+            parameters:
+              title: {{ .Values.name | quote }}
+              severity: {{ .Values.severity | quote }}
+              platform_url: {{ .Aporeto.UI | quote }}
+              content: |-
+                For full details, please see the logs on the Prisma Cloud Microsegmentation console
+                Alert Severity:
+        `}}
+
+      steps:
+        - name: General
+          parameters:
+            - name: Name
+              key: name
+              description: The name of the automation.
+              type: String
+              defaultValue: Audit Event
+            - name: Description
+              key: description
+              description: Optional information about the automation.
+              type: String
+              optional: true
+        - name: Conditions
+          parameters:
+            - name: Entities
+              key: entities
+              description: The entities to track.
+              type: List
+              subtype: Enum
+              allowedChoices:
+                namespace: Namespaces
+                networkrulesetpolicy: Network Ruleset Policies
+                appcredential: Application Credentials
+            - name: Event Types
+              key: events
+              description: The event types to listen for.
+              type: List
+              subtype: Enum
+              allowedChoices:
+                create: Create
+                update: Update
+                delete: Delete
+        - name: Actions
+          parameters:
+            - name: Integrations
+              key: actions
+              description: The list of integrations to use when the alert is triggered.
+              type: List
+              subtype: AutomationAction
+        - name: Alert Severity
+          parameters:
+            - name: Severity
+              key: severity
+              description: The severity of the message.
+              type: Enum
+              allowedChoices:
+                Low: Low
+                Medium: Medium
+                High: High
+                Critical: Critical
+              defaultValue: Low

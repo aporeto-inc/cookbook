@@ -30,12 +30,19 @@ data:
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
             subject:
+            - - "app:host:type=kubernetes"
             - - "@org:kubernetes=kube-system"
             {{- range $_, $orgmeta := .Aporeto.OrganizationalMetadata }}
             {{- if hasPrefix "@org:kubernetes=" $orgmeta }}{{- else }}
               - {{ $orgmeta | quote }}
             {{- end }}
             {{- end }}
+            incomingRules:
+            - action: Allow
+              protocolPorts:
+              - any
+              object:
+              - - "@org:kubernetes=kube-system"
             outgoingRules:
             - action: Allow
               protocolPorts:

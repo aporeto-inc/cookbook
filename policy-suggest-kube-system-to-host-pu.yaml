@@ -40,7 +40,7 @@ data:
             incomingRules:
             - action: Allow
               protocolPorts:
-              - any
+              - "any"
               object:
               - - "@org:kubernetes=kube-system"
             outgoingRules:

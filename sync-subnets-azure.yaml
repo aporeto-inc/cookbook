@@ -1,0 +1,193 @@
+APIVersion: 1
+label: recipe:sync:subnets:azure
+data:
+  recipes:
+  - name: Synchronize Azure Public Subnets
+    label: recipe:sync:subnets:azure
+    propagate: true
+    metadata:
+    - "@aporeto:author=aporeto"
+    targetIdentities:
+    - automation
+    description: Regularly synchronizes Azure public subnets into an External Network.
+    longDescription: |-
+      ### Synchronize Azure public subnets
+
+      This reads the Azure subnets of the service and adds them as
+      entries to an external network in your namespace. It will
+      create the external network with the chosen services. You can
+      use this external network to create network policies based on
+      the labels.
+
+    template: |-
+      {{`
+      APIVersion: 1
+      data:
+        externalnetworks:
+        {{- $renderID := .RenderID }}
+        {{- $protos := .Values.protocols }}
+        {{- $prts := .Values.ports }}
+        {{- range $_, $srv := .Values.services }}
+        - name: "CSP Service Azure - {{ $srv }} Subnets"
+          entries:
+          - "0.0.0.1/32"
+          servicePorts:
+          {{- range $_, $protocol := $protos }}
+          {{- range $_, $port := $prts }}
+          - "{{ $protocol }}/{{ $port }}"
+          {{- end }}
+          {{- end }}
+          associatedTags:
+          - 'recipe:renderid={{ $renderID }}'
+          - 'cloud:azure:networks=imported'
+          - 'cloud:azure:service={{ $srv }}'
+        {{- end }}
+
+        automations:
+        {{- range $_, $srv := .Values.services }}
+        - name: "Sync Azure Subnets - {{ $srv }}"
+          trigger: Time
+          schedule: "0 */5 * * *"
+          immediateExecution: true
+          entitlements:
+            externalnetwork:
+              - retrieve-many
+              - update
+
+          condition: |
+            function when(api, params) {
+              return {continue: true, payload: null};
+            }
+
+          actions:
+            - |
+              function then(api, params, payload) {
+
+                var extnets = api.RetrieveMany(
+                  'externalnetworks',
+                  null,
+                  'normalizedTags contains "recipe:renderid={{ $renderID }}" and normalizedTags contains "cloud:azure:service={{ $srv }}"'
+                );
+                if (extnets.length != 1) {
+                  throw "unable to find external network"
+                }
+
+                var obj = aporeto.http('GET', 'https://download.microsoft.com/download/7/1/D/71D86715-5596-4529-9B13-DA13A5DE5B63/ServiceTags_Public_20220418.json');
+                var body = JSON.parse(obj.body);
+                var vals = body.values;
+                var extnet = extnets[0];
+                var entries = [];
+
+                _.each(vals, function(val) {
+                  if (val.properties.systemService != {{ $srv | quote }} && val.id != {{ $srv | quote }}) {
+                    return;
+                  }
+
+                  entries = entries.concat(val.properties.addressPrefixes)
+                })
+
+                entries = _.uniq(entries)
+
+                if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
+                  console.log('no change since last sync');
+                  return;
+                }
+
+                extnet.entries = entries
+                api.Update('externalnetwork', extnet)
+                console.log('external network updated');
+              }
+        {{- end }}
+      `}}
+    steps:
+    - name: Synchronization
+      description: Configure the Azure options
+      parameters:
+      - name: Services
+        key: services
+        description: The services to separate subnets into.
+        type: StringSlice
+        defaultValue:
+        - "ActionGroup"
+        - "ApplicationInsightsAvailability"
+        - "AzureAD"
+        - "AzureAPIForFHIR"
+        - "AzureAdvancedThreatProtection"
+        - "AzureApiManagement"
+        - "AzureAppConfiguration"
+        - "AzureAppService"
+        - "AzureAppServiceManagement"
+        - "AzureArcInfrastructure"
+        - "AzureAttestation"
+        - "AzureAutomation"
+        - "AzureBackup"
+        - "AzureBotService"
+        - "AzureCognitiveSearch"
+        - "AzureConnectors"
+        - "AzureContainerRegistry"
+        - "AzureCosmosDB"
+        - "AzureDataExplorerManagement"
+        - "AzureDataLake"
+        - "AzureDatabricks"
+        - "AzureDevOps"
+        - "AzureDevSpaces"
+        - "AzureDigitalTwins"
+        - "AzureEventGrid"
+        - "AzureEventHub"
+        - "AzureFrontDoor"
+        - "AzureIdentity"
+        - "AzureInformationProtection"
+        - "AzureIoTHub"
+        - "AzureKeyVault"
+        - "AzureMachineLearning"
+        - "AzureMonitor"
+        - "AzureOpenDatasets"
+        - "AzurePortal"
+        - "AzureResourceManager"
+        - "AzureSQL"
+        - "AzureSecurityCenter"
+        - "AzureServiceBus"
+        - "AzureSignalR"
+        - "AzureSiteRecovery"
+        - "AzureSphereSecureService_Prod"
+        - "AzureStack"
+        - "AzureStorage"
+        - "AzureTrafficManager"
+        - "AzureUpdateDelivery"
+        - "AzureVideoAnalyzerForMedia"
+        - "BatchNodeManagement"
+        - "CognitiveServicesManagement"
+        - "DataFactory"
+        - "Dynamics365ForMarketingEmail"
+        - "EOPExtPublished"
+        - "GatewayManager"
+        - "Grafana"
+        - "HDInsight"
+        - "LogicApps"
+        - "M365ManagementActivityApi"
+        - "M365ManagementActivityApiWebhook"
+        - "MicrosoftAzureFluidRelay"
+        - "MicrosoftCloudAppSecurity"
+        - "MicrosoftContainerRegistry"
+        - "OneDsCollector"
+        - "PowerBI"
+        - "PowerPlatformInfra"
+        - "PowerQueryOnline"
+        - "SCCservice"
+        - "ServiceFabric"
+        - "SqlManagement"
+        - "StorageSyncService"
+        - "WindowsAdminCenter"
+        - "WindowsVirtualDesktop"
+
+      - name: Ports
+        key: ports
+        description: The ports to define in the external network. Empty means any.
+        type: StringSlice
+        optional: true
+
+      - name: Protocols
+        key: protocols
+        description: The protocols to define in the external network. Empty means any.
+        type: StringSlice
+        optional: true

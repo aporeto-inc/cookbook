@@ -1,22 +1,22 @@
 APIVersion: 1
-label: recipe:sync:subnets:aws
+label: recipe:sync:subnets:gcp
 data:
   recipes:
-  - name: Synchronize AWS public subnets
-    label: recipe:sync:subnets:aws
+  - name: Synchronize GCP Public Subnets
+    label: recipe:sync:subnets:gcp
     propagate: true
     metadata:
     - "@aporeto:author=aporeto"
     targetIdentities:
     - automation
-    description: Regularly synchronizes AWS public subnets into an External Network.
+    description: Regularly synchronizes GCP public subnets into an External Network.
     longDescription: |-
-      ### Synchronize AWS public subnets
+      ### Synchronize GCP public subnets
 
-      This reads the AWS subnets of the service andadds them as entries to
-      an external network in your namespace. It will create the external
-      network with services chosen. You can use this external network to
-      create network policies based on the labels.
+      This reads the GCP subnets of the services and adds them as entries
+      to an external network in your namespace. It will create the
+      external network with the services chosen. You can use this
+      external network to create network policies based on the labels.
 
     template: |-
       {{`
@@ -27,7 +27,7 @@ data:
         {{- $protos := .Values.protocols }}
         {{- $prts := .Values.ports }}
         {{- range $_, $srv := .Values.services }}
-        - name: "CSP Service AWS - {{ $srv }} Subnets"
+        - name: "CSP Service GCP - {{ $srv }} Subnets"
           entries:
           - "0.0.0.1/32"
           servicePorts:
@@ -38,13 +38,13 @@ data:
           {{- end }}
           associatedTags:
           - 'recipe:renderid={{ $renderID }}'
-          - 'cloud:aws:networks=imported'
-          - 'cloud:aws:service={{ $srv }}'
+          - 'cloud:gcp:networks=imported'
+          - 'cloud:gcp:service={{ $srv }}'
         {{- end }}
 
         automations:
         {{- range $_, $srv := .Values.services }}
-        - name: "Sync AWS Subnets - {{ $srv }}"
+        - name: "Sync GCP Subnets - {{ $srv }}"
           trigger: Time
           schedule: "0 */5 * * *"
           immediateExecution: true
@@ -65,13 +65,13 @@ data:
                 var extnets = api.RetrieveMany(
                   'externalnetworks',
                   null,
-                  'normalizedTags contains "recipe:renderid={{ $renderID }}" and normalizedTags contains "cloud:aws:service={{ $srv }}"'
+                  'normalizedTags contains "recipe:renderid={{ $renderID }}" and normalizedTags contains "cloud:gcp:service={{ $srv }}"'
                 );
                 if (extnets.length != 1) {
                   throw "unable to find external network"
                 }
 
-                var obj = aporeto.http('GET', 'https://ip-ranges.amazonaws.com/ip-ranges.json');
+                var obj = aporeto.http('GET', 'https://www.gstatic.com/ipranges/cloud.json');
                 var body = JSON.parse(obj.body);
                 var subnets = body.prefixes;
                 var extnet = extnets[0];
@@ -82,7 +82,17 @@ data:
                     return;
                   }
 
-                  entries.push(subnet.ip_prefix);
+                  var keys = _.keys(subnet);
+
+                  if (_.contains(keys, "ipv4Prefix")) {
+                    entries.push(subnet.ipv4Prefix);
+                    return;
+                  }
+
+                  if (_.contains(keys, "ipv6Prefix")) {
+                    entries.push(subnet.ipv6Prefix);
+                    return;
+                  }
                 })
 
                 entries = _.uniq(entries)
@@ -100,35 +110,14 @@ data:
       `}}
     steps:
     - name: Synchronization
-      description: Configure the AWS options
+      description: Configure the GCP options
       parameters:
       - name: Services
         key: services
         description: The services to separate subnets into.
         type: StringSlice
         defaultValue:
-        - "AMAZON"
-        - "AMAZON_APPFLOW"
-        - "AMAZON_CONNECT"
-        - "API_GATEWAY"
-        - "CHIME_MEETINGS"
-        - "CHIME_VOICECONNECTOR"
-        - "CLOUD9"
-        - "CLOUDFRONT"
-        - "CLOUDFRONT_ORIGIN_FACING"
-        - "CODEBUILD"
-        - "DYNAMODB"
-        - "EBS"
-        - "EC2"
-        - "EC2_INSTANCE_CONNECT"
-        - "GLOBALACCELERATOR"
-        - "KINESIS_VIDEO_STREAMS"
-        - "ROUTE53"
-        - "ROUTE53_HEALTHCHECKS"
-        - "ROUTE53_HEALTHCHECKS_PUBLISHING"
-        - "ROUTE53_RESOLVER"
-        - "S3"
-        - "WORKSPACES_GATEWAYS"
+        - "Google Cloud"
 
       - name: Ports
         key: ports

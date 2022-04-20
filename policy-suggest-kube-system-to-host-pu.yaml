@@ -10,7 +10,7 @@ data:
       associatedTags:
         - "aporeto:recipe:placement=policy-suggest"
         - "aporeto:recipe:placement=k8s-rules"
-        - "aporeto:recipe:placement=kubernetes-level"
+        - "aporeto:recipe:placement=group-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
         - networkrulesetpolicy

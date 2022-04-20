@@ -71,7 +71,9 @@ data:
                   throw "unable to find external network"
                 }
 
-                var obj = aporeto.http('GET', 'https://www.gstatic.com/ipranges/cloud.json');
+                var jsonURL = "https://www.gstatic.com/ipranges/cloud.json";
+
+                var obj = aporeto.http('GET', jsonURL);
                 var body = JSON.parse(obj.body);
                 var subnets = body.prefixes;
                 var extnet = extnets[0];

@@ -71,7 +71,9 @@ data:
                   throw "unable to find external network"
                 }
 
-                var obj = aporeto.http('GET', 'https://ip-ranges.amazonaws.com/ip-ranges.json');
+                var jsonURL = "https://ip-ranges.amazonaws.com/ip-ranges.json";
+
+                var obj = aporeto.http('GET', jsonURL);
                 var body = JSON.parse(obj.body);
                 var subnets = body.prefixes;
                 var extnet = extnets[0];

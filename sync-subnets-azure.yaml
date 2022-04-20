@@ -72,7 +72,9 @@ data:
                   throw "unable to find external network"
                 }
 
-                var obj = aporeto.http('GET', 'https://download.microsoft.com/download/7/1/D/71D86715-5596-4529-9B13-DA13A5DE5B63/ServiceTags_Public_20220418.json');
+                var jsonURL = "https://download.microsoft.com/download/7/1/D/71D86715-5596-4529-9B13-DA13A5DE5B63/ServiceTags_Public_20220418.json";
+
+                var obj = aporeto.http('GET', jsonURL);
                 var body = JSON.parse(obj.body);
                 var vals = body.values;
                 var extnet = extnets[0];

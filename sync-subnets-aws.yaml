@@ -5,18 +5,20 @@ data:
   - name: Synchronize AWS public subnets
     label: recipe:sync:subnets:aws
     propagate: true
+    deploymentMode: Unique
     metadata:
     - "@aporeto:author=aporeto"
     targetIdentities:
     - automation
-    description: Regularly synchronizes AWS public subnets into an External Network.
+    - externalnetwork
+    description: Regularly synchronizes AWS public subnets into External Networks.
     longDescription: |-
       ### Synchronize AWS public subnets
 
-      This reads the AWS subnets of the service andadds them as entries to
-      an external network in your namespace. It will create the external
-      network with services chosen. You can use this external network to
-      create network policies based on the labels.
+      This reads the AWS subnets of each service and adds them as entries
+      to external networks in your namespace. It will create an external
+      network for each service listed. You can use these external networks
+      to create network policies based on the labels.
 
     template: |-
       {{`
@@ -24,10 +26,12 @@ data:
       data:
         externalnetworks:
         {{- $renderID := .RenderID }}
+        {{- $ipRangesURL := .Values.ipAddressRangesURL }}
         {{- $protos := .Values.protocols }}
         {{- $prts := .Values.ports }}
         {{- range $_, $srv := .Values.services }}
         - name: "CSP Service AWS - {{ $srv }} Subnets"
+          propagate: true
           entries:
           - "0.0.0.1/32"
           servicePorts:
@@ -46,18 +50,12 @@ data:
         {{- range $_, $srv := .Values.services }}
         - name: "Sync AWS Subnets - {{ $srv }}"
           trigger: Time
-          schedule: "0 */5 * * *"
+          schedule: "0 * */1 * *"
           immediateExecution: true
           entitlements:
             externalnetwork:
               - retrieve-many
               - update
-
-          condition: |
-            function when(api, params) {
-              return {continue: true, payload: null};
-            }
-
           actions:
             - |
               function then(api, params, payload) {
@@ -71,9 +69,7 @@ data:
                   throw "unable to find external network"
                 }
 
-                var jsonURL = "https://ip-ranges.amazonaws.com/ip-ranges.json";
-
-                var obj = aporeto.http('GET', jsonURL);
+                var obj = aporeto.http('GET', {{ $ipRangesURL | quote }});
                 var body = JSON.parse(obj.body);
                 var subnets = body.prefixes;
                 var extnet = extnets[0];
@@ -104,6 +100,12 @@ data:
     - name: Synchronization
       description: Configure the AWS options
       parameters:
+      - name: IP Address Ranges URL
+        key: ipAddressRangesURL
+        description: This is the URL to the IP address ranges.
+        type: String
+        defaultValue: "https://ip-ranges.amazonaws.com/ip-ranges.json"
+
       - name: Services
         key: services
         description: The services to separate subnets into.

@@ -36,6 +36,7 @@ data:
           - 'recipe:renderid={{ $renderID }}'
           - 'cloud:aws:networks=imported'
           - 'cloud:aws:service={{ $srv }}'
+          - 'externalnetwork:name=CSP Service AWS - {{ $srv }} Subnets'
         {{- end }}
 
         automations:

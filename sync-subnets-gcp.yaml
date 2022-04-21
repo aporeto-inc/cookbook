@@ -36,6 +36,7 @@ data:
           - 'recipe:renderid={{ $renderID }}'
           - 'cloud:gcp:networks=imported'
           - 'cloud:gcp:service={{ $srv }}'
+          - 'externalnetwork:name=CSP Service GCP - {{ $srv }} Subnets'
         {{- end }}
 
         automations:

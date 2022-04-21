@@ -36,6 +36,7 @@ data:
           - 'recipe:renderid={{ $renderID }}'
           - 'cloud:azure:networks=imported'
           - 'cloud:azure:service={{ $srv }}'
+          - 'externalnetwork:name=CSP Service Azure - {{ $srv }} Subnets'
         {{- end }}
 
         automations:

@@ -27,19 +27,11 @@ data:
         externalnetworks:
         {{- $renderID := .RenderID }}
         {{- $ipRangesURL := .Values.ipAddressRangesURL }}
-        {{- $protos := .Values.protocols }}
-        {{- $prts := .Values.ports }}
         {{- range $_, $srv := .Values.services }}
         - name: "CSP Service GCP - {{ $srv }} Subnets"
           propagate: true
           entries:
           - "0.0.0.1/32"
-          servicePorts:
-          {{- range $_, $protocol := $protos }}
-          {{- range $_, $port := $prts }}
-          - "{{ $protocol }}/{{ $port }}"
-          {{- end }}
-          {{- end }}
           associatedTags:
           - 'recipe:renderid={{ $renderID }}'
           - 'cloud:gcp:networks=imported'
@@ -120,15 +112,3 @@ data:
         type: StringSlice
         defaultValue:
         - "Google Cloud"
-
-      - name: Ports
-        key: ports
-        description: The ports to define in the external network. Empty means any.
-        type: StringSlice
-        optional: true
-
-      - name: Protocols
-        key: protocols
-        description: The protocols to define in the external network. Empty means any.
-        type: StringSlice
-        optional: true

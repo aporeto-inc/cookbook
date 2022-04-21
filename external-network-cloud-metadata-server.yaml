@@ -7,7 +7,7 @@ data:
   - name: "Cloud Metadata Server"
     propagate: true
     entries:
-    - "169.254.169.254"
+    - "169.254.169.254/32"
     associatedTags:
     - 'cloud:metadataserver=imported'
     - 'externalnetwork:name=Cloud Metadata Server'

@@ -1,115 +1,80 @@
 APIVersion: 1
-label: recipe:sync:subnets:gcp
+label: sync:subnets:gcp
 data:
-  recipes:
-  - name: Synchronize GCP Public Subnets
-    label: recipe:sync:subnets:gcp
-    propagate: true
-    deploymentMode: Unique
-    metadata:
-    - "@aporeto:author=aporeto"
-    targetIdentities:
-    - automation
-    - externalnetwork
-    description: Regularly synchronizes GCP public subnets into External Networks.
-    longDescription: |-
-      ### Synchronize GCP public subnets
+  automations:
+  - name: "Sync GCP Subnets"
+    trigger: Time
+    schedule: "0 * */1 * *"
+    immediateExecution: true
+    entitlements:
+      externalnetwork:
+        - retrieve-many
+        - create
+        - update
+    actions:
+      - |
+        function then(api, params, payload) {
 
-      This reads the GCP subnets of each service and adds them as entries
-      to external networks in your namespace. It will create an external
-      network for each service listed. You can use these external networks
-      to create network policies based on the labels.
+          var obj = aporeto.http('GET', 'https://www.gstatic.com/ipranges/cloud.json');
+          var body = JSON.parse(obj.body);
+          var subnets = body.prefixes;
 
-    template: |-
-      {{`
-      APIVersion: 1
-      data:
-        externalnetworks:
-        {{- $renderID := .RenderID }}
-        {{- $ipRangesURL := .Values.ipAddressRangesURL }}
-        {{- range $_, $srv := .Values.services }}
-        - name: "CSP Service GCP - {{ $srv }} Subnets"
-          propagate: true
-          entries:
-          - "0.0.0.1/32"
-          associatedTags:
-          - 'recipe:renderid={{ $renderID }}'
-          - 'cloud:gcp:networks=imported'
-          - 'cloud:gcp:service={{ $srv }}'
-          - 'externalnetwork:name=CSP Service GCP - {{ $srv }} Subnets'
-        {{- end }}
+          var services = [
+            "Google Cloud"
+          ];
 
-        automations:
-        - name: "Sync GCP Subnets"
-          trigger: Time
-          schedule: "0 * */1 * *"
-          immediateExecution: true
-          entitlements:
-            externalnetwork:
-              - retrieve-many
-              - update
-          actions:
-            - |
-              function then(api, params, payload) {
+          _.each(services, function(srv) {
+            var extnets = api.RetrieveMany(
+              'externalnetworks',
+              null,
+              'normalizedTags contains "externalnetwork:name=CSP Service GCP - ' + srv + ' Subnets"'
+            );
 
-                var obj = aporeto.http('GET', {{ $ipRangesURL | quote }});
-                var body = JSON.parse(obj.body);
-                var subnets = body.prefixes;
-                var extnets;
-                {{- range $_, $srv := .Values.services }}
+            var entries = [];
 
-                extnets = api.RetrieveMany(
-                  'externalnetworks',
-                  null,
-                  'normalizedTags contains "recipe:renderid={{ $renderID }}" and normalizedTags contains "cloud:gcp:service={{ $srv }}"'
-                );
-
-                if (extnets.length == 1) {
-                  var extnet = extnets[0];
-                  var entries = [];
-
-                  _.each(subnets, function(subnet) {
-                    if (subnet.service != {{ $srv | quote }}) {
-                      return;
-                    }
-
-                    var keys = _.keys(subnet);
-
-                    if (_.contains(keys, "ipv4Prefix")) {
-                      entries.push(subnet.ipv4Prefix);
-                      return;
-                    }
-
-                    if (_.contains(keys, "ipv6Prefix")) {
-                      entries.push(subnet.ipv6Prefix);
-                      return;
-                    }
-                  })
-
-                  entries = _.uniq(entries)
-
-                  if (!_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
-                    extnet.entries = entries
-                    api.Update('externalnetwork', extnet)
-                    console.log('external network updated for {{ $srv }}');
-                  }
-                }
-                {{- end }}
+            _.each(subnets, function(subnet) {
+              if (subnet.service != srv) {
+                return;
               }
-      `}}
-    steps:
-    - name: Synchronization
-      description: Configure the GCP options
-      parameters:
-      - name: IP Address Ranges URL
-        key: ipAddressRangesURL
-        description: This is the URL to the IP address ranges.
-        type: String
-        defaultValue: "https://www.gstatic.com/ipranges/cloud.json"
 
-      - name: Services
-        key: services
-        description: The services to separate subnets into.
-        type: StringSlice
-        defaultValue:
-        - "Google Cloud"
+              var keys = _.keys(subnet);
+
+              if (_.contains(keys, "ipv4Prefix")) {
+                entries.push(subnet.ipv4Prefix);
+                return;
+              }
+
+              if (_.contains(keys, "ipv6Prefix")) {
+                entries.push(subnet.ipv6Prefix);
+                return;
+              }
+            })
+
+            entries = _.uniq(entries)
+
+            if (extnets.length == 0) {
+              api.Create('externalnetworks', {
+                  "name": "CSP Service GCP - " + srv + " Subnets",
+                  "propagate": true,
+                  "entries": entries,
+                  "associatedTags": ["cloud:gcp:networks=imported", "cloud:gcp:service=" + srv, "externalnetwork:name=CSP Service GCP - " + srv + " Subnets"]
+              });
+
+              return;
+            }
+
+            if (extnets.length > 1) {
+              throw "found more than one external network matching " + srv
+            }
+
+            var extnet = extnets[0];
+
+            if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
+              return;
+            }
+
+            extnet.entries = entries
+            api.Update('externalnetwork', extnet)
+            console.log('external network updated for ' + srv);
+          })
+        }

@@ -1,126 +1,91 @@
 APIVersion: 1
-label: recipe:sync:subnets:aws
+label: sync:subnets:aws
 data:
-  recipes:
-  - name: Synchronize AWS public subnets
-    label: recipe:sync:subnets:aws
-    propagate: true
-    deploymentMode: Unique
-    metadata:
-    - "@aporeto:author=aporeto"
-    targetIdentities:
-    - automation
-    - externalnetwork
-    description: Regularly synchronizes AWS public subnets into External Networks.
-    longDescription: |-
-      ### Synchronize AWS public subnets
+  automations:
+  - name: "Sync AWS Subnets"
+    trigger: Time
+    schedule: "0 * */1 * *"
+    immediateExecution: true
+    entitlements:
+      externalnetwork:
+        - retrieve-many
+        - create
+        - update
+    actions:
+      - |
+        function then(api, params, payload) {
 
-      This reads the AWS subnets of each service and adds them as entries
-      to external networks in your namespace. It will create an external
-      network for each service listed. You can use these external networks
-      to create network policies based on the labels.
+          var obj = aporeto.http('GET', 'https://ip-ranges.amazonaws.com/ip-ranges.json');
+          var body = JSON.parse(obj.body);
+          var subnets = body.prefixes;
 
-    template: |-
-      {{`
-      APIVersion: 1
-      data:
-        externalnetworks:
-        {{- $renderID := .RenderID }}
-        {{- $ipRangesURL := .Values.ipAddressRangesURL }}
-        {{- range $_, $srv := .Values.services }}
-        - name: "CSP Service AWS - {{ $srv }} Subnets"
-          propagate: true
-          entries:
-          - "0.0.0.1/32"
-          associatedTags:
-          - 'recipe:renderid={{ $renderID }}'
-          - 'cloud:aws:networks=imported'
-          - 'cloud:aws:service={{ $srv }}'
-          - 'externalnetwork:name=CSP Service AWS - {{ $srv }} Subnets'
-        {{- end }}
+          var services = [
+            "AMAZON",
+            "AMAZON_APPFLOW",
+            "AMAZON_CONNECT",
+            "API_GATEWAY",
+            "CHIME_MEETINGS",
+            "CHIME_VOICECONNECTOR",
+            "CLOUD9",
+            "CLOUDFRONT",
+            "CLOUDFRONT_ORIGIN_FACING",
+            "CODEBUILD",
+            "DYNAMODB",
+            "EBS",
+            "EC2",
+            "EC2_INSTANCE_CONNECT",
+            "GLOBALACCELERATOR",
+            "KINESIS_VIDEO_STREAMS",
+            "ROUTE53",
+            "ROUTE53_HEALTHCHECKS",
+            "ROUTE53_HEALTHCHECKS_PUBLISHING",
+            "ROUTE53_RESOLVER",
+            "S3",
+            "WORKSPACES_GATEWAYS"
+          ];
 
-        automations:
-        - name: "Sync AWS Subnets"
-          trigger: Time
-          schedule: "0 * */1 * *"
-          immediateExecution: true
-          entitlements:
-            externalnetwork:
-              - retrieve-many
-              - update
-          actions:
-            - |
-              function then(api, params, payload) {
+          _.each(services, function(srv) {
+            var extnets = api.RetrieveMany(
+              'externalnetworks',
+              null,
+              'normalizedTags contains "externalnetwork:name=CSP Service AWS - ' + srv + ' Subnets"'
+            );
 
-                var obj = aporeto.http('GET', {{ $ipRangesURL | quote }});
-                var body = JSON.parse(obj.body);
-                var subnets = body.prefixes;
-                var extnets;
-                {{- range $_, $srv := .Values.services }}
+            var entries = [];
 
-                extnets = api.RetrieveMany(
-                  'externalnetworks',
-                  null,
-                  'normalizedTags contains "recipe:renderid={{ $renderID }}" and normalizedTags contains "cloud:aws:service={{ $srv }}"'
-                );
-
-                if (extnets.length == 1) {
-                  var extnet = extnets[0];
-                  var entries = [];
-
-                  _.each(subnets, function(subnet) {
-                    if (subnet.service != {{ $srv | quote }}) {
-                      return;
-                    }
-
-                    entries.push(subnet.ip_prefix);
-                  })
-
-                  entries = _.uniq(entries)
-
-                  if (!_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
-                    extnet.entries = entries
-                    api.Update('externalnetwork', extnet)
-                    console.log('external network updated for {{ $srv }}');
-                  }
-                }
-                {{- end }}
+            _.each(subnets, function(subnet) {
+              if (subnet.service != srv) {
+                return;
               }
-      `}}
-    steps:
-    - name: Synchronization
-      description: Configure the AWS options
-      parameters:
-      - name: IP Address Ranges URL
-        key: ipAddressRangesURL
-        description: This is the URL to the IP address ranges.
-        type: String
-        defaultValue: "https://ip-ranges.amazonaws.com/ip-ranges.json"
 
-      - name: Services
-        key: services
-        description: The services to separate subnets into.
-        type: StringSlice
-        defaultValue:
-        - "AMAZON"
-        - "AMAZON_APPFLOW"
-        - "AMAZON_CONNECT"
-        - "API_GATEWAY"
-        - "CHIME_MEETINGS"
-        - "CHIME_VOICECONNECTOR"
-        - "CLOUD9"
-        - "CLOUDFRONT"
-        - "CLOUDFRONT_ORIGIN_FACING"
-        - "CODEBUILD"
-        - "DYNAMODB"
-        - "EBS"
-        - "EC2"
-        - "EC2_INSTANCE_CONNECT"
-        - "GLOBALACCELERATOR"
-        - "KINESIS_VIDEO_STREAMS"
-        - "ROUTE53"
-        - "ROUTE53_HEALTHCHECKS"
-        - "ROUTE53_HEALTHCHECKS_PUBLISHING"
-        - "ROUTE53_RESOLVER"
-        - "S3"
-        - "WORKSPACES_GATEWAYS"
+              entries.push(subnet.ip_prefix);
+            })
+
+            entries = _.uniq(entries)
+
+            if (extnets.length == 0) {
+              api.Create('externalnetworks', {
+                  "name": "CSP Service AWS - " + srv + " Subnets",
+                  "propagate": true,
+                  "entries": entries,
+                  "associatedTags": ["cloud:aws:networks=imported", "cloud:aws:service=" + srv, "externalnetwork:name=CSP Service AWS - " + srv + " Subnets"]
+              });
+
+              return;
+            }
+
+            if (extnets.length > 1) {
+              throw "found more than one external network matching " + srv
+            }
+
+            var extnet = extnets[0];
+
+            if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
+              return;
+            }
+
+            extnet.entries = entries
+            api.Update('externalnetwork', extnet)
+            console.log('external network updated for ' + srv);
+          })
+        }

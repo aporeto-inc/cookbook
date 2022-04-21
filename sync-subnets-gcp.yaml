@@ -47,8 +47,7 @@ data:
         {{- end }}
 
         automations:
-        {{- range $_, $srv := .Values.services }}
-        - name: "Sync GCP Subnets - {{ $srv }}"
+        - name: "Sync GCP Subnets"
           trigger: Time
           schedule: "0 * */1 * *"
           immediateExecution: true
@@ -60,51 +59,50 @@ data:
             - |
               function then(api, params, payload) {
 
-                var extnets = api.RetrieveMany(
+                var obj = aporeto.http('GET', {{ $ipRangesURL | quote }});
+                var body = JSON.parse(obj.body);
+                var subnets = body.prefixes;
+                var extnets;
+                {{- range $_, $srv := .Values.services }}
+
+                extnets = api.RetrieveMany(
                   'externalnetworks',
                   null,
                   'normalizedTags contains "recipe:renderid={{ $renderID }}" and normalizedTags contains "cloud:gcp:service={{ $srv }}"'
                 );
-                if (extnets.length != 1) {
-                  throw "unable to find external network"
+
+                if (extnets.length == 1) {
+                  var extnet = extnets[0];
+                  var entries = [];
+
+                  _.each(subnets, function(subnet) {
+                    if (subnet.service != {{ $srv | quote }}) {
+                      return;
+                    }
+
+                    var keys = _.keys(subnet);
+
+                    if (_.contains(keys, "ipv4Prefix")) {
+                      entries.push(subnet.ipv4Prefix);
+                      return;
+                    }
+
+                    if (_.contains(keys, "ipv6Prefix")) {
+                      entries.push(subnet.ipv6Prefix);
+                      return;
+                    }
+                  })
+
+                  entries = _.uniq(entries)
+
+                  if (!_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
+                    extnet.entries = entries
+                    api.Update('externalnetwork', extnet)
+                    console.log('external network updated for {{ $srv }}');
+                  }
                 }
-
-                var obj = aporeto.http('GET', {{ $ipRangesURL | quote }});
-                var body = JSON.parse(obj.body);
-                var subnets = body.prefixes;
-                var extnet = extnets[0];
-                var entries = [];
-
-                _.each(subnets, function(subnet) {
-                  if (subnet.service != {{ $srv | quote }}) {
-                    return;
-                  }
-
-                  var keys = _.keys(subnet);
-
-                  if (_.contains(keys, "ipv4Prefix")) {
-                    entries.push(subnet.ipv4Prefix);
-                    return;
-                  }
-
-                  if (_.contains(keys, "ipv6Prefix")) {
-                    entries.push(subnet.ipv6Prefix);
-                    return;
-                  }
-                })
-
-                entries = _.uniq(entries)
-
-                if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
-                  console.log('no change since last sync');
-                  return;
-                }
-
-                extnet.entries = entries
-                api.Update('externalnetwork', extnet)
-                console.log('external network updated');
+                {{- end }}
               }
-        {{- end }}
       `}}
     steps:
     - name: Synchronization

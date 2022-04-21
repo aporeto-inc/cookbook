@@ -47,8 +47,7 @@ data:
         {{- end }}
 
         automations:
-        {{- range $_, $srv := .Values.services }}
-        - name: "Sync Azure Subnets - {{ $srv }}"
+        - name: "Sync Azure Subnets"
           trigger: Time
           schedule: "0 * */1 * *"
           immediateExecution: true
@@ -60,44 +59,43 @@ data:
             - |
               function then(api, params, payload) {
 
-                var extnets = api.RetrieveMany(
-                  'externalnetworks',
-                  null,
-                  'normalizedTags contains "recipe:renderid={{ $renderID }}" and normalizedTags contains "cloud:azure:service={{ $srv }}"'
-                );
-                if (extnets.length != 1) {
-                  throw "unable to find external network"
-                }
-
                 var page = aporeto.http('GET', {{ $ipRangesURL | quote }});
                 var jsonURL = page.body.match(/https:\/\/download.microsoft.com\/download\/.*?.json/)[0]
 
                 var obj = aporeto.http('GET', jsonURL);
                 var body = JSON.parse(obj.body);
                 var vals = body.values;
-                var extnet = extnets[0];
-                var entries = [];
+                var extnets;
+                {{- range $_, $srv := .Values.services }}
 
-                _.each(vals, function(val) {
-                  if (val.properties.systemService != {{ $srv | quote }} && val.id != {{ $srv | quote }}) {
-                    return;
+                extnets = api.RetrieveMany(
+                  'externalnetworks',
+                  null,
+                  'normalizedTags contains "recipe:renderid={{ $renderID }}" and normalizedTags contains "cloud:azure:service={{ $srv }}"'
+                );
+
+                if (extnets.length == 1) {
+                  var extnet = extnets[0];
+                  var entries = [];
+
+                  _.each(vals, function(val) {
+                    if (val.properties.systemService != {{ $srv | quote }} && val.id != {{ $srv | quote }}) {
+                      return;
+                    }
+
+                    entries = entries.concat(val.properties.addressPrefixes)
+                  })
+
+                  entries = _.uniq(entries)
+
+                  if (!_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
+                    extnet.entries = entries
+                    api.Update('externalnetwork', extnet)
+                    console.log('external network updated for {{ $srv }}');
                   }
-
-                  entries = entries.concat(val.properties.addressPrefixes)
-                })
-
-                entries = _.uniq(entries)
-
-                if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
-                  console.log('no change since last sync');
-                  return;
                 }
-
-                extnet.entries = entries
-                api.Update('externalnetwork', extnet)
-                console.log('external network updated');
+                {{- end }}
               }
-        {{- end }}
       `}}
     steps:
     - name: Synchronization

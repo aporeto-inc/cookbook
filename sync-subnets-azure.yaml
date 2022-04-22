@@ -20,83 +20,17 @@ data:
 
           var obj = aporeto.http('GET', jsonURL);
           var body = JSON.parse(obj.body);
-          var vals = body.values;
+          var values = body.values;
 
-          var services = [
-            "ActionGroup",
-            "ApplicationInsightsAvailability",
-            "AzureAD",
-            "AzureAPIForFHIR",
-            "AzureAdvancedThreatProtection",
-            "AzureApiManagement",
-            "AzureAppConfiguration",
-            "AzureAppService",
-            "AzureAppServiceManagement",
-            "AzureArcInfrastructure",
-            "AzureAttestation",
-            "AzureAutomation",
-            "AzureBackup",
-            "AzureBotService",
-            "AzureCognitiveSearch",
-            "AzureConnectors",
-            "AzureContainerRegistry",
-            "AzureCosmosDB",
-            "AzureDataExplorerManagement",
-            "AzureDataLake",
-            "AzureDatabricks",
-            "AzureDevOps",
-            "AzureDevSpaces",
-            "AzureDigitalTwins",
-            "AzureEventGrid",
-            "AzureEventHub",
-            "AzureFrontDoor",
-            "AzureIdentity",
-            "AzureInformationProtection",
-            "AzureIoTHub",
-            "AzureKeyVault",
-            "AzureMachineLearning",
-            "AzureMonitor",
-            "AzureOpenDatasets",
-            "AzurePortal",
-            "AzureResourceManager",
-            "AzureSQL",
-            "AzureSecurityCenter",
-            "AzureServiceBus",
-            "AzureSignalR",
-            "AzureSiteRecovery",
-            "AzureSphereSecureService_Prod",
-            "AzureStack",
-            "AzureStorage",
-            "AzureTrafficManager",
-            "AzureUpdateDelivery",
-            "AzureVideoAnalyzerForMedia",
-            "BatchNodeManagement",
-            "CognitiveServicesManagement",
-            "DataFactory",
-            "Dynamics365ForMarketingEmail",
-            "EOPExtPublished",
-            "GatewayManager",
-            "Grafana",
-            "HDInsight",
-            "LogicApps",
-            "M365ManagementActivityApi",
-            "M365ManagementActivityApiWebhook",
-            "MicrosoftAzureFluidRelay",
-            "MicrosoftCloudAppSecurity",
-            "MicrosoftContainerRegistry",
-            "OneDsCollector",
-            "PowerBI",
-            "PowerPlatformInfra",
-            "PowerQueryOnline",
-            "SCCservice",
-            "ServiceFabric",
-            "SqlManagement",
-            "StorageSyncService",
-            "WindowsAdminCenter",
-            "WindowsVirtualDesktop"
-          ];
+          var services = _.groupBy(values, function(v) {
+            return v.properties.systemService;
+          })
 
-          _.each(services, function(srv) {
+          _.each(services, function(vals, srv) {
+            if (!srv) {
+              return;
+            }
+
             var extnets = api.RetrieveMany(
               'externalnetworks',
               null,
@@ -106,10 +40,6 @@ data:
             var entries = [];
 
             _.each(vals, function(val) {
-              if (val.properties.systemService != srv && val.id != srv) {
-                return;
-              }
-
               entries = entries.concat(val.properties.addressPrefixes)
             })
 

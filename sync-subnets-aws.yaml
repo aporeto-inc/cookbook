@@ -17,34 +17,15 @@ data:
 
           var obj = aporeto.http('GET', 'https://ip-ranges.amazonaws.com/ip-ranges.json');
           var body = JSON.parse(obj.body);
-          var subnets = body.prefixes;
+          var prefixes = body.prefixes;
 
-          var services = [
-            "AMAZON",
-            "AMAZON_APPFLOW",
-            "AMAZON_CONNECT",
-            "API_GATEWAY",
-            "CHIME_MEETINGS",
-            "CHIME_VOICECONNECTOR",
-            "CLOUD9",
-            "CLOUDFRONT",
-            "CLOUDFRONT_ORIGIN_FACING",
-            "CODEBUILD",
-            "DYNAMODB",
-            "EBS",
-            "EC2",
-            "EC2_INSTANCE_CONNECT",
-            "GLOBALACCELERATOR",
-            "KINESIS_VIDEO_STREAMS",
-            "ROUTE53",
-            "ROUTE53_HEALTHCHECKS",
-            "ROUTE53_HEALTHCHECKS_PUBLISHING",
-            "ROUTE53_RESOLVER",
-            "S3",
-            "WORKSPACES_GATEWAYS"
-          ];
+          var services = _.groupBy(prefixes, 'service')
 
-          _.each(services, function(srv) {
+          _.each(services, function(subnets, srv) {
+            if (!srv) {
+              return;
+            }
+
             var extnets = api.RetrieveMany(
               'externalnetworks',
               null,
@@ -54,10 +35,6 @@ data:
             var entries = [];
 
             _.each(subnets, function(subnet) {
-              if (subnet.service != srv) {
-                return;
-              }
-
               entries.push(subnet.ip_prefix);
             })
 

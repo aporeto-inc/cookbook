@@ -17,13 +17,15 @@ data:
 
           var obj = aporeto.http('GET', 'https://www.gstatic.com/ipranges/cloud.json');
           var body = JSON.parse(obj.body);
-          var subnets = body.prefixes;
+          var prefixes = body.prefixes;
 
-          var services = [
-            "Google Cloud"
-          ];
+          var services = _.groupBy(prefixes, 'service')
 
-          _.each(services, function(srv) {
+          _.each(services, function(subnets, srv) {
+            if (!srv) {
+              return;
+            }
+
             var extnets = api.RetrieveMany(
               'externalnetworks',
               null,
@@ -33,10 +35,6 @@ data:
             var entries = [];
 
             _.each(subnets, function(subnet) {
-              if (subnet.service != srv) {
-                return;
-              }
-
               var keys = _.keys(subnet);
 
               if (_.contains(keys, "ipv4Prefix")) {

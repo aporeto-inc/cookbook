@@ -2,7 +2,7 @@ APIVersion: 1
 label: sync:subnets:aws
 data:
   automations:
-  - name: "Sync AWS Subnets"
+  - name: AWS_Sync_Subnets
     trigger: Time
     schedule: "0 * */1 * *"
     immediateExecution: true
@@ -22,47 +22,63 @@ data:
           var services = _.groupBy(prefixes, 'service')
 
           _.each(services, function(subnets, srv) {
-            if (!srv) {
+            if (!srv || srv === "AMAZON") {
               return;
             }
 
-            var extnets = api.RetrieveMany(
-              'externalnetworks',
-              null,
-              'normalizedTags contains "externalnetwork:name=CSP Service AWS - ' + srv + ' Subnets"'
-            );
+            srv = srv.replace(/ /g,"_")
 
-            var entries = [];
+            var ipPrefixes = {
+              "IPv4": [],
+              "IPv6": []
+            };
 
             _.each(subnets, function(subnet) {
-              entries.push(subnet.ip_prefix);
+              if (_.contains(subnet, ":")) {
+                ipPrefixes["IPv6"].push(subnet.ip_prefix);
+                return;
+              }
+
+              ipPrefixes["IPv4"].push(subnet.ip_prefix);
             })
 
-            entries = _.uniq(entries)
+            _.map(ipPrefixes, function(entries, ipType) {
+              if (entries.length == 0) {
+                return;
+              }
 
-            if (extnets.length == 0) {
-              api.Create('externalnetworks', {
-                  "name": "CSP Service AWS - " + srv + " Subnets",
-                  "propagate": true,
-                  "entries": entries,
-                  "associatedTags": ["cloud:aws:networks=imported", "cloud:aws:service=" + srv, "externalnetwork:name=CSP Service AWS - " + srv + " Subnets"]
-              });
+              entries = _.uniq(entries)
 
-              return;
-            }
+              var extnets = api.RetrieveMany(
+                'externalnetworks',
+                null,
+                'normalizedTags contains "externalnetwork:name=AWS_' + srv + '_' + ipType + '"'
+              );
 
-            if (extnets.length > 1) {
-              throw "found more than one external network matching " + srv
-            }
+              if (extnets.length == 0) {
+                api.Create('externalnetworks', {
+                    "name": "AWS_" + srv + "_" + ipType,
+                    "propagate": true,
+                    "entries": entries,
+                    "associatedTags": ["cloud:aws=subnet", "cloud:aws=" + srv, "cloud:aws=" + ipType, "externalnetwork:name=AWS_" + srv + "_" + ipType]
+                });
 
-            var extnet = extnets[0];
+                return;
+              }
 
-            if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
-              return;
-            }
+              if (extnets.length > 1) {
+                throw "found more than one external network matching " + srv + "_" + ipType
+              }
 
-            extnet.entries = entries
-            api.Update('externalnetwork', extnet)
-            console.log('external network updated for ' + srv);
+              var extnet = extnets[0];
+
+              if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
+                return;
+              }
+
+              extnet.entries = entries
+              api.Update('externalnetwork', extnet)
+              console.log('external network updated for ' + srv + '_' + ipType);
+            })
           })
         }

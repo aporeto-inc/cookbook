@@ -46,5 +46,5 @@ data:
               - tcp/80
               - tcp/443
               object:
-              - - "externalnetwork:name=Cloud Metadata Server"
+              - - "externalnetwork:name=Cloud_Metadata_Server"
           `}}

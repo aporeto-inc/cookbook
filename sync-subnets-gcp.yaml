@@ -2,7 +2,7 @@ APIVersion: 1
 label: sync:subnets:gcp
 data:
   automations:
-  - name: "Sync GCP Subnets"
+  - name: GCP_Sync_Subnets
     trigger: Time
     schedule: "0 * */1 * *"
     immediateExecution: true
@@ -26,53 +26,63 @@ data:
               return;
             }
 
-            var extnets = api.RetrieveMany(
-              'externalnetworks',
-              null,
-              'normalizedTags contains "externalnetwork:name=CSP Service GCP - ' + srv + ' Subnets"'
-            );
+            srv = srv.replace(/ /g,"_")
 
-            var entries = [];
+            var ipPrefixes = {
+              "IPv4": [],
+              "IPv6": []
+            };
 
             _.each(subnets, function(subnet) {
               var keys = _.keys(subnet);
 
               if (_.contains(keys, "ipv4Prefix")) {
-                entries.push(subnet.ipv4Prefix);
+                ipPrefixes["IPv4"].push(subnet.ipv4Prefix);
                 return;
               }
 
               if (_.contains(keys, "ipv6Prefix")) {
-                entries.push(subnet.ipv6Prefix);
-                return;
+                ipPrefixes["IPv6"].push(subnet.ipv6Prefix);
               }
             })
 
-            entries = _.uniq(entries)
+            _.map(ipPrefixes, function(entries, ipType) {
+              if (entries.length == 0) {
+                return;
+              }
 
-            if (extnets.length == 0) {
-              api.Create('externalnetworks', {
-                  "name": "CSP Service GCP - " + srv + " Subnets",
-                  "propagate": true,
-                  "entries": entries,
-                  "associatedTags": ["cloud:gcp:networks=imported", "cloud:gcp:service=" + srv, "externalnetwork:name=CSP Service GCP - " + srv + " Subnets"]
-              });
+              entries = _.uniq(entries)
 
-              return;
-            }
+              var extnets = api.RetrieveMany(
+                'externalnetworks',
+                null,
+                'normalizedTags contains "externalnetwork:name=GCP_' + srv + '_' + ipType + '"'
+              );
 
-            if (extnets.length > 1) {
-              throw "found more than one external network matching " + srv
-            }
+              if (extnets.length == 0) {
+                api.Create('externalnetworks', {
+                    "name": "GCP_" + srv + "_" + ipType,
+                    "propagate": true,
+                    "entries": entries,
+                    "associatedTags": ["cloud:gcp=subnet", "cloud:gcp=" + srv, "cloud:gcp=" + ipType, "externalnetwork:name=GCP_" + srv + "_" + ipType]
+                });
 
-            var extnet = extnets[0];
+                return;
+              }
 
-            if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
-              return;
-            }
+              if (extnets.length > 1) {
+                throw "found more than one external network matching " + srv + "_" + ipType
+              }
 
-            extnet.entries = entries
-            api.Update('externalnetwork', extnet)
-            console.log('external network updated for ' + srv);
+              var extnet = extnets[0];
+
+              if (_.isEqual(_.sortBy(entries), _.sortBy(extnet.entries))) {
+                return;
+              }
+
+              extnet.entries = entries
+              api.Update('externalnetwork', extnet)
+              console.log('external network updated for ' + srv + '_' + ipType);
+            })
           })
         }

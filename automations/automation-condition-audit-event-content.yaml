@@ -21,7 +21,11 @@ data:
         var eventType = params.eventPayload.type;
         var id = params.eventPayload.entity.ID;
         var namespace = params.eventPayload.entity.namespace;
-        var entity = JSON.stringify(params.eventPayload.entity, null, 2);
+        var entity = JSON.stringify(
+          _.pick(params.eventPayload.entity, ['roles', 'updateTime']),
+          null,
+          2,
+        );
 
         return {
           continue: true,

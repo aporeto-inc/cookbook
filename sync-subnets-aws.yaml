@@ -18,6 +18,7 @@ data:
           var obj = aporeto.http('GET', 'https://ip-ranges.amazonaws.com/ip-ranges.json');
           var body = JSON.parse(obj.body);
           var prefixes = body.prefixes;
+          var knownCIDRs = {};
 
           var services = _.groupBy(prefixes, 'service')
 
@@ -34,6 +35,11 @@ data:
             };
 
             _.each(subnets, function(subnet) {
+              if (subnet.ip_prefix in knownCIDRs) {
+                return;
+              }
+              knownCIDRs[subnet.ip_prefix] = 1
+
               if (_.contains(subnet, ":")) {
                 ipPrefixes["IPv6"].push(subnet.ip_prefix);
                 return;

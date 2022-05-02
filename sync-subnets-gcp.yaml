@@ -18,6 +18,7 @@ data:
           var obj = aporeto.http('GET', 'https://www.gstatic.com/ipranges/cloud.json');
           var body = JSON.parse(obj.body);
           var prefixes = body.prefixes;
+          var knownCIDRs = {};
 
           var services = _.groupBy(prefixes, 'service')
 
@@ -37,11 +38,21 @@ data:
               var keys = _.keys(subnet);
 
               if (_.contains(keys, "ipv4Prefix")) {
+                if (subnet.ipv4Prefix in knownCIDRs) {
+                  return;
+                }
+                knownCIDRs[subnet.ipv4Prefix] = 1
+
                 ipPrefixes["IPv4"].push(subnet.ipv4Prefix);
                 return;
               }
 
               if (_.contains(keys, "ipv6Prefix")) {
+                if (subnet.ipv6Prefix in knownCIDRs) {
+                  return;
+                }
+                knownCIDRs[subnet.ipv6Prefix] = 1
+
                 ipPrefixes["IPv6"].push(subnet.ipv6Prefix);
               }
             })

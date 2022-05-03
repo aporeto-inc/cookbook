@@ -21,18 +21,22 @@ data:
         var eventType = params.eventPayload.type;
         var id = params.eventPayload.entity.ID;
         var namespace = params.eventPayload.entity.namespace;
+
+        var content = "\nEntity: " + identity +
+          "\nEvent Type: " + eventType +
+          "\nID: " + id +
+          "\nNamespace: " + namespace
+
         var roles = params.eventPayload.entity.roles;
+        if (roles) { content += "\nRoles: " + roles.join(', ') }
+
         var updateTime = params.eventPayload.entity.updateTime;
+        if (updateTime) { content += "\nUpdate Time: " + updateTime }
 
         return {
           continue: true,
           payload: {
-            content: "\n\nEntity: " + identity +
-              "\nEvent Type: " + eventType +
-              "\nID: " + id +
-              "\nNamespace: " + namespace +
-              "\nRoles: " + roles +
-              "\nUpdate Time: " + updateTime
+            content: content,
           }
         }
       }

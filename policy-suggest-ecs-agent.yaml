@@ -2,8 +2,8 @@ APIVersion: 1
 label: recipe:policy-suggest:ecs-agent
 data:
   recipes:
-    - name: Create ecs-agent rule
-      description: Creates an ecs-agent rule to allow ecs-agent to talk to aws control plane.
+    - name: Create ECS Agent Rule
+      description: Creates an ECS Agent Rule to allow ECS Agent to talk to AWS control plane.
       label: recipe:policy-suggest:ecs-agent
       metadata:
         - "@aporeto:author=aporeto"
@@ -17,10 +17,10 @@ data:
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
-        ### Create an ecs-agent rule
+        ### Create an ECS Agent Rule
 
         This recipe will create an External Network and Network Ruleset Policy to
-        allow ecs-agent to talk to aws control plane.
+        allow ECS Agent to talk to the AWS control plane.
 
       template: |-
         {{`
@@ -37,7 +37,7 @@ data:
             associatedTags:
             - "externalnetwork:name=aws_control_plane"
           networkrulesetpolicies:
-          - name: "Allow ecs-agent"
+          - name: "Allow ECS Agent"
             description: "Ruleset automatically created by an Out of Box template."
             propagate: true
             subject:

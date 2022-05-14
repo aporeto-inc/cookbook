@@ -1,0 +1,70 @@
+APIVersion: 1
+label: recipe:policy-suggest:ecs-agent
+data:
+  recipes:
+    - name: Create ECS Agent Rule
+      description: Creates an ECS Agent Rule to allow ECS Agent to talk to AWS control plane.
+      label: recipe:policy-suggest:ecs-agent
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=policy-suggest"
+        - "aporeto:recipe:placement=ecs-rules"
+        - "aporeto:recipe:placement=group-level"
+      deploymentMode: NamespaceUnique
+      targetIdentities:
+        - externalnetwork
+        - networkrulesetpolicy
+      propagate: true
+      longDescription: |-
+        ### Create an ECS Agent Rule
+
+        This recipe will create an External Network and Network Ruleset Policy to
+        allow ECS Agent to talk to the AWS control plane.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          externalnetworks:
+          - name: aws_control_plane
+            description: "External network automatically created by an Out of Box template."
+            propagate: true
+            entries:
+            {{- range $_, $network := .Values.networks }}
+            - {{ $network | quote }}
+            {{- end }}
+            associatedTags:
+            - "externalnetwork:name=aws_control_plane"
+          networkrulesetpolicies:
+          - name: "Allow ECS Agent"
+            description: "Ruleset automatically created by an Out of Box template."
+            propagate: true
+            subject:
+            {{- range $index, $orgmeta := .Aporeto.OrganizationalMetadata }}
+            {{- if eq $index 0 }}
+            - - {{ $orgmeta | quote }}
+            {{- else }}
+              - {{ $orgmeta | quote }}
+            {{- end }}
+            {{- end }}
+            outgoingRules:
+            - action: Allow
+              protocolPorts:
+              - any
+              object:
+              - - "externalnetwork:name=aws_control_plane"
+          `}}
+
+      steps:
+        - name: General
+          description: General configuration
+          parameters:
+            - key: networks
+              name: Networks
+              description: Describe the external network.
+              longDescription: |-
+                Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
+              type: StringSlice
+              defaultValue:
+              - 0.0.0.0/0

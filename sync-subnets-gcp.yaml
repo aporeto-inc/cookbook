@@ -1,8 +1,8 @@
 APIVersion: 1
-label: sync:subnets:aws
+label: sync:subnets:gcp
 data:
   automations:
-  - name: AWS_Sync_Subnets
+  - name: GCP_Sync_Subnets
     trigger: Time
     schedule: "0 * */1 * *"
     immediateExecution: true
@@ -15,7 +15,7 @@ data:
       - |
         function then(api, params, payload) {
 
-          var obj = aporeto.http('GET', 'https://ip-ranges.amazonaws.com/ip-ranges.json');
+          var obj = aporeto.http('GET', 'https://www.gstatic.com/ipranges/cloud.json');
           var body = JSON.parse(obj.body);
           var prefixes = body.prefixes;
           var knownCIDRs = {};
@@ -23,7 +23,7 @@ data:
           var services = _.groupBy(prefixes, 'service')
 
           _.each(services, function(subnets, srv) {
-            if (!srv || srv === "AMAZON") {
+            if (!srv) {
               return;
             }
 
@@ -35,17 +35,26 @@ data:
             };
 
             _.each(subnets, function(subnet) {
-              if (subnet.ip_prefix in knownCIDRs) {
+              var keys = _.keys(subnet);
+
+              if (_.contains(keys, "ipv4Prefix")) {
+                if (subnet.ipv4Prefix in knownCIDRs) {
+                  return;
+                }
+                knownCIDRs[subnet.ipv4Prefix] = 1
+
+                ipPrefixes["IPv4"].push(subnet.ipv4Prefix);
                 return;
               }
-              knownCIDRs[subnet.ip_prefix] = 1
 
-              if (_.contains(subnet, ":")) {
-                ipPrefixes["IPv6"].push(subnet.ip_prefix);
-                return;
+              if (_.contains(keys, "ipv6Prefix")) {
+                if (subnet.ipv6Prefix in knownCIDRs) {
+                  return;
+                }
+                knownCIDRs[subnet.ipv6Prefix] = 1
+
+                ipPrefixes["IPv6"].push(subnet.ipv6Prefix);
               }
-
-              ipPrefixes["IPv4"].push(subnet.ip_prefix);
             })
 
             _.map(ipPrefixes, function(entries, ipType) {
@@ -58,15 +67,15 @@ data:
               var extnets = api.RetrieveMany(
                 'externalnetworks',
                 null,
-                'normalizedTags contains "externalnetwork:name=AWS_' + srv + '_' + ipType + '"'
+                'normalizedTags contains "externalnetwork:name=GCP_' + srv + '_' + ipType + '"'
               );
 
               if (extnets.length == 0) {
                 api.Create('externalnetworks', {
-                    "name": "AWS_" + srv + "_" + ipType,
+                    "name": "GCP_" + srv + "_" + ipType,
                     "propagate": true,
                     "entries": entries,
-                    "associatedTags": ["cloud:aws=subnet", "cloud:aws=" + srv, "cloud:aws=" + ipType, "externalnetwork:name=AWS_" + srv + "_" + ipType]
+                    "associatedTags": ["cloud:gcp=subnet", "cloud:gcp=" + srv, "cloud:gcp=" + ipType, "externalnetwork:name=GCP_" + srv + "_" + ipType]
                 });
 
                 return;

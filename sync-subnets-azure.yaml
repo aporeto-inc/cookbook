@@ -1,8 +1,8 @@
 APIVersion: 1
-label: sync:subnets:aws
+label: sync:subnets:azure
 data:
   automations:
-  - name: AWS_Sync_Subnets
+  - name: Azure_Sync_Subnets
     trigger: Time
     schedule: "0 * */1 * *"
     immediateExecution: true
@@ -15,15 +15,20 @@ data:
       - |
         function then(api, params, payload) {
 
-          var obj = aporeto.http('GET', 'https://ip-ranges.amazonaws.com/ip-ranges.json');
+          var page = aporeto.http('GET', 'https://www.microsoft.com/en-us/download/confirmation.aspx?id=56519');
+          var jsonURL = page.body.match(/https:\/\/download.microsoft.com\/download\/.*?.json/)[0]
+
+          var obj = aporeto.http('GET', jsonURL);
           var body = JSON.parse(obj.body);
-          var prefixes = body.prefixes;
+          var values = body.values;
           var knownCIDRs = {};
 
-          var services = _.groupBy(prefixes, 'service')
+          var services = _.groupBy(values, function(v) {
+            return v.properties.systemService;
+          })
 
-          _.each(services, function(subnets, srv) {
-            if (!srv || srv === "AMAZON") {
+          _.each(services, function(vals, srv) {
+            if (!srv) {
               return;
             }
 
@@ -34,18 +39,20 @@ data:
               "IPv6": []
             };
 
-            _.each(subnets, function(subnet) {
-              if (subnet.ip_prefix in knownCIDRs) {
-                return;
-              }
-              knownCIDRs[subnet.ip_prefix] = 1
+            _.each(vals, function(val) {
+              _.each(val.properties.addressPrefixes, function(addressPrefix) {
+                if (addressPrefix in knownCIDRs) {
+                  return;
+                }
+                knownCIDRs[addressPrefix] = 1
 
-              if (_.contains(subnet, ":")) {
-                ipPrefixes["IPv6"].push(subnet.ip_prefix);
-                return;
-              }
+                if (_.contains(addressPrefix, ":")) {
+                  ipPrefixes["IPv6"].push(addressPrefix);
+                  return;
+                }
 
-              ipPrefixes["IPv4"].push(subnet.ip_prefix);
+                ipPrefixes["IPv4"].push(addressPrefix);
+              })
             })
 
             _.map(ipPrefixes, function(entries, ipType) {
@@ -58,15 +65,15 @@ data:
               var extnets = api.RetrieveMany(
                 'externalnetworks',
                 null,
-                'normalizedTags contains "externalnetwork:name=AWS_' + srv + '_' + ipType + '"'
+                'normalizedTags contains "externalnetwork:name=Azure_' + srv + '_' + ipType + '"'
               );
 
               if (extnets.length == 0) {
                 api.Create('externalnetworks', {
-                    "name": "AWS_" + srv + "_" + ipType,
+                    "name": "Azure_" + srv + "_" + ipType,
                     "propagate": true,
                     "entries": entries,
-                    "associatedTags": ["cloud:aws=subnet", "cloud:aws=" + srv, "cloud:aws=" + ipType, "externalnetwork:name=AWS_" + srv + "_" + ipType]
+                    "associatedTags": ["cloud:azure=subnet", "cloud:azure=" + srv, "cloud:azure=" + ipType, "externalnetwork:name=Azure_" + srv + "_" + ipType]
                 });
 
                 return;

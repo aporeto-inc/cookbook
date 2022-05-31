@@ -1,0 +1,13 @@
+APIVersion: 1
+label: externalnetwork:cloud_metadata_server
+identities:
+- externalnetwork
+data:
+  externalnetworks:
+  - name: Cloud_Metadata_Server
+    propagate: true
+    entries:
+    - "169.254.169.254/32"
+    associatedTags:
+    - 'cloud:metadataserver=subnet'
+    - 'externalnetwork:name=Cloud_Metadata_Server'

@@ -15,30 +15,19 @@ data:
         - "aporeto:recipe:placement=group-level"
       deploymentMode: NamespaceUnique
       targetIdentities:
-        - externalnetwork
         - networkrulesetpolicy
       propagate: true
       longDescription: |-
         ### Create a metadata service rule
 
-        This recipe will create an External Network and Network Ruleset Policy to
-        enable access to the metadata service outgoing port TCP/80 and TCP/443 on
-        the current namespace.
+        This recipe will create a Network Ruleset Policy to enable access
+        to the metadata service outgoing port TCP/80 and TCP/443 on the
+        current namespace.
 
       template: |-
         {{`
         APIVersion: 1
         data:
-          externalnetworks:
-          - name: metadata_service
-            description: "External network automatically created by an Out of Box template."
-            propagate: true
-            entries:
-            {{- range $_, $network := .Values.networks }}
-            - {{ $network | quote }}
-            {{- end }}
-            associatedTags:
-            - "externalnetwork:name=metadata_service"
           networkrulesetpolicies:
           - name: metadata_service
             description: "Ruleset automatically created by an Out of Box template."
@@ -57,18 +46,5 @@ data:
               - tcp/80
               - tcp/443
               object:
-              - - "externalnetwork:name=metadata_service"
+              - - "externalnetwork:name=Cloud_Metadata_Server"
           `}}
-
-      steps:
-        - name: General
-          description: General configuration
-          parameters:
-            - key: networks
-              name: Networks
-              description: Describe the external network.
-              longDescription: |-
-                Provide at least one CIDR or FQDN. Example 52.17.12.0/16,google.com
-              type: StringSlice
-              defaultValue:
-              - 169.254.169.254/32

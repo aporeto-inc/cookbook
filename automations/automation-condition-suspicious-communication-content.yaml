@@ -1,0 +1,56 @@
+APIVersion: 1
+label: automation:condition:suspicious_communication_content
+identities:
+- automationcondition
+data:
+  automationconditions:
+  - key: '@condition:suspicious_communication_content'
+    name: When a suspicious activity event comes in
+    propagate: true
+    description: Form the content for the message and continue.
+    function: |-
+      function when(m, params) {
+        if (!params.eventPayload) {
+          throw 'This condition must be configured with a trigger of type "Event"';
+        }
+        if (!params.platform_url) {
+          throw 'Parameter "platform_url" must be set';
+        }
+
+        var id = params.eventPayload.entity.ID;
+        var namespace = params.eventPayload.entity.namespace;
+        var timeOccurred = params.eventPayload.entity.firstOccurrenceTime;
+        var risk = params.eventPayload.entity.risk;
+        var categories = params.eventPayload.entity.categories;
+        var counter = params.eventPayload.entity.counter;
+        var sourceID = params.eventPayload.entity.sourceID;
+        var sourceName = params.eventPayload.entity.sourceName;
+        var sourceNamespace = params.eventPayload.entity.sourceNamespace;
+        var sourceType = params.eventPayload.entity.sourceType;
+
+        var content = "\nNew Suspicious Acitivity reported " +
+          "\nID: " + id +
+          "\nNamespace: " + namespace +
+          "\nIP/FQDN: " + sourceName +
+          "\nFirst seen: " + timeOccurred +
+          "\nRisk: " + risk +
+          "\nCategories: " + categories +
+          "\nNumber of occurrences: " + counter +
+          "\nSource Type: " + sourceType +
+          "\nSource ID: " + sourceID +
+          "\nSource Namespace: " + sourceNamespace
+
+        return {
+          continue: true,
+          payload: {
+            content: content,
+          }
+        }
+      }
+    steps:
+    - name: Parameters
+      parameters:
+      - name: Platform URL
+        key: platform_url
+        description: The base URL to the platform's UI.
+        type: String

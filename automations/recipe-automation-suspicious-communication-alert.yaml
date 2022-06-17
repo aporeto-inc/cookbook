@@ -1,0 +1,79 @@
+APIVersion: 1
+label: recipe:automation:suspicious-communication-alert
+data:
+  recipes:
+    - name: Create a Suspicious Communication Alert
+      description: Creates an automation that will raise an alert when a suspicious communication happens in a given namespace.
+      label: recipe:automation:suspicious-communication-alert
+      metadata:
+        - "@aporeto:author=aporeto"
+      associatedTags:
+        - "aporeto:recipe:placement=automation"
+      targetIdentities:
+        - automation
+      propagate: true
+      longDescription: |-
+        ### Creates an automation that will raise an alert when a suspicious communication happens in a given namespace
+
+        This recipe will create an automation that will raise an alarm when
+        a suspicious communication happens in the specified namespace or below.
+
+      template: |-
+        {{`
+        APIVersion: 1
+        data:
+          automations:
+          - name: {{ .Values.name | quote }}
+            {{- if .Values.description }}
+            description: {{ .Values.description | quote }}
+            {{- end }}
+            trigger: Event
+            events:
+              suspiciousactivity:
+              - create
+            condition: "@condition:suspicious_communication_content"
+            actions:
+            {{- range $_, $action := .Values.actions }}
+            - {{ $action | quote }}
+            {{- end }}
+            parameters:
+              title: {{ .Values.name | quote }}
+              severity: {{ .Values.severity | quote }}
+              platform_url: {{ .Aporeto.UI | quote }}
+              content: |-
+                For full details, please see the logs on the Prisma Cloud Microsegmentation console
+                Alert Severity:
+        `}}
+
+      steps:
+        - name: General
+          parameters:
+            - name: Name
+              key: name
+              description: The name of the automation.
+              type: String
+              defaultValue: Suspicious communication Alert
+            - name: Description
+              key: description
+              description: Optional information about the automation.
+              type: String
+              optional: true
+        - name: Actions
+          parameters:
+            - name: Integrations
+              key: actions
+              description: The list of integrations to use when the alert is triggered.
+              type: List
+              subtype: AutomationAction
+        - name: Alert Severity
+          parameters:
+            - name: Severity
+              key: severity
+              description: The severity of the message.
+              type: Enum
+              allowedChoices:
+                Low: Low
+                Medium: Medium
+                High: High
+                Critical: Critical
+              defaultValue: High

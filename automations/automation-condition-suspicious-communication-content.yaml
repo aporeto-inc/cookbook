@@ -45,7 +45,7 @@ data:
           susType = suspiciousCategories[category]
         })
 
-        var content = "\nNew Suspicious Acitivity reported " +
+        var content = "\nNew Suspicious Activity reported " +
           "\nType: " + susType +
           "\nID: " + id +
           "\nNamespace: " + namespace +

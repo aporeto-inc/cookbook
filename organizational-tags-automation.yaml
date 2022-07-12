@@ -1,0 +1,82 @@
+APIVersion: 1
+label: "recipe:organizational-metadata-automation"
+data:
+  hookpolicies:
+  - name: "organizational-metadata-automation-hook"
+    description: "Triggers automation called organizational-metadata-automation"
+    endpointType: Automation
+    propagate: true
+    # protected: true
+    subject:
+    - - "$identity=namespace"
+    selectors:
+    - - "$identity=automation"
+      - "$name=organizational-metadata-automation"
+  automations:
+  - name: organizational-metadata-automation
+    description: "Triggered by the hook called organizational-metadata-automation-hook"
+    signature: ""
+    trigger: Webhook
+    propagate: true
+    # protected: true
+    parameters:
+      level0: company
+      level1: zone
+      level2: rail
+      level3: group
+    actions:
+    - |
+      // Return the level of the created namespace.
+      function getCurrentLevel(namespaceName) {
+        var arr = namespaceName.split("/");
+        arr.shift()
+        return arr.length;
+      }
+
+      // Return the name of the namespace.
+      function getNamespaceName(namespaceName) {
+          var arr = namespaceName.split("/");
+
+          if (arr.length === 0) {
+            return namespaceName;
+          }
+
+          return arr[arr.length - 1];
+      }
+
+      // Action triggered when a namespace is created.
+      function then(api, params) {
+        var triggerPayload = JSON.parse(params.triggerPayload);
+        var namespace = triggerPayload.input;
+
+        if (!namespace.name || triggerPayload.operation === "delete") {
+            triggerPayload.output = triggerPayload.input;
+
+            return {
+              "statusCode": 200,
+              "body": JSON.stringify(triggerPayload),
+            }
+        }
+
+        var namespaceLevel = getCurrentLevel(namespace.namespace);
+        var tag = _.get(params, "level"+namespaceLevel, "");
+
+        if (tag != "") {
+          var organizationalMetadata = ["@org:"+params["level"+namespaceLevel]+"="+getNamespaceName(namespace.name)];
+          _.each(namespace.organizationalMetadata, function (m) {
+            organizationalMetadata.push(m);
+          });
+          namespace.organizationalMetadata = organizationalMetadata;
+        }
+
+        // populates the output field of the remote processor model with our modifications
+        triggerPayload.output = namespace;
+
+        return {
+            "statusCode": 200,
+            "body": JSON.stringify(triggerPayload),
+        }
+      }
+identities:
+- hookpolicy
+- automation

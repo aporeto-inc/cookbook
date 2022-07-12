@@ -56,6 +56,12 @@ data:
               description: The name of the automation.
               type: String
               defaultValue: Ruleset Alert
+              validationFunction: |-
+                function validate(value) {
+                  if (value.length > 200) {
+                    throw "Field 'Name' should not exceed 200 characters";
+                  }
+                }
             - name: Description
               key: description
               description: Optional information about the automation.

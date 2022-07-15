@@ -26,10 +26,9 @@ data:
           83: "Ransomware",
         };
 
+        var eventType = params.eventPayload.type;
         var id = params.eventPayload.entity.ID;
         var namespace = params.eventPayload.entity.namespace;
-        var timeOccurred = params.eventPayload.entity.firstOccurrenceTime;
-        var risk = params.eventPayload.entity.risk;
         var counter = params.eventPayload.entity.counter;
         var sourceID = params.eventPayload.entity.sourceID;
         var sourceName = params.eventPayload.entity.sourceName;
@@ -45,13 +44,22 @@ data:
           susType = suspiciousCategories[category]
         })
 
-        var content = "\n\nNew Suspicious Activity reported" +
+        var timeOccurred = "\nFirst seen: " + params.eventPayload.entity.firstOccurrenceTime;
+        if (eventType === "update") {
+          timeOccurred = "\nLast seen: " + params.eventPayload.entity.lastOccurrenceTime;
+        }
+
+        var risk = "";
+        if (params.eventPayload.entity.risk !== "Unknown") {
+          risk = "\nRisk: " + params.eventPayload.entity.risk;
+        }
+
+        var content = "\n\nSuspicious Activity detected" +
           "\nType: " + susType +
           "\nID: " + id +
           "\nNamespace: " + namespace +
           "\nIP/FQDN: " + sourceName +
-          "\nFirst seen: " + timeOccurred +
-          "\nRisk: " + risk +
+          timeOccurred + risk +
           "\nNumber of occurrences: " + counter +
           "\nSource Type: " + sourceType +
           "\nSource ID: " + sourceID +

@@ -44,10 +44,12 @@ data:
 
                 var message = payload.content ? params.content + " " + params.severity + payload.content : params.content + " " + params.severity
 
+                var key = payload.id ? params.automation_id + "." + payload.id : params.automation_id
+
                 m.Create('alarm', {
                     name: params.title,
                     emails: params.emails,
-                    kind: 'automation.create_alarm.'+params.automation_id,
+                    kind: 'automation.create_alarm.'+key,
                     severity: params.severity,
                     content: message,
                 });

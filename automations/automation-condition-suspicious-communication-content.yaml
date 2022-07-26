@@ -58,9 +58,9 @@ data:
           "\nType: " + susType +
           "\nID: " + id +
           "\nNamespace: " + namespace +
-          "\nIP/FQDN: " + sourceName +
+          "\nFQDN/IP: " + sourceName +
           timeOccurred + risk +
-          "\nNumber of occurrences: " + counter +
+          "\nFQDN/IP address appearances: " + counter +
           "\nSource Type: " + sourceType +
           "\nSource ID: " + sourceID +
           "\nSource Namespace: " + sourceNamespace

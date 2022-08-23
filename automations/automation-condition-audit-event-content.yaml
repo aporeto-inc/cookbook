@@ -22,21 +22,23 @@ data:
         var id = params.eventPayload.entity.ID;
         var namespace = params.eventPayload.entity.namespace;
 
-        var content = "\nEntity: " + identity +
-          "\nEvent Type: " + eventType +
-          "\nID: " + id +
-          "\nNamespace: " + namespace
+        var content = {
+          Entity: id,
+          Identity: identity,
+          'Event Type': eventType,
+          Namespace: namespace
+        }
 
         var roles = params.eventPayload.entity.roles;
-        if (roles) { content += "\nRoles: " + roles.join(', ') }
+        if (roles) { content['Roles'] = roles; }
 
         var updateTime = params.eventPayload.entity.updateTime;
-        if (updateTime) { content += "\nUpdate Time: " + updateTime }
+        if (updateTime) { content['Update Time'] = updateTime; }
 
         return {
           continue: true,
           payload: {
-            content: content,
+            content,
           }
         }
       }

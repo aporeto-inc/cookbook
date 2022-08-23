@@ -39,10 +39,16 @@ data:
                     throw 'Parameter key "content" must be set';
                 }
 
-                var message = payload.content ? params.content + " " + params.severity + payload.content : params.content + " " + params.severity
+                payload.content['Alert Severity'] = params.severity;
+
+                var message = JSON.stringify(payload.content, null, 2);
 
                 body = JSON.stringify({
-                    text: params.title + "\n\n" + message,
+                    text: params.title + "\n\n" +
+                    "```" +
+                    message +
+                    "```",
+                    mrkdwn: true
                 });
 
                 aporeto.http(

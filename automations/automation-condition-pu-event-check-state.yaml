@@ -69,12 +69,16 @@ data:
             break;
         }
 
+        var content = {
+          'Affected Host Processing Unit': id,
+          Namespace: namespace,
+          'Current State': currentState
+        }
+
         return {
           continue: shouldContinue,
           payload: {
-            content: "\n\nAffected Host Processing Unit: " + id +
-              "\nNamespace: " + namespace +
-              "\n\nState: " + currentState
+            content
           }
         }
       }

@@ -54,22 +54,22 @@ data:
           risk = "\nRisk: " + params.eventPayload.entity.risk;
         }
 
-        var content = "\n\nSuspicious Activity detected" +
-          "\nType: " + susType +
-          "\nID: " + id +
-          "\nNamespace: " + namespace +
-          "\nFQDN/IP: " + sourceName +
-          timeOccurred + risk +
-          "\nFQDN/IP address appearances: " + counter +
-          "\nSource Type: " + sourceType +
-          "\nSource ID: " + sourceID +
-          "\nSource Namespace: " + sourceNamespace
+        var content = {
+          Type: susType,
+          'Suspicious Activity': id,
+          Namespace: namespace,
+          'FQDN/IP': sourceName + timeOccurred + risk,
+          'FQDN/IP address appearances': counter,
+          'Source Type': sourceType,
+          'Source ID': sourceID,
+          'Source Namespace': sourceNamespace
+        }
 
         return {
           continue: true,
           payload: {
             id: id,
-            content: content,
+            content,
           }
         }
       }

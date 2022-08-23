@@ -78,7 +78,7 @@ data:
         return {
           continue: shouldContinue,
           payload: {
-            content
+            content: content
           }
         }
       }

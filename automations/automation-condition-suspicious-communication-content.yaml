@@ -69,7 +69,7 @@ data:
           continue: true,
           payload: {
             id: id,
-            content,
+            content: content
           }
         }
       }

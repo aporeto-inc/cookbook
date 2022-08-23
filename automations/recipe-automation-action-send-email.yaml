@@ -42,22 +42,12 @@ data:
                     throw 'Parameter key "content" must be set';
                 }
 
-                var template = "<table style='display:flex;justify-content:center'><tbody>"
-                Object
-                  .entries(params.content)
-                  .forEach(function([name, value]) {
-                    template += "
-                      <tr>" +
-                        "<td style='vertical-align:top;padding-right:16px;color:rgb(112 112 112)'>" + name + ": </td>" +
-                        "<td>" + value + "</td>
-                      </tr>"
-                    table += "
-                      <tr>
-                        <td style='vertical-align:top;padding-right:16px;color:rgb(112 112 112)'>Severity: </td>
-                        <td>" + params.severity + "</td>
-                      </tr>"
-                  });
-                template: += "</tbody></table>"
+                var template = params.content + "<br><br><table><tbody>"
+                _.forEach(payload.content, function(value, key) {
+                  template += "<tr><td>" + key + ": </td>" + "<td>" + value + "</td></tr>"
+                });
+
+                template += "<tr><td>Severity: </td><td>" + params.severity + "</td></tr></tbody></table>"
 
                 var key = payload.id ? params.automation_id + "." + payload.id : params.automation_id
 

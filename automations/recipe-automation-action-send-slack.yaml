@@ -1,10 +1,10 @@
 APIVersion: 1
-label: recipe:automation-action:send-slack
+label: recipe:automation-action:send-slack-test
 data:
   recipes:
-    - name: Create a Send Slack Automation Action
+    - name: Create a Send Slack Automation Action TEST
       description: Creates an automation action that posts to a specific Slack WebHook.
-      label: recipe:automation-action:send-slack
+      label: recipe:automation-action:send-slack-test
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
@@ -43,11 +43,11 @@ data:
 
                 var message = JSON.stringify(payload.content, null, 2);
 
+                // \x60 is the backtick required for markdown codeblock
+                var text = params.title + "\n\n " + "{{ printf "\x60\x60\x60" }}" + message + "{{ printf "\x60\x60\x60" }}";
+
                 body = JSON.stringify({
-                    text: params.title + "\n\n" +
-                    "```" +
-                    message +
-                    "```",
+                    text: text,
                     mrkdwn: true
                 });
 

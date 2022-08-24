@@ -46,7 +46,6 @@ data:
               platform_url: {{ .Aporeto.UI | quote }}
               content: |-
                 For full details, please see the logs on the Prisma Cloud Microsegmentation console
-                Alert Severity:
         `}}
 
       steps:

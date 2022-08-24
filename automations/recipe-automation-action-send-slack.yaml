@@ -39,10 +39,16 @@ data:
                     throw 'Parameter key "content" must be set';
                 }
 
-                var message = payload.content ? params.content + " " + params.severity + payload.content : params.content + " " + params.severity
+                payload.content['Alert Severity'] = params.severity;
+
+                var message = JSON.stringify(payload.content, null, 2);
+
+                // \x60 is the backtick required for markdown codeblock
+                var text = params.title + "\n\n " + "{{ printf "\x60\x60\x60" }}" + message + "{{ printf "\x60\x60\x60" }}";
 
                 body = JSON.stringify({
-                    text: params.title + "\n\n" + message,
+                    text: text,
+                    mrkdwn: true
                 });
 
                 aporeto.http(

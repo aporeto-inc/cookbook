@@ -65,12 +65,16 @@ data:
             break;
         }
 
+        var content = {
+          'Affected Enforcer': id,
+          Namespace: namespace,
+          'Connection State': currentState
+        }
+
         return {
           continue: shouldContinue,
           payload: {
-            content: "\n\nAffected Enforcer: " + id +
-              "\nNamespace: " + namespace +
-              "\n\nConnection State: " + currentState
+            content: content
           }
         }
       }

@@ -48,13 +48,16 @@ data:
           return flows.length >= params.limit;
         });
 
+        var content = {
+          'Affected Ruleset': policyID,
+          'Flow details': JSON.stringify(flow, null, 2),
+          'Flow info': "" + params.platform_url + "/flowlogs?namespace=" + sourceNamespace + "&timeRange=86400000&filter=policyID+==+" + policyID
+        }
+
         return {
           continue: condition,
           payload: {
-            content: "\n\nAffected Ruleset: " + policyID +
-              "\n\nFlow details:" +
-              "\n" + JSON.stringify(flow, null, 2) +
-              "\n\nFor more info: " + params.platform_url + "/flowlogs?namespace=" + sourceNamespace + "&timeRange=86400000&filter=policyID+==+" + policyID
+            content: content
           }
         }
       }

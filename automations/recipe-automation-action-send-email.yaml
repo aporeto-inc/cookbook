@@ -42,7 +42,12 @@ data:
                     throw 'Parameter key "content" must be set';
                 }
 
-                var message = payload.content ? params.content + " " + params.severity + payload.content : params.content + " " + params.severity
+                var template = params.content + "<br><br><table><tbody>"
+                _.forEach(payload.content, function(value, key) {
+                  template += "<tr><td>" + key + ": </td>" + "<td>" + value + "</td></tr>"
+                });
+
+                template += "<tr><td>Severity: </td><td>" + params.severity + "</td></tr></tbody></table>"
 
                 var key = payload.id ? params.automation_id + "." + payload.id : params.automation_id
 
@@ -51,7 +56,7 @@ data:
                     emails: params.emails,
                     kind: 'automation.create_alarm.'+key,
                     severity: params.severity,
-                    content: message,
+                    content: template,
                 });
               }
             parameters:

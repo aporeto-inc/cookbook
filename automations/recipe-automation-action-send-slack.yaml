@@ -1,10 +1,10 @@
 APIVersion: 1
-label: recipe:automation-action:send-slack-test
+label: recipe:automation-action:send-slack
 data:
   recipes:
-    - name: Create a Send Slack Automation Action TEST
+    - name: Create a Send Slack Automation Action
       description: Creates an automation action that posts to a specific Slack WebHook.
-      label: recipe:automation-action:send-slack-test
+      label: recipe:automation-action:send-slack
       metadata:
         - "@aporeto:author=aporeto"
       associatedTags:
